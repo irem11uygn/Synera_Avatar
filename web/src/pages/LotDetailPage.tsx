@@ -16,9 +16,13 @@ import { LINK_PROCESS, LOT_ORIGIN, MOVEMENT_TYPE } from '../lib/labels'
 
 type LinkRow = LotDetail['parents'][number]
 
+// Belgesi ekranı olan hareketler belgeye bağlanır.
+const DOC_PAGE: Partial<Record<Movement['doc_type'], string>> = { URETIM: '/uretim', PARCALAMA: '/parcalama' }
+
 function documentCell(movement: Movement) {
   const number = movement.doc_no ?? `#${movement.doc_id}`
-  return movement.doc_type === 'URETIM' ? <Link to={`/uretim/${movement.doc_id}`}>{number}</Link> : number
+  const page = DOC_PAGE[movement.doc_type]
+  return page ? <Link to={`${page}/${movement.doc_id}`}>{number}</Link> : number
 }
 
 function movementColumns(unit: BaseUnit): TableColumnsType<Movement> {
@@ -49,12 +53,10 @@ const LINK_COLUMNS: TableColumnsType<LinkRow> = [
   {
     title: 'Süreç',
     dataIndex: 'process',
-    render: (process: LinkRow['process'], row) =>
-      process === 'URETIM' ? (
-        <Link to={`/uretim/${row.process_id}`}>{LINK_PROCESS[process]}</Link>
-      ) : (
-        LINK_PROCESS[process]
-      ),
+    render: (process: LinkRow['process'], row) => {
+      const page = process === 'URETIM' ? '/uretim' : process === 'PARCALAMA' ? '/parcalama' : null
+      return page ? <Link to={`${page}/${row.process_id}`}>{LINK_PROCESS[process]}</Link> : LINK_PROCESS[process]
+    },
   },
 ]
 

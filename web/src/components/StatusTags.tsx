@@ -1,6 +1,6 @@
 import { Tag } from 'antd'
-import type { LotStatus, OrderStatus } from '../api/types'
-import { LOT_STATUS, ORDER_STATUS } from '../lib/labels'
+import type { CuttingStatus, LotStatus, OrderStatus } from '../api/types'
+import { CUTTING_STATUS, LOT_STATUS, ORDER_STATUS } from '../lib/labels'
 
 // Durum yalnız renkle değil yazıyla da belirtilir (erişilebilirlik).
 
@@ -17,4 +17,8 @@ const ORDER_COLOR: Record<OrderStatus, string> = {
 
 export function OrderStatusTag({ status }: { status: OrderStatus }) {
   return <Tag color={ORDER_COLOR[status]}>{ORDER_STATUS[status]}</Tag>
+}
+
+export function CuttingStatusTag({ status }: { status: CuttingStatus }) {
+  return <Tag color={status === 'ONAYLANDI' ? 'green' : 'default'}>{CUTTING_STATUS[status]}</Tag>
 }

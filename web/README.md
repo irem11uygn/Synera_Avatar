@@ -4,7 +4,7 @@ Web yönetim ve raporlama arayüzü: hammadde/lot kayıtları, dış üretim emr
 
 **Teknoloji:** React 19 + Vite 8 + TypeScript (strict) + Ant Design 6 (Türkçe dil paketi) + TanStack Query (`docs/decisions/ADR-002`). Kod denetimi: oxlint.
 
-**Durum (T-10):** Görev 1 ekranları hazır: giriş/çıkış, ana sayfa (sistem durumu, hızlı işlemler), ürün ve cari kartları, hammadde alışı, stok durumu, lotlar ve lot ayrıntısı (hareket geçmişi, lot ağı), transferler (araca yükleme), dış üretim emirleri (oluştur, sevk, kabul, EKP dökümü). Web yalnız yönetici hesabına açıktır. Parçalama, izleme/geri çağırma, raporlar ve yapay zekâ ekranları sonraki işlerde eklenecek.
+**Durum (T-10):** Görev 1 ekranları hazır: giriş/çıkış, ana sayfa (sistem durumu, hızlı işlemler), ürün ve cari kartları, hammadde alışı, stok durumu, lotlar ve lot ayrıntısı (hareket geçmişi, lot ağı), transferler (araca yükleme), dış üretim emirleri (oluştur, sevk, kabul, EKP dökümü). **T-12:** parçalama (yeni, tartım ve canlı ön izleme, onay, dağıtım dökümü) ve parçalama reçeteleri. Web yalnız yönetici hesabına açıktır. İzleme/geri çağırma, raporlar ve yapay zekâ ekranları sonraki işlerde eklenecek.
 
 | Dosya | Amaç |
 |---|---|

@@ -20,6 +20,7 @@ export default function HomePage() {
               <Button type="primary" onClick={() => navigate('/uretim/yeni')}>
                 Yeni dış üretim emri
               </Button>
+              <Button onClick={() => navigate('/parcalama/yeni')}>Yeni parçalama</Button>
               <Button onClick={() => navigate('/alislar/yeni')}>Hammadde alışı</Button>
               <Button onClick={() => navigate('/transferler')}>Araca yükleme</Button>
               <Button onClick={() => navigate('/stok')}>Stok durumu</Button>

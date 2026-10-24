@@ -2,6 +2,8 @@
 // burada eksik kalırsa derlemeyi durdurur.
 
 import type {
+  AllocationMethod,
+  CuttingStatus,
   LinkProcess,
   LotOrigin,
   LotStatus,
@@ -9,6 +11,8 @@ import type {
   OrderStatus,
   ProductKind,
   PurchaseCostKind,
+  RecipeLineType,
+  Species,
   TransferReason,
   WarehouseKind,
 } from '../api/types'
@@ -75,6 +79,21 @@ export const PURCHASE_COST_KIND: Record<PurchaseCostKind, string> = {
   VETERINER: 'Veteriner',
   DIGER: 'Diğer',
 }
+
+export const ALLOCATION_METHOD: Record<AllocationMethod, string> = {
+  MIKTAR: 'Miktar ağırlıklı',
+  DEGER: 'Değer ağırlıklı',
+}
+
+export const CUTTING_STATUS: Record<CuttingStatus, string> = { TASLAK: 'Taslak', ONAYLANDI: 'Onaylandı' }
+
+export const RECIPE_LINE_TYPE: Record<RecipeLineType, string> = {
+  PARCA: 'Parça',
+  YAN_URUN: 'Yan ürün',
+  FIRE: 'Fire',
+}
+
+export const SPECIES: Record<Species, string> = { KUZU: 'Kuzu', KOYUN: 'Koyun', KECI: 'Keçi' }
 
 /** Select bileşeni için { value, label } listesi. */
 export function options<K extends string>(labels: Record<K, string>): { value: K; label: string }[] {

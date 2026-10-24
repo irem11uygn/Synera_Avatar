@@ -3,6 +3,9 @@ import { useState, type ReactNode } from 'react'
 import { useSession } from './auth/context'
 import { Link } from './components/Link'
 import { matchPath, navigate, usePath } from './lib/router'
+import CuttingDetailPage from './pages/CuttingDetailPage'
+import CuttingListPage from './pages/CuttingListPage'
+import CuttingNewPage from './pages/CuttingNewPage'
 import HomePage from './pages/HomePage'
 import LotDetailPage from './pages/LotDetailPage'
 import LotsPage from './pages/LotsPage'
@@ -13,6 +16,7 @@ import ProductionNewPage from './pages/ProductionNewPage'
 import ProductsPage from './pages/ProductsPage'
 import PurchaseNewPage from './pages/PurchaseNewPage'
 import PurchasesPage from './pages/PurchasesPage'
+import RecipesPage from './pages/RecipesPage'
 import StockPage from './pages/StockPage'
 import TransfersPage from './pages/TransfersPage'
 
@@ -34,6 +38,10 @@ const ROUTES: Route[] = [
   { pattern: '/uretim', render: () => <ProductionListPage /> },
   { pattern: '/uretim/yeni', render: () => <ProductionNewPage /> },
   { pattern: '/uretim/:id', render: ({ id }) => <ProductionDetailPage id={Number(id)} /> },
+  { pattern: '/parcalama', render: () => <CuttingListPage /> },
+  { pattern: '/parcalama/yeni', render: () => <CuttingNewPage /> },
+  { pattern: '/parcalama/:id', render: ({ id }) => <CuttingDetailPage id={Number(id)} /> },
+  { pattern: '/receteler', render: () => <RecipesPage /> },
 ]
 
 const link = (to: string, label: string) => ({ key: to, label: <Link to={to}>{label}</Link> })
@@ -52,9 +60,14 @@ const MENU: MenuProps['items'] = [
     ],
   },
   { type: 'group', label: 'Görev 1', children: [link('/uretim', 'Dış üretim emirleri')] },
+  {
+    type: 'group',
+    label: 'Görev 2',
+    children: [link('/parcalama', 'Parçalama'), link('/receteler', 'Parçalama reçeteleri')],
+  },
 ]
 
-const MENU_KEYS = ['/urunler', '/cariler', '/alislar', '/stok', '/lotlar', '/transferler', '/uretim']
+const MENU_KEYS = ['/urunler', '/cariler', '/alislar', '/stok', '/lotlar', '/transferler', '/uretim', '/parcalama', '/receteler']
 
 function selectedKey(path: string): string {
   return MENU_KEYS.find((key) => path === key || path.startsWith(`${key}/`)) ?? '/'
@@ -78,12 +91,18 @@ function renderRoute(path: string): ReactNode {
   )
 }
 
+// antd "lg" kırılım noktası (992 px) altı.
+function isNarrowScreen(): boolean {
+  return window.matchMedia('(max-width: 991.98px)').matches
+}
+
 export default function App() {
   const path = usePath()
   const { user, logout } = useSession()
   // Dar ekranda menü gizlenir; üst çubuktaki "Menü" düğmesiyle açılır, bir sayfa seçilince kapanır.
-  const [narrow, setNarrow] = useState(false)
-  const [menuClosed, setMenuClosed] = useState(false)
+  // Başlangıç değeri ekran genişliğinden: menü açık başlayıp kapanırsa o arada tıklama menüye gider.
+  const [narrow, setNarrow] = useState(isNarrowScreen)
+  const [menuClosed, setMenuClosed] = useState(isNarrowScreen)
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
