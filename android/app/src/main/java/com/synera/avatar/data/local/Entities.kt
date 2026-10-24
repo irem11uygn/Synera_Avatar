@@ -47,6 +47,8 @@ data class SyncMetaEntity(
     @PrimaryKey val id: Int = 1,
     val lastChangeSeq: Long,
     val lastPullAtMillis: Long?,
+    /** Sunucu veri kümesi kimliği; sürüm 1'den gelen cihazlarda boştur (ilk çekişte baştan kurulur). */
+    val datasetId: String?,
 )
 
 /** Araç deposu ekranı için birleşik satır. */

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from sqlalchemy import BigInteger, CheckConstraint, Connection, Integer, event, select, update
+from sqlalchemy import BigInteger, CheckConstraint, Connection, Integer, String, event, select, update
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from app.db import Base
@@ -17,6 +17,9 @@ class SyncCounter(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
     value: Mapped[int] = mapped_column(BigInteger, default=0)
+    # Veri kümesi kimliği: veritabanı her sıfırdan kurulduğunda yeni UUID. Cihaz bunu değişmiş görürse
+    # yerel kopyasını silip baştan çeker (sıfırdan kurulan sunucuda artımlı çekme eski kayıtları bırakırdı).
+    dataset_id: Mapped[str] = mapped_column(String(36))
 
 
 def next_change_seq(connection: Connection) -> int:

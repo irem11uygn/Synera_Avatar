@@ -5,6 +5,7 @@ import com.synera.avatar.data.local.LotEntity
 import com.synera.avatar.data.local.ProductEntity
 import com.synera.avatar.data.local.PulledChanges
 import com.synera.avatar.data.local.StockEntity
+import com.synera.avatar.data.local.SyncMetaEntity
 import com.synera.avatar.data.remote.PullResponse
 import com.synera.avatar.util.Money
 import com.synera.avatar.util.Quantity
@@ -12,6 +13,7 @@ import com.synera.avatar.util.Quantity
 /** Sunucu yanıtını cihaz tablolarına çevirir: metin ondalıklar → tamsayı kuruş / binde bir birim. */
 fun PullResponse.toChanges(): PulledChanges =
     PulledChanges(
+        datasetId = datasetId,
         nextSince = nextSince,
         products = products.map {
             ProductEntity(
@@ -32,3 +34,10 @@ fun PullResponse.toChanges(): PulledChanges =
         },
         stock = stock.map { StockEntity(lotId = it.lotId, qtyMilli = Quantity.toMilli(it.qty)) },
     )
+
+/**
+ * Sunucu sıfırdan kurulduysa (veri kümesi kimliği değişti) ya da eski bir yedekten döndüyse (sayaç geriledi)
+ * artımlı çekme sunucuda artık olmayan kayıtları cihazda bırakır; yerel kopya baştan kurulmalıdır.
+ */
+fun SyncMetaEntity?.isStaleFor(changes: PulledChanges): Boolean =
+    this != null && (datasetId != changes.datasetId || changes.nextSince < lastChangeSeq)

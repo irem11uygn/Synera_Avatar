@@ -53,6 +53,7 @@ class StockOut(_FromModel):
 
 
 class PullResponse(BaseModel):
+    dataset_id: str
     next_since: int
     products: list[ProductOut]
     customers: list[CustomerOut]
@@ -68,6 +69,7 @@ def pull(
 ) -> PullResponse:
     result = pull_changes(db, user, since)
     return PullResponse(
+        dataset_id=result.dataset_id,
         next_since=result.next_since,
         products=[ProductOut.model_validate(p) for p in result.products],
         customers=[CustomerOut.model_validate(c) for c in result.customers],

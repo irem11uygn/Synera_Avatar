@@ -36,7 +36,20 @@ abstract class MasterDataDao {
         upsertCustomers(changes.customers)
         upsertLots(changes.lots)
         upsertStock(changes.stock)
-        upsertSyncMeta(SyncMetaEntity(lastChangeSeq = changes.nextSince, lastPullAtMillis = pulledAtMillis))
+        upsertSyncMeta(
+            SyncMetaEntity(
+                lastChangeSeq = changes.nextSince,
+                lastPullAtMillis = pulledAtMillis,
+                datasetId = changes.datasetId,
+            ),
+        )
+    }
+
+    /** Yerel kopyayı sunucunun tam kopyasıyla değiştirir; silme ve yazma aynı işlemde, yarıda kalırsa eski kopya durur. */
+    @Transaction
+    open suspend fun replaceAll(changes: PulledChanges, pulledAtMillis: Long) {
+        clearAll()
+        applyPull(changes, pulledAtMillis)
     }
 
     @Query("SELECT COUNT(*) FROM product WHERE active = 1")
@@ -85,6 +98,7 @@ abstract class MasterDataDao {
 }
 
 data class PulledChanges(
+    val datasetId: String,
     val nextSince: Long,
     val products: List<ProductEntity>,
     val customers: List<CustomerEntity>,

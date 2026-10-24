@@ -57,6 +57,7 @@ data class StockDto(@SerialName("lot_id") val lotId: Long, val qty: String)
 
 @Serializable
 data class PullResponse(
+    @SerialName("dataset_id") val datasetId: String,
     @SerialName("next_since") val nextSince: Long,
     val products: List<ProductDto>,
     val customers: List<CustomerDto>,

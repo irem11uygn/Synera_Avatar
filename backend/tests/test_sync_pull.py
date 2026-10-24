@@ -67,6 +67,14 @@ def test_only_sales_users_can_pull(client):
     assert response.json()["error"]["code"] == "FORBIDDEN"
 
 
+def test_pull_carries_a_stable_dataset_identity(client):
+    """Cihaz bu kimlik değişirse (sunucu sıfırlandı/geri yüklendi) yerel kopyasını baştan kurar."""
+    headers = auth_header(client, "satis1", "satis123")
+    first, second = pull(client, headers), pull(client, headers, 5)
+    assert len(first["dataset_id"]) == 36 and first["dataset_id"].count("-") == 4
+    assert second["dataset_id"] == first["dataset_id"]
+
+
 def test_negative_since_is_rejected(client):
     headers = auth_header(client, "satis1", "satis123")
     assert client.get("/api/v1/sync/pull", params={"since": -1}, headers=headers).status_code == 422

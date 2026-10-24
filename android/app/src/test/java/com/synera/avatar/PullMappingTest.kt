@@ -1,16 +1,21 @@
 package com.synera.avatar
 
+import com.synera.avatar.data.local.SyncMetaEntity
 import com.synera.avatar.data.remote.ApiClient
 import com.synera.avatar.data.remote.PullResponse
+import com.synera.avatar.data.repo.isStaleFor
 import com.synera.avatar.data.repo.toChanges
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PullMappingTest {
     // Sunucunun /api/v1/sync/pull yanıtı biçiminde örnek (docs/api.md §4.4); bilinmeyen alanlar yok sayılır.
     private val body = """
         {
+          "dataset_id": "5b0f1c9e-3d2a-4c7e-9f10-2a6b8d4e7c31",
           "next_since": 52,
           "products": [
             {"id": 5, "code": "NARIN-SUCUK", "name": "Narin Sucuk 1 kg", "base_unit": "ADET",
@@ -30,6 +35,7 @@ class PullMappingTest {
         val changes = ApiClient.json.decodeFromString<PullResponse>(body).toChanges()
 
         assertEquals(52L, changes.nextSince)
+        assertEquals("5b0f1c9e-3d2a-4c7e-9f10-2a6b8d4e7c31", changes.datasetId)
         val sucuk = changes.products.first { it.code == "NARIN-SUCUK" }
         assertEquals(2490L, sucuk.salePriceCents)
         assertEquals(1_000L, sucuk.unitWeightMilli)
@@ -37,5 +43,18 @@ class PullMappingTest {
         assertEquals("Market A", changes.customers.single().name)
         assertEquals("BLOKE", changes.lots.single().status)
         assertEquals(85_000L, changes.stock.single().qtyMilli)
+    }
+
+    @Test
+    fun `sunucu sifirlaninca ya da geri donunce yerel kopya bastan kurulur`() {
+        val changes = ApiClient.json.decodeFromString<PullResponse>(body).toChanges()
+        fun meta(datasetId: String?, seq: Long) = SyncMetaEntity(lastChangeSeq = seq, lastPullAtMillis = 0, datasetId = datasetId)
+
+        val firstPull: SyncMetaEntity? = null
+        assertFalse("ilk çekiş zaten tam", firstPull.isStaleFor(changes))
+        assertFalse("aynı sunucu, ileri giden sayaç", meta(changes.datasetId, 40).isStaleFor(changes))
+        assertTrue("sunucu sıfırdan kuruldu", meta("eski-kimlik", 40).isStaleFor(changes))
+        assertTrue("sürüm 1'den gelen cihaz", meta(null, 40).isStaleFor(changes))
+        assertTrue("sunucu eski yedekten döndü", meta(changes.datasetId, 60).isStaleFor(changes))
     }
 }

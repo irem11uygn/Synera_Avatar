@@ -117,6 +117,7 @@ def test_sync_counter_has_exactly_one_row(session):
     counters = session.scalars(select(SyncCounter)).all()
     assert [c.id for c in counters] == [1]
     assert counters[0].value > 0  # örnek kayıtlar yüklenirken değişiklik numaraları dağıtıldı
+    assert len(counters[0].dataset_id) == 36  # şema kurulurken UUID verildi
     with pytest.raises(DBAPIError, match="single_row"), session.begin_nested():
-        session.add(SyncCounter(id=2, value=0))
+        session.add(SyncCounter(id=2, value=0, dataset_id=counters[0].dataset_id))
         session.flush()

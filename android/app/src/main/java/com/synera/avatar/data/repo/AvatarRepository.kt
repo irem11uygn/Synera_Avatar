@@ -32,20 +32,30 @@ class AvatarRepository(
         return session
     }
 
-    /** Son alınan değişiklik numarasından sonraki kayıtları çeker ve tek işlemde uygular (ADR-004). */
+    /**
+     * Son alınan değişiklik numarasından sonraki kayıtları çeker ve tek işlemde uygular (ADR-004).
+     * Sunucu sıfırlanmışsa tam kopyayı çeker ve yerel kopyanın yerine koyar.
+     */
     suspend fun pull(): Int {
         val session = sessions.current() ?: throw ApiException("Oturum yok; yeniden giriş yapın.")
-        val since = dao.syncMeta()?.lastChangeSeq ?: 0
-        val response = try {
-            ApiClient.call { apiFor(sessions.serverUrl).pull("Bearer ${session.token}", since) }
+        val meta = dao.syncMeta()
+        var changes = fetchChanges(session, meta?.lastChangeSeq ?: 0)
+        if (meta.isStaleFor(changes)) {
+            changes = fetchChanges(session, 0)
+            dao.replaceAll(changes, now())
+        } else {
+            dao.applyPull(changes, now())
+        }
+        return changes.products.size + changes.customers.size + changes.lots.size + changes.stock.size
+    }
+
+    private suspend fun fetchChanges(session: Session, since: Long) =
+        try {
+            ApiClient.call { apiFor(sessions.serverUrl).pull("Bearer ${session.token}", since) }.toChanges()
         } catch (e: ApiException) {
             if (e.code == "UNAUTHORIZED") sessions.clearToken()
             throw e
         }
-        val changes = response.toChanges()
-        dao.applyPull(changes, now())
-        return changes.products.size + changes.customers.size + changes.lots.size + changes.stock.size
-    }
 
     fun logout() = sessions.clearToken()
 

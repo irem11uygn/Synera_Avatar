@@ -1,7 +1,12 @@
 """Android senkronizasyonu — sunucudan cihaza çekme (ADR-004, architecture.md §5).
 
 Cihaz son aldığı değişiklik numarasını (since) gönderir; yalnız ondan sonra değişen kayıtlar döner.
-Sayaç ve kayıtlar aynı işlemde okunduğu için (InnoDB tutarlı okuma) dönen next_since güvenlidir.
+Yanıttaki veri kümesi kimliği (dataset_id) değişmişse ya da next_since cihazın since değerinden küçükse
+(sunucu sıfırlandı ya da eski bir yedekten döndü) cihaz yerel kopyasını silip since=0 ile baştan çeker.
+Kayıtlar since < change_seq ≤ upto aralığıyla süzülür. Sayaç satır kilidi numaraları işlenme sırasıyla
+dağıttığı için upto'ya kadarki bütün değişiklikler kaydedilmiştir; sayaç okunduktan sonra kaydedilenler
+bir sonraki çekişe kalır. Bu yüzden READ COMMITTED yalıtımında da (her sorgu yeni anlık görüntü)
+kayıt atlanmaz.
 """
 
 from dataclasses import dataclass
@@ -17,6 +22,7 @@ from app.models.sync import SyncCounter
 
 @dataclass(frozen=True)
 class PullResult:
+    dataset_id: str
     next_since: int
     products: list[Product]
     customers: list[Partner]
@@ -27,7 +33,9 @@ class PullResult:
 def pull_changes(session: Session, user: User, since: int) -> PullResult:
     if user.warehouse_id is None:
         raise Forbidden("Bu kullanıcıya araç deposu atanmamış; senkronizasyon yapılamaz.")
-    upto = session.scalar(select(SyncCounter.value).where(SyncCounter.id == 1)) or 0
+    dataset_id, upto = session.execute(
+        select(SyncCounter.dataset_id, SyncCounter.value).where(SyncCounter.id == 1)
+    ).one()
 
     def changed(column: Any) -> ColumnElement[bool]:
         return and_(column > since, column <= upto)
@@ -50,6 +58,7 @@ def pull_changes(session: Session, user: User, since: int) -> PullResult:
         .order_by(Lot.id)
     ).all()
     return PullResult(
+        dataset_id=dataset_id,
         next_since=upto,
         products=list(products),
         customers=list(customers),
