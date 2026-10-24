@@ -27,3 +27,4 @@ Seçenek 3:
 - Sunucuda değişiklik numarası tutulması, Android'de kuyruk tablosu ve bir arka plan işi gerekir (≈ 2 kişi-günü).
 - Araç deposu, saha satışını modeller. Satış dükkândan yapılacaksa, tek cihaz için aynı yapı "dükkân deposu" olarak çalışır.
 - (T-09'da görüldü) Sunucu veritabanı sıfırlanınca cihaz eski numarasıyla çekmeye devam etti ve silinmiş bir lotu araç stokunda göstermeyi sürdürdü. Çekme yanıtına veri kümesi kimliği (`dataset_id`) eklendi; kimlik değişirse ya da sunucunun numarası cihazınkinden küçükse cihaz yerel kopyasını baştan kurar (`architecture.md` §5).
+- (T-15'te uygulandı) Gönderimde her satış ayrı alt işlemde yazılıyor; birinin reddi diğerlerini etkilemiyor. Çevrimdışı bloke lot satışı kural olarak kabul edildi: kayıt + `recall_violation` + `GERI_CAGIRMA_IHLALI` uyarısı + cihaza `ACCEPTED_WITH_WARNING` (AT-12). Emülatörde uçak modunda yapılan iki satış, bağlantı gelince WorkManager ile kendiliğinden gönderildi.

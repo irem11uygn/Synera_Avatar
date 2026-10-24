@@ -261,3 +261,46 @@ Yolda bulunan ve düzeltilenler:
 2. Lot sayfasında "Parçalama" süreci ve PRC belgeleri bağlantısızdı; parçalama sayfasına bağlandı.
 
 Not: Deneme sırasında açılan KUZU-YARIM reçetesinin giriş ürünü yanlışlıkla "Doğal bağırsak" seçildi (deneme hatası). Geliştirme veritabanında duruyor; temiz örnek kayıtlar için `docker compose down -v` + `up`.
+
+## 24 Ekim 2026 — T-14 Android satış ve T-15 gönderim
+
+| Kontrol | Komut | Sonuç |
+|---|---|---|
+| Sunucu testleri | `docker compose run --rm --no-deps api pytest -q` | **134 geçti** (8 yeni: gönderim — AT-11 çift gönderim, AT-12 çevrimdışı bloke lot, kısmi ret, geçersiz satışlar, depo/rol, çekmeyle tutarlılık, yönetici listesi) |
+| Python kod denetimi | `… ruff check . && ruff format --check .` | Sorun yok |
+| Android birim testleri | `./gradlew testDebugUnitTest` | **17 geçti** (yeni: SaleRulesTest 4, PushMappingTest 2, giriş ayrıştırma 2) |
+| Android derleme | `./gradlew assembleDebug` | Başarılı; Room sürüm 3, WorkManager 2.12.0 |
+| Room göçü | Room'un ürettiği `createAllTables` ile göç SQL'i karşılaştırıldı | Birebir aynı; emülatörde sürüm 2 veritabanının üzerine kurulumda veri korundu |
+| Bütünlük | `check_invariants` | Emülatör senaryosundan sonra 8/8 |
+
+Emülatörde (Android 17) denenen senaryo; araçta SUC-2026-045 85 adet ve SUC-2026-046 10 adet vardı:
+
+1. **Sürüm yükseltme:** Yeni APK eski kurulumun üzerine kuruldu. Göç 2 → 3 hatasız çalıştı, eşitleme yapıldı.
+2. **Bağlantılı satış:**
+   - Yeni satış, Market A, SUC-2026-045 ("Önerilen: ilk biten"); fiyat liste fiyatıyla geldi (24,90 €).
+   - 90 adet girilince "Araçta kullanılabilir miktar: 85 adet." uyarısı çıktı; 30 adet → 747,00 €.
+   - Kaydedilince "1 satış gönderilmeyi bekliyor", kullanılabilir 55 adet (araçta 85).
+3. **Eski oturum:** Arka plandaki gönderim, eski sürümden kalan oturumda depo kimliği olmadığı için satışı göndermedi ve oturumu kapattı; satış telefonda kaldı. Yeniden girişten sonra "1 satış gönderildi · 2 kayıt güncellendi" → SAT-2026-0101. Düzeltme: böyle bir oturum artık uygulama açılışında tanınıyor ve doğrudan giriş isteniyor.
+4. **Çevrimdışı satış:** Uçak modu açıldı. Market B'ye SUC-2026-045'ten 25 adet satıldı: "gönderilmeyi bekliyor", kullanılabilir 30.
+5. **Çevrimdışıyken geri çağırma:**
+   - Telefon çevrimdışıyken SUC-2026-046 sunucuda bloke edildi (geri çağırma ekranı T-16'da gelecek; şimdilik doğrudan veritabanından).
+   - Telefon bunu bilmediği için Market C'ye 5 adet satıldı. "2 satış gönderilmeyi bekliyor".
+6. **Bağlantı geldi:** Uçak modu kapatıldı. WorkManager iki satışı kendiliğinden gönderdi, sonra çekti.
+   - SAT-2026-0102 (Market B) gönderildi.
+   - SAT-2026-0103 (Market C) gönderildi; uyarı: "Geri çağrılmış lot satıldı (SUC-2026-046); satış kaydedildi, ihlal yöneticiye bildirildi."
+   - Araçta SUC-2026-046 "BLOKE — satılamaz"; satış ekranında bu lot seçilemiyor.
+7. **Sunucuda:**
+   - Satışlar SAT-2026-0101/0102/0103. Maliyetler 544,76 / 453,97 / 82,71 €; ilk ikisi tasarım doğrulamasındaki rakamlarla aynı.
+   - Araçta SUC-2026-045 30 adet, SUC-2026-046 5 adet.
+   - Uyarı: "SAT-2026-0103: bloke SUC-2026-046 lotundan 5 adet Market C müşterisine satıldı (çevrimdışı satış). Müşteriyi geri çağırma listesine ekleyin."
+
+Yolda bulunan ve düzeltilenler:
+
+1. İkinci satışta aynı satış ekranı modeli yeniden kullanılırdı. Önceki satışın "kaydedildi" durumu yüzünden ekran hemen kapanırdı. Yazarken fark edildi; her satış ayrı anahtar alıyor.
+2. Eski oturumda gönderim sessizce oturumu kapatıyordu; kullanıcı ancak eşitlemeye basınca fark ediyordu. Artık açılışta giriş isteniyor.
+3. İhlal uyarısında miktar "5 birim" yazıyordu; artık ürün birimiyle ("5 adet", "4 kg").
+
+Notlar:
+
+- Bu senaryo geliştirme veritabanında iz bıraktı: SUC-2026-046 bloke, 3 satış. Temiz örnek kayıtlar için `docker compose down -v` + `up`.
+- Android arayüz akışları elle (adb) denendi; otomatik arayüz testi yok.

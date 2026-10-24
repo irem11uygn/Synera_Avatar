@@ -187,11 +187,11 @@ Uygulanan tablolar (T-13; `android/.../data/local/Entities.kt`). Cihazda değiş
 | `stock` | lotId, qtyMilli | Sunucudaki araç deposu bakiyesi |
 | `sync_meta` | lastChangeSeq, lastPullAtMillis, datasetId | Tek satır. `datasetId` Room sürüm 2'de eklendi (göç 1 → 2, `ALTER TABLE … ADD COLUMN`); sürüm 1'den gelen cihazda boştur ve ilk çekişte yerel kopya baştan kurulur. |
 
-Satış akışıyla (T-14/T-15) eklenecekler:
+Satış tabloları (T-14, Room sürüm 3; göç 2 → 3 Room'un ürettiği tanımla birebir aynı):
 
 | Tablo | Alanlar | Not |
 |---|---|---|
-| `sale` | clientUuid, customerId, soldAt, syncState (`BEKLIYOR`/`GONDERILDI`/`HATA`), serverSaleNo, errorMessage | Cihazda oluşturulur |
-| `sale_line` | saleUuid, lineNo, productId, lotId, qtyMilli, unitPriceCents, amountCents | — |
+| `sale` | clientUuid, customerId, soldAtMillis, syncState (`BEKLIYOR`/`GONDERILDI`/`HATA`), serverSaleNo, serverMessage | Cihazda oluşturulur; serverMessage sunucunun uyarısı ya da ret nedeni |
+| `sale_line` | saleUuid, lineNo, productId, lotId, lotNo, qtyMilli, unitPriceCents, amountCents | Birincil anahtar (saleUuid, lineNo); lotNo gönderim için satırda da saklanır |
 
 Kullanılabilir miktar = `stock.qty_milli` − Σ (sync_state = `BEKLIYOR` olan satış satırlarının qty_milli).

@@ -216,6 +216,8 @@ sequenceDiagram
 
 **Reddedilen satış:** Araç deposu modeli eksi stoku önler. Yine de sunucuda yapılan bir düzeltme yüzünden yetersiz stok çıkarsa satış `REJECTED` döner, cihazda "HATA" olarak kalır ve yöneticinin çözmesi için görünür olur; sessizce kaybolmaz.
 
+**Uygulama ayrıntıları (T-14/T-15):** Eşitleme her zaman önce gönderir, sonra çeker; ön plandaki "Verileri güncelle" ile arka plandaki WorkManager işi aynı anda çalışmasın diye kilit kullanılır. Satış kaydedilince ve uygulama açılınca ağ koşullu tek bir iş kuyruğa girer; ağ hatasında artan aralıklarla yeniden dener, yetki hatasında durur. Satış kaydı Room işleminde bloke lotu ve kullanılabilir miktarı yeniden denetler. Gönderilmemiş satış varken başka kullanıcı giriş yapamaz (satış yanlış kullanıcı adına gitmesin). Eski sürümden kalan oturumda araç deposu kimliği yoksa uygulama açılışta yeniden giriş ister. Sunucu sıfırlanınca ana veriler yenilenir ama bekleyen satışlar silinmez.
+
 **Cihaz kimliği ve deposu:** `SATIS` rolündeki her kullanıcıya bir araç deposu atanır. Sunucu, push'taki depo kimliği kullanıcının deposu değilse isteği reddeder (`FORBIDDEN`).
 
 ---

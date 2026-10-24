@@ -6,7 +6,7 @@
 | Tarih | 24 Ekim 2026 |
 | Karşıladığı teslimat | CR-008 "API açıklaması" |
 | Dayanak | `architecture.md`, `data_model.md` |
-| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET, POST /cutting-recipes`, `GET /cutting-recipes/{id}`; `POST, GET /cuttings`, `GET, PUT /cuttings/{id}`, `POST /cuttings/{id}/preview`, `POST /cuttings/{id}/approve`; `GET /sync/pull`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
+| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET, POST /cutting-recipes`, `GET /cutting-recipes/{id}`; `POST, GET /cuttings`, `GET, PUT /cuttings/{id}`, `POST /cuttings/{id}/preview`, `POST /cuttings/{id}/approve`; `GET /sync/pull`, `POST /sync/push`; `GET /sales`, `GET /sales/{id}`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
 
 ## 1. Genel kurallar
 
@@ -268,6 +268,8 @@ Yanıt:
   ]
 }
 ```
+
+Kurallar (T-15): her satış kendi alt işleminde yazılır; biri reddedilirse yalnız o geri alınır, numara boşa harcanmaz. `warehouse_id` kullanıcının araç deposu değilse bütün istek `FORBIDDEN`. Bir gönderimde en çok 200 satış, satışta en çok 50 satır.
 
 Durumlar: `ACCEPTED`, `ACCEPTED_WITH_WARNING` (ör. çevrimdışıyken geri çağrılmış lot satıldı — kaydedildi, ihlal işaretlendi), `DUPLICATE` (daha önce kaydedilmiş; ilk sonuç döner), `REJECTED` (ör. `INSUFFICIENT_STOCK`; `error` alanıyla).
 

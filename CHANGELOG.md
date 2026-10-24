@@ -79,3 +79,8 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Parçalama listesi, yeni parçalama, tartım ekranı (her ağırlık girişinde sunucudan kaydetmeden ön izleme: ağırlık dengesi, iki yöntemle pay ve €/kg), onay ve sonuç (dağıtım dökümü, parça lotları), reçete listesi ve yeni reçete.
 - Lot sayfasında parçalama belgelerine bağlantı; dar ekranda menü sayfa açılışında kapalı başlıyor.
 - Senaryo tarayıcıda baştan sona denendi (`reports/test_results.md`).
+
+### 24 Ekim 2026 (on ikinci tur) — Android satış ve gönderim (T-14, T-15)
+- Sunucu: `POST /sync/push` (UUID ile tekrar güvenli, satış başına alt işlem, çevrimdışı bloke lot satışında ihlal uyarısı), `GET /sales`.
+- Android: satış ekranı (müşteri, ilk biten önerili lot listesi, miktar ve fiyat, bloke lot engeli), cihazda tek işlemde kayıt (Room sürüm 3), kullanılabilir miktar = sunucu bakiyesi − bekleyen satışlar, son satışlar ve durumları, WorkManager 2.12.0 ile arka planda gönderim.
+- 134 sunucu testi (AT-11, AT-12 dahil), 17 Android birim testi; emülatörde bağlantılı ve uçak modunda satış denendi (`reports/test_results.md`).
