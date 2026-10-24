@@ -1,0 +1,76 @@
+// Lot listesi: her alış, üretim ve parçalama yeni lot açar. Lot numarasına tıklayınca köken,
+// hareket geçmişi ve lot ağı görünür.
+
+import { useQuery } from '@tanstack/react-query'
+import { Input, Segmented, Space, Table, type TableColumnsType } from 'antd'
+import { useDeferredValue, useState } from 'react'
+import { api } from '../api/client'
+import type { Lot, LotOrigin, LotStatus } from '../api/types'
+import { Link } from '../components/Link'
+import { Page } from '../components/Page'
+import { QueryError } from '../components/QueryError'
+import { LotStatusTag } from '../components/StatusTags'
+import { formatDate, formatMoney, formatQty, formatUnitCost } from '../lib/format'
+import { LOT_ORIGIN } from '../lib/labels'
+
+const COLUMNS: TableColumnsType<Lot> = [
+  { title: 'Lot no', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+  { title: 'Ürün', dataIndex: 'product_name' },
+  { title: 'Köken', dataIndex: 'origin', render: (origin: LotOrigin) => LOT_ORIGIN[origin] },
+  { title: 'Tedarikçi', dataIndex: 'supplier_name', render: (v: string | null) => v ?? '—' },
+  { title: 'Durum', dataIndex: 'status', render: (status: LotStatus) => <LotStatusTag status={status} /> },
+  { title: 'Başlangıç', dataIndex: 'initial_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+  { title: 'Kalan', dataIndex: 'remaining_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+  { title: 'Kalan değer', dataIndex: 'remaining_value', align: 'right', render: formatMoney },
+  { title: 'Birim maliyet', dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
+  { title: 'Üretim', dataIndex: 'produced_at', render: formatDate },
+  { title: 'SKT', dataIndex: 'expiry_date', render: formatDate },
+]
+
+export default function LotsPage() {
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<LotStatus | 'all'>('all')
+  const q = useDeferredValue(search.trim())
+  const lots = useQuery({
+    queryKey: ['lots', { q, status }],
+    queryFn: () => api<Lot[]>('/lots', { query: { q, status: status === 'all' ? undefined : status } }),
+    placeholderData: (previous) => previous,
+  })
+
+  return (
+    <Page title="Lotlar">
+      {lots.isError && <QueryError error={lots.error} onRetry={() => lots.refetch()} />}
+      <Space wrap style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Lot no ara (ör. ET-2026)"
+          aria-label="Lot no ara"
+          allowClear
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+          enterKeyHint="search"
+          style={{ width: 260 }}
+        />
+        <Segmented<LotStatus | 'all'>
+          value={status}
+          onChange={setStatus}
+          options={[
+            { value: 'all', label: 'Tümü' },
+            { value: 'AKTIF', label: 'Aktif' },
+            { value: 'BLOKE', label: 'Bloke' },
+          ]}
+        />
+      </Space>
+      <Table<Lot>
+        rowKey="id"
+        size="middle"
+        loading={lots.isPending}
+        columns={COLUMNS}
+        dataSource={lots.data}
+        pagination={{ pageSize: 50, hideOnSinglePage: true }}
+        scroll={{ x: 'max-content' }}
+      />
+    </Page>
+  )
+}
