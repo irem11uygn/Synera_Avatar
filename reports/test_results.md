@@ -145,3 +145,57 @@ Yolda bulunan ve düzeltilen hatalar:
    - Yeni APK eski veritabanının üzerine kuruldu; göç 1 → 2 hatasız çalıştı.
    - Sunucu `docker compose down -v` + `up` ile sıfırlandı (kimlik `9fdc1300…` → `16d30143…`, sayaç 41 → 23). Telefon: eski oturum 401 → giriş ekranı → yeniden giriş. Sunucu kayıtlarında sırasıyla `GET /sync/pull?since=41` ve `GET /sync/pull?since=0`; ekranda "0 lot araçta", eski SUC-2026-045 satırı silindi.
    - Senaryo yeniden çalıştırıldı → "Verileri güncelle" → `GET /sync/pull?since=23` (artımlı, tam çekme yok), "2 kayıt güncellendi", SUC-2026-045 · 85 adet göründü.
+
+## 24 Ekim 2026 — T-10 Görev 1 web ekranları
+
+| Kontrol | Komut | Sonuç |
+|---|---|---|
+| Sunucu testleri | `docker compose run --rm --no-deps api pytest -q` | **113 geçti** (2 yeni: çıkış ucu, dış üreticiye otomatik depo; 2 test genişletildi: hareketlerde belge no/kullanıcı/UTC eki, `/stock`) |
+| Python kod denetimi | `… ruff check . && ruff format --check .` | Sorun yok; 73 dosya biçimli |
+| Web tip denetimi | `npx tsc -p tsconfig.app.json --noEmit` | Hata yok (TypeScript strict) |
+| Web kod denetimi | `npx oxlint` | Uyarı yok |
+| Web birim testleri | `npm test` (Vitest 5.0.5) | **16 geçti**: ondalık hesap 6, biçimler 5, kullanıcı girişi 2, yol eşleme 3 |
+| Web derleme | `npm run build` / `docker compose up -d --build web` | Başarılı; paket 1,2 MB (sıkıştırılmış 378 kB), Vite boyut uyarısı veriyor (ADR-002 notu) |
+| Bütünlük (çalışan sistem) | `check_invariants` | Arayüz senaryosundan sonra 8/8 tutarlı |
+
+Tarayıcıda elle denenen senaryo (geliştirme sunucusu 5180 ve Docker'daki nginx 8080; masaüstü 1280 px ve telefon 375 px):
+
+1. Giriş: demo yönetici ile giriş; sayfa yenilenince oturum sürüyor. Satış kullanıcısı Türkçe uyarıyla reddedildi.
+2. Hammadde alışı: FAT-ET-2026-0500, ET-2026-002, 50 kg. Birim fiyat (9,70 €) ve SKT (belge tarihi + 7 gün = 31.10.2026) üründen otomatik geldi. Ön izleme 485,00 € gösterdi. Fatura 490,00 € girilip açıklama boş bırakılınca kayıt engellendi. Açıklama yazılınca kaydedildi; lot değeri 490,00 €, birim maliyet 9,80 €/kg.
+3. Kuzu alışı satırı: 287,50 + kesim 40,00 + nakliye 23,50 = 351,00 € doğru gösterildi.
+4. Dış üretim emri: 60 kg girilince "Ana depoda 50 kg var." uyarısı çıktı. 40 kg ile **URT-2026-046** açıldı. Plan ön izlemesi: hammadde 588,00 € (60 kg ile), hizmet 36 × 5,50 = 198,00 €.
+5. Sevk: onay penceresi → "Sevk edildi"; ET-2026-002'nin 40 kg'ı dış üretici deposuna geçti.
+6. Kabul: teslim 34 adet; tüketilen 38 + iade 1 girilince "sevk edilen 40 kg olmalı" uyarısı çıktı. Fatura 190,00 € (önerilen 34 × 5,50 = 187,00 €) açıklamasız engellendi. Düzeltilince **SUC-2026-046** açıldı:
+   - Maliyet: 372,40 + 190,00 = **562,40 €**.
+   - EKP: **16,541176 → 16,54 €**; kâr 8,36 €, marj %33,57.
+   - Verim: %89,47; miktar farkı −2 adet.
+7. Lot ET-2026-002 ayrıntısı:
+   - Hareketler: alış, 2 transfer, iade transferi, üretimde tüketim; her birinde belge no (FAT/TRF/URT) ve kullanıcı.
+   - Toplam 12 kg / 117,60 €; "kalanla tutarlı" işareti çıktı.
+   - İleri bağ: SUC-2026-046.
+8. Transfer: varsayılan Ana depo → Satış aracı 1; SUC-2026-046'dan 10 adet → TRF-2026-0005. Stok durumunda ana depoda 24, araçta 10 adet.
+9. Ürün penceresi:
+   - Düzenleme değerleri doğru geldi; yeni ürün penceresi temiz açıldı.
+   - Var olan kod (ET) ile kayıtta sunucunun Türkçe hatası pencerede gösterildi.
+10. Çıkış: belirteç tarayıcıdan silindi; eski belirteçle `/auth/me` → 401.
+11. Telefon genişliği:
+   - Sayfa yatay taşmıyor (scrollWidth = 375).
+   - Menü üst çubuktaki düğmeyle üstte açılıyor ve sayfa seçilince kapanıyor.
+
+Yolda bulunan ve düzeltilen hatalar:
+
+1. **Kök adres 404 veriyordu.** Yol eşleştirici sondaki "/" işaretini atarken kök yolu da boşaltıyordu. Düzeltildi ve `router.test.ts` eklendi.
+2. **Kabulde lot numarası sunucuya gitmiyordu.** Lot numarası formda görünür bir alan olmadığından form değerlerine girmiyordu. Sunucu isteği "İstekte geçersiz alanlar var. (inputs.0.lot_no)" ile reddetti, yarım kayıt oluşmadı. Lot numarası artık emrin girdi listesinden alınıyor.
+3. **Pencere formlarında başlangıç değerleri gelmiyordu (yalnız geliştirme modunda).** React StrictMode formu kurup söküp yeniden kuruyor; bu sırada `clearOnDestroy` başlangıç değerlerini siliyordu. Form artık her açılışta kendi temiz deposuyla kuruluyor. Önceki düzenlemenin değerlerinin yeni kayıt penceresinde kalmadığı ayrıca denendi.
+
+Ayrıca düzeltilenler:
+
+- Sunucu zamanları saat dilimi eki olmadan dönüyordu (api.md ISO 8601 + dilim istiyor); ekranlar 3 saat kayık gösterirdi. Artık `Z` ekli UTC dönüyor.
+- Web'den açılan yeni dış üreticinin deposu yoktu; o cariyle emir açılamazdı. Artık otomatik açılıyor.
+- Dar ekranda menü düğmesi başlığın üstüne biniyordu; düğme üst çubuğa taşındı.
+- Tamamlanan emirde son adım "sürüyor" görünüyordu; düzeltildi.
+
+Bilinen eksikler:
+
+- Bileşen ve uçtan uca arayüz testleri otomatik değil (T-23).
+- Üretim emrinde Model A tahmini yok (T-21).

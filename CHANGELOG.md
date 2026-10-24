@@ -62,3 +62,9 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Hata düzeltmesi: API işlemi yanıt gönderildikten sonra kaydediyordu; hemen ardından gelen istek veriyi göremiyordu. Kayıt artık yanıttan önce; bağlantılar READ COMMITTED.
 - Hata düzeltmesi: sunucu veritabanı sıfırlanınca telefon eski kayıtları tutuyordu. Çekme yanıtına veri kümesi kimliği eklendi (göç `e93069315efb`); telefon kimlik değişince yerel kopyasını baştan kurar (Room sürüm 2).
 - 111 sunucu testi, 9 Android birim testi geçiyor; senaryo çalışan sistemde ve telefonda denendi (`reports/test_results.md`).
+
+### 24 Ekim 2026 (dokuzuncu tur) — Görev 1 web ekranları (T-10)
+- Web: giriş/çıkış, ürün ve cari kartları, hammadde alışı (fatura farkı açıklaması, ek maliyetler, lot değeri ön izlemesi), stok durumu, lot listesi ve ayrıntısı (hareket geçmişi, lot ağı), transferler, dış üretim emri (oluştur, sevk, kabul, iptal, EKP dökümü, kâr/marj, verim). Dar ekranda menü üst çubuktaki düğmeyle açılıyor.
+- API tipleri OpenAPI tanımından üretiliyor (`docs/openapi.json`, `web/src/api/schema.d.ts`).
+- Sunucu: `GET /stock`, `POST /auth/logout`; hareket geçmişinde belge numarası ve kullanıcı; zamanlar `Z` ekli UTC; dış üretici olarak kaydedilen cariye otomatik depo.
+- Testler: 113 sunucu testi, 16 web birim testi (Vitest 5.0.5), 9 Android testi; senaryo tarayıcıda denendi (`reports/test_results.md`).

@@ -39,7 +39,7 @@ Beklenen değerler şartnameden (**Belge**) veya bizim tanımladığımız örne
 | AT-12 | Cihaz çevrimdışıyken lot geri çağrılır, cihaz o lottan satış yapar, sonra bağlanır | Mimaride kararlaştırılacak kurala göre (öneri: satış kaydedilir + uyarı üretilir + geri çağırma listesine eklenir) | Çıkarım | FR-403, FR-405 | Kural bekleniyor |
 | AT-13 | YZ değerlendirmesi (Model A ve B) | Ayrılmış test verisinde referans yöntem ve model hataları raporlanır; hedef: model < referans. Hedefe ulaşılmazsa dürüstçe raporlanır | Belge | FR-501–507, CR-006 | Yazılmadı |
 | AT-14 | Temiz klonda kurulum | README adımlarıyla sistem ayağa kalkar, örnek kayıtlar yüklü, AT-06 arayüzden yapılabilir | Çıkarım | NFR-006, CR-001, CR-011 | Yazılmadı |
-| AT-15 | Dış üretimde miktar farkı: planlanan 87, teslim 85 paket; 0,5 kg baharat iade | Farklar emirde ve üretim raporunda görünür; EKP teslim edilen 85'e göre | Örnek | FR-109, FR-602 | Kısmen geçti (24.10): farklar emirde, iade ana depoya döner, EKP 85'e göre 18,02 € (`test_production::test_at15_*`); üretim raporu T-22 |
+| AT-15 | Dış üretimde miktar farkı: planlanan 87, teslim 85 paket; 0,5 kg baharat iade | Farklar emirde ve üretim raporunda görünür; EKP teslim edilen 85'e göre | Örnek | FR-109, FR-602 | Kısmen geçti (24.10): farklar emirde, iade ana depoya döner, EKP 85'e göre 18,02 € (`test_production::test_at15_*`); web emir ekranında plan/teslim farkı, tüketim/iade ve fatura farkı görünür (T-10, elle); üretim raporu T-22 |
 
 **Tasarım doğrulaması (24 Ekim 2026):** AT-01, AT-03, AT-04, AT-06, AT-07, AT-08 (yalnız bloke durumu), AT-10 ve AT-11 senaryoları, veri modelinin sade bir kopyasında çalıştırıldı ve 20/20 kontrol geçti (`reports/design_validation/`). Bu sonuç tasarımın mantığını doğrular; yukarıdaki ürün testlerinin durumu bu yüzden hâlâ "Yazılmadı"dır. AT-10'un denetleyeceği değişmezler: `data_model.md` §5 (I-1…I-8).
 
@@ -55,7 +55,9 @@ Yukarıdaki tablonun "Doğruladığı gereksinimler" sütunu izleme matrisidir. 
 | Python denetim + biçim | `docker compose run --rm --no-deps api sh -c "ruff check . && ruff format --check ."` | Çalışıyor |
 | Web tip denetimi + derleme | `cd web && npm run build` | Çalışıyor |
 | Web kod denetimi | `cd web && npx oxlint` | Çalışıyor |
-| Web birim testleri (Vitest) | — | Saf fonksiyonlar yazılınca eklenecek |
+| Web birim testleri (Vitest) | `cd web && npm test` | Çalışıyor (ondalık hesap, biçimler, yol eşleme) |
+| Web API tiplerini yenileme | `cd web && npm run api:types` (önce `docs/openapi.json` güncellenir) | Çalışıyor |
+| Web uçtan uca (elle) | Tarayıcıda Görev 1 senaryosu | T-10'da elle denendi; otomatik arayüz testi yok |
 | Kabul testleri (`tests/`) | — | T-23'te |
 | Android birim testleri (JUnit) | `cd android && ./gradlew testDebugUnitTest` (JAVA_HOME = Android Studio JDK) | Çalışıyor |
 | Android derleme | `cd android && ./gradlew assembleDebug` | Çalışıyor |

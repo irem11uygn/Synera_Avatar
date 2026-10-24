@@ -147,6 +147,8 @@ Geri çağırma başlatılınca (FR-306): kaynak lottan ileri izleme yapılır, 
 | 3. Mamul kabulü | `POST /production-orders/{id}/complete` | Teslim alınan miktar, iadeler (DIS-URETICI → ANA transferi), tüketim (`URETIM_TUKETIM`), hizmet tutarı, yeni mamul lotu (`URETIM_GIRIS`, değer = tüketim + hizmet), `lot_links`; emir `TAMAMLANDI` |
 | 4. Sonuç | `GET /production-orders/{id}` | EKP, VKP, brüt kâr, marj; tahmin – gerçek – sapma; miktar farkları |
 
+Bir cari "dış üretici" olarak kaydedilince ona ait `DIS_URETICI` deposu otomatik açılır (kod `DIS-<cari kodu>`); böylece web'den açılan yeni bir dış üreticiyle hemen emir açılabilir.
+
 ### 4.2 Parçalama (Görev 2)
 
 | Adım | Uç nokta | Ne olur |
@@ -246,6 +248,7 @@ sequenceDiagram
 | SQL enjeksiyonu | Yalnız ORM / parametreli sorgu. |
 | CORS | Yalnız web arayüzünün adresi. Docker'da web ile API aynı adresten sunulduğu için (ters vekil) CORS gerekmez. |
 | Gizli bilgiler | Ortam değişkenlerinden okunur; depoda yalnız `.env.example`. Demo kullanıcı parolaları README'de "yalnız demo" diye belirtilir. |
+| Web oturumu | Belirteç `sessionStorage`'da tutulur (sekme kapanınca biter, sayfa yenilenince sürer). Web yalnız `YONETICI` rolüne açıktır; satış kullanıcısı girişte Türkçe uyarıyla reddedilir. "Çıkış" oturumu sunucuda da kapatır (`POST /auth/logout`). Herhangi bir istek 401 dönerse giriş ekranına dönülür. |
 | Android oturumu | Belirteç uygulamaya özel SharedPreferences'ta tutulur (prototip: şifrelenmeden). Sunucu 401 dönerse belirteç silinir, kullanıcı giriş ekranına döner. |
 | Android 17 yerel ağ izni | targetSdk 37 olan uygulamalar yerel ağ adreslerine (emülatörde 10.0.2.2, telefonda bilgisayarın yerel IP'si) ancak `ACCESS_LOCAL_NETWORK` çalışma anı izniyle erişebilir; izin yoksa TCP bağlantısı zaman aşımına uğrar. Uygulama izni yalnız sunucu adresi yerel ağdaysa girişte ister (`util/LocalNetwork.kt`). |
 
@@ -302,10 +305,12 @@ ml/
   models/              # eğitilmiş model dosyaları + sürüm bilgisi
   tests/
 web/src/
-  api/                 # OpenAPI'den üretilen tipler + istemci
-  pages/               # Ana veriler, Alış, Lotlar, Dış üretim, Parçalama, Satışlar, Transfer,
-                       # İzlenebilirlik, Geri çağırma, Raporlar, Yapay zekâ
-  components/  lib/money.ts
+  api/                 # schema.d.ts (OpenAPI'den üretilir), client.ts (belirteç, hata biçimi), types.ts, queries.ts
+  auth/                # oturum bağlamı ve giriş akışı
+  pages/               # Ana veriler, Alış, Stok, Lotlar, Transfer, Dış üretim (T-10); Parçalama, İzlenebilirlik,
+                       # Geri çağırma, Raporlar, Yapay zekâ sonra
+  components/          # sayfa çerçevesi, pencere formu, durum etiketleri, bağlantı
+  lib/                 # decimal.ts (BigInt ile ondalık hesap), format.ts (Türkçe biçimler), router.ts, rules.ts, labels.ts
 android/app/src/main/java/.../
   data/local/          # Room varlıkları, DAO'lar
   data/remote/         # Retrofit arayüzü, DTO'lar

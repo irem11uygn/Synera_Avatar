@@ -6,7 +6,7 @@
 | Tarih | 24 Ekim 2026 |
 | Karşıladığı teslimat | CR-008 "API açıklaması" |
 | Dayanak | `architecture.md`, `data_model.md` |
-| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET /sync/pull`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
+| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET /sync/pull`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
 
 ## 1. Genel kurallar
 
@@ -16,7 +16,7 @@
 | Biçim | JSON, UTF-8 |
 | Kimlik | `Authorization: Bearer <belirteç>` (`/auth/login` ve `/health` hariç her uçta) |
 | Ondalıklar | **Metin** olarak: `"18.158824"`, `"1543.50"` (ADR-006). Miktarlar ürünün temel biriminde (kg veya adet). |
-| Tarih/saat | ISO 8601 (`2026-10-26`, `2026-10-26T09:30:00+03:00`) |
+| Tarih/saat | ISO 8601 (`2026-10-26`, `2026-10-26T09:30:00+03:00`). Sunucu zamanları UTC olarak `Z` ekiyle döner (`2026-10-24T11:51:59Z`); ekranlar yerel saate çevirir. |
 | Listeler | `?limit=50&offset=0`; yanıt `{"items": [...], "total": n}` |
 | CSV | Rapor ve geri çağırma uçlarında `?format=csv` veya `/export.csv` |
 | Hata | §3 |
@@ -31,6 +31,7 @@ Rol: **Y** = yönetici, **S** = satış.
 |---|---|---|---|
 | POST | `/auth/login` | — | Kullanıcı adı + parola → belirteç, rol, araç deposu |
 | GET | `/auth/me` | Y, S | Oturumdaki kullanıcı |
+| POST | `/auth/logout` | Y, S | Oturumu sunucuda kapatır (204); belirteç bundan sonra geçersiz |
 | GET | `/health` | — | Servis ve veritabanı durumu |
 
 ### Ana veriler (FR-101, FR-201, FR-202, FR-301)
@@ -53,8 +54,8 @@ Rol: **Y** = yönetici, **S** = satış.
 | GET | `/purchases`, `/purchases/{id}` | Y | — |
 | GET | `/lots` | Y | `?product_id=&status=&warehouse_id=&q=` |
 | GET | `/lots/{lot_no}` | Y | Lot ayrıntısı: köken, tedarikçi, durum, kalan miktar/değer, birim maliyet, depo bakiyeleri, bir düzey ebeveyn/çocuk |
-| GET | `/lots/{lot_no}/movements` | Y | Lotun bütün hareketleri (geçmişe dönük inceleme) |
-| GET | `/stock` | Y | `?warehouse_id=` lot bakiyeleri |
+| GET | `/lots/{lot_no}/movements` | Y | Lotun bütün hareketleri (geçmişe dönük inceleme): zaman, tür, depo, miktar, değer, belge türü + numarası (`doc_no`), kullanıcı (`user_name`; örnek kayıtlarda boş) |
+| GET | `/stock` | Y | `?warehouse_id=&product_id=` lot × depo bakiyeleri (sıfır olmayanlar), lot durumu, SKT, birim maliyet |
 
 ### Transfer, fire, ters kayıt (FR-303, NFR-002)
 
