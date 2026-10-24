@@ -9,8 +9,9 @@ from sqlalchemy import select
 
 from app.api.deps import AdminUser, Db
 from app.api.fields import UtcDateTime
+from app.api.purchases import ExtraCostOut
 from app.models import Cutting, CuttingRecipe, Product
-from app.models.enums import AllocationMethod, CuttingStatus, PurchaseCostKind, RecipeLineType, Species
+from app.models.enums import AllocationMethod, CuttingStatus, RecipeLineType, Species
 from app.services import cutting as service
 from app.services.lookups import get_or_404, lot_by_no
 
@@ -165,12 +166,6 @@ class CuttingLineOut(BaseModel):
     allocated_cost: Decimal | None
     cost_per_kg: Decimal | None
     output_lot_no: str | None
-
-
-class ExtraCostOut(BaseModel):
-    kind: PurchaseCostKind
-    amount: Decimal
-    note: str | None
 
 
 class InputCostOut(BaseModel):
