@@ -74,3 +74,8 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Uçlar: `/cutting-recipes`, `/cuttings` (`docs/api.md`).
 - Sunucu mesajlarındaki sayılar Türkçe biçimde (`tr_number`): "fark 3.000 kg" yerine "fark 3 kg", "1.543,50 €".
 - 126 sunucu testi; AT-03 ve AT-04 API üzerinden geçti; canlı senaryo ve bütünlük 8/8 (`reports/test_results.md`).
+
+### 24 Ekim 2026 (on birinci tur) — Görev 2 parçalama web ekranları (T-12)
+- Parçalama listesi, yeni parçalama, tartım ekranı (her ağırlık girişinde sunucudan kaydetmeden ön izleme: ağırlık dengesi, iki yöntemle pay ve €/kg), onay ve sonuç (dağıtım dökümü, parça lotları), reçete listesi ve yeni reçete.
+- Lot sayfasında parçalama belgelerine bağlantı; dar ekranda menü sayfa açılışında kapalı başlıyor.
+- Senaryo tarayıcıda baştan sona denendi (`reports/test_results.md`).

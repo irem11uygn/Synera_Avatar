@@ -224,3 +224,40 @@ Yolda bulunan ve düzeltilenler:
 
 1. **Sunucu mesajlarında sayılar İngilizce biçimdeydi.** Örneğin "fark 3.000 kg" Türkçede üç bin diye okunur. Dış üretim ve alış mesajlarında da vardı ("40.000", "190.00 €"). Artık bütün kullanıcı mesajlarında ve bütünlük raporunda Türkçe biçim kullanılıyor: 3 kg, 0,2 kg, 1.543,50 €.
 2. Fire satırı için birim maliyet "0 €/kg" yazılıyordu. Maliyet almayan satırlarda artık boş.
+
+## 24 Ekim 2026 — T-12 Görev 2 parçalama web ekranları
+
+| Kontrol | Komut | Sonuç |
+|---|---|---|
+| Web tip denetimi | `npx tsc -p tsconfig.app.json --noEmit` | Hata yok |
+| Web kod denetimi | `npx oxlint` | Uyarı yok |
+| Web birim testleri | `npm test` | 16 geçti (değişmedi) |
+| Web derleme | `docker compose up -d --build web` | Başarılı; derin bağlantı (`/parcalama/2`) 8080'de açıldı, konsol hatasız |
+| Bütünlük | `check_invariants` | Arayüz senaryosundan sonra 8/8 |
+
+Tarayıcıda elle denenen senaryo (deneme için API'den yeni bir kuzu alışı yapıldı: KUZU-2026-013, 24 kg × 11,50 + kesim 40 + nakliye 20 = 336,00 €):
+
+1. Yeni parçalama:
+   - Reçete seçilince ana depodaki kuzu lotları listelendi (KUZU-2026-013 · 24 kg · 14,00 €/kg).
+   - Lot seçilince ağırlık 24 kg olarak geldi; yöntem reçetenin varsayılanı (değer ağırlıklı).
+   - "Taslağı aç" → **PRC-2026-013**.
+2. Taslak: giriş maliyeti kalemleri gösterildi (276,00 + kesim 40,00 + nakliye 20,00 = 336,00 €); "6 kalemin ağırlığı girilmedi" bilgisi çıktı.
+3. Beş parça girildi (6,5 / 4 / 5 / 3 / 3 kg), fire boş bırakıldı: "1 kalemin ağırlığı girilmedi; çıkışlar 21,5 kg, fark 2,5 kg". "Beklenen" sütunu standart oranla hesaplandı (but 24 × %27 = 6,48 kg).
+4. Fire 0 → kırmızı "Ağırlık dengesi tutmuyor; onaylanamaz. … fark 2,5 kg (tolerans 0,2 kg)".
+5. Fire 2,5 → yeşil "Ağırlık dengesi tutuyor". Değer ağırlıklı paylar 112,52 / 81,84 / 70,82 / 33,05 / 37,77 / 0,00, toplam 336,00 €. Elle kontrol: but payı 336 × (6,5 × 22) / 427 = 112,52 €.
+6. Miktar ağırlıklıya geçince paylar ≈ 15,63 €/kg'a döndü. Kaburga ile kıyma arasındaki kuruş eşitliğinde reçete sırası öne geçti (46,89 / 46,88). Değer katsayısı sütunu bu yöntemde gizlendi.
+7. Değer ağırlıklıya dönüp onaylandı:
+   - Sonuç: toplam ve dağıtılan 336,00 €, fire 2,5 kg.
+   - Parça lotları BUT-/SIRT-/OMUZ-/KABURGA-/KIYMA-PRC-2026-013 bağlantılı.
+8. Lot BUT-PRC-2026-013:
+   - Köken parçalama; 6,5 kg / 112,52 € (17,310769 €/kg).
+   - SKT 29.10.2026, girdi lotununkiyle aynı.
+   - Kaynak KUZU-2026-013 ("Parçalama" bağlantısı parçalama sayfasına gidiyor); hareket belgesi PRC-2026-013.
+9. Reçeteler: yeni reçete penceresinde oran toplamı canlı gösterildi (%90 → kırmızı ve "Standart oranların toplamı %100 olmalı."). %100 yapılınca kaydedildi (KUZU-YARIM; API'de oranlar 0,6000 / 0,4000, fire maliyet taşımıyor).
+
+Yolda bulunan ve düzeltilenler:
+
+1. Dar ekranda (992 px altı) sayfa açılırken menü bir an açık başlayıp kapanıyordu; bu sırada yapılan tıklama menüye gidiyordu. Menünün başlangıç durumu artık ekran genişliğinden hesaplanıyor.
+2. Lot sayfasında "Parçalama" süreci ve PRC belgeleri bağlantısızdı; parçalama sayfasına bağlandı.
+
+Not: Deneme sırasında açılan KUZU-YARIM reçetesinin giriş ürünü yanlışlıkla "Doğal bağırsak" seçildi (deneme hatası). Geliştirme veritabanında duruyor; temiz örnek kayıtlar için `docker compose down -v` + `up`.

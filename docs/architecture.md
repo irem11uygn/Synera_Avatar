@@ -309,8 +309,8 @@ ml/
 web/src/
   api/                 # schema.d.ts (OpenAPI'den üretilir), client.ts (belirteç, hata biçimi), types.ts, queries.ts
   auth/                # oturum bağlamı ve giriş akışı
-  pages/               # Ana veriler, Alış, Stok, Lotlar, Transfer, Dış üretim (T-10); Parçalama, İzlenebilirlik,
-                       # Geri çağırma, Raporlar, Yapay zekâ sonra
+  pages/               # Ana veriler, Alış, Stok, Lotlar, Transfer, Dış üretim (T-10); Parçalama ve reçeteler
+                       # (T-12); İzlenebilirlik, Geri çağırma, Raporlar, Yapay zekâ sonra
   components/          # sayfa çerçevesi, pencere formu, durum etiketleri, bağlantı
   lib/                 # decimal.ts (BigInt ile ondalık hesap), format.ts (Türkçe biçimler), router.ts, rules.ts, labels.ts
 android/app/src/main/java/.../
