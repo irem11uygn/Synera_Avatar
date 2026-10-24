@@ -1,0 +1,32 @@
+# Yarışma kaynak belgeleri: depo herkese açık olacağı için gönderilmez
+_kaynak/
+
+# Gizli bilgiler (örnek değerler .env.example dosyalarında tutulur)
+.env
+*.env
+!*.env.example
+
+# İşletim sistemi / editör
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python (backend/, ml/)
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node (web/)
+node_modules/
+dist/
+
+# Android (android/)
+.gradle/
+build/
+.kotlin/
+local.properties
+*.iml
+captures/

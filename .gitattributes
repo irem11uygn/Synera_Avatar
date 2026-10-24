@@ -1,0 +1,8 @@
+# Metin dosyaları depoda LF ile saklanır.
+* text=auto
+
+# Kabuk betikleri Linux konteynerinde çalışır: satır sonu her zaman LF.
+*.sh text eol=lf
+android/gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary

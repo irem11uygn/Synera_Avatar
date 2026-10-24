@@ -1,0 +1,23 @@
+# Calistirma: python -I model_check.py  |  Tarih: 2026-10-24 12:57  |  Python 3.12.10
+GECTI AT-01 toplam maliyet 1543.50  [1543.50]
+GECTI AT-01 EKP gosterimi 18.16  [18.15882352941176470588235294]
+GECTI AT-01 lot degeri 18.16x85 degil  [1543.60 != 1543.50]
+GECTI AT-11 ayni satis ikinci kez gelirse yeni kayit yok
+GECTI Satis maliyetleri toplami = lot degeri (kurus kaymasi yok)  [544.76 + 453.97 + 544.77]
+GECTI AT-06 ileri izleme: SUC-2026-045 bulundu  [ET-2026-001, SUC-2026-045]
+GECTI AT-06 alicilar A30 / B25 / C30  [[('Market A', 30.0), ('Market B', 25.0), ('Market C', 30.0)]]
+GECTI AT-06 depoda kalan 0  [0]
+GECTI AT-07 geri izleme: et, baharat, bagirsak lotlari ve tedarikcileri  [[('BAG-2026-007', 'Tedarikci-Bagirsak'), ('BAH-2026-014', 'Tedarikci-Baharat'), ('ET-2026-001', 'Tedarikci-Et')]]
+GECTI AT-08 SUC-2026-045 bloke
+GECTI AT-03 miktar agirlikli  [['111.68', '63.82', '79.77', '47.87', '47.86']]
+GECTI AT-03 deger agirlikli  [['123.41', '83.34', '72.12', '33.66', '38.47']]
+GECTI AT-03 iki yontemde toplam 351.00
+GECTI AT-04 fire girilmeden denge yok (3 kg)  [3]
+GECTI Parcalama: kuzu lotundan 5 parca lotuna ileri izleme
+GECTI AT-10 lot miktari = hareket toplami
+GECTI AT-10 lot degeri = hareket degeri toplami
+GECTI AT-10 miktari 0 olan lotun degeri de 0
+GECTI AT-10 hareket guncellenemez  [defter degistirilemez]
+GECTI AT-10 eksi stok reddedilir  [yetersiz stok BUT-PRC-2026-012@ANA]
+
+SONUC: 20/20 kontrol gecti
