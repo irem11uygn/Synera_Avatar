@@ -34,6 +34,24 @@ class UnitsTest {
     }
 
     @Test
+    fun `kullanici girisi virgul ya da noktayla ayristirilir`() {
+        assertEquals(2_500L, Quantity.parseInput("2,5"))
+        assertEquals(30_000L, Quantity.parseInput(" 30 "))
+        assertEquals(2490L, Money.parseInput("24,90"))
+        assertEquals(2490L, Money.parseInput("24.9"))
+        assertEquals("24.90", Money.toApiText(2490))
+    }
+
+    @Test
+    fun `binlik ayirici, eksi ve fazla basamak reddedilir`() {
+        assertEquals(null, Quantity.parseInput("1.543,5"))
+        assertEquals(null, Quantity.parseInput("-1"))
+        assertEquals(null, Quantity.parseInput("1,2345"))
+        assertEquals(null, Money.parseInput("24,901"))
+        assertEquals(null, Money.parseInput(""))
+    }
+
+    @Test
     fun `miktar birimiyle gosterilir`() {
         assertEquals("2,5 kg", Quantity.format(2_500, "KG"))
         assertEquals("85 adet", Quantity.format(85_000, "ADET"))

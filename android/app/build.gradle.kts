@@ -48,6 +48,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.work.runtime)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.retrofit)

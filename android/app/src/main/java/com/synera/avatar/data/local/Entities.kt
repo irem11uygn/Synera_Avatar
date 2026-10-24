@@ -1,10 +1,10 @@
 package com.synera.avatar.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 // Cihazdaki SQLite tabloları (docs/data_model.md §6). Para: kuruş, miktar: binde bir birim.
-// Satış tabloları (sale, sale_line) satış akışıyla birlikte eklenecek (T-14).
 
 @Entity(tableName = "product")
 data class ProductEntity(
@@ -51,12 +51,59 @@ data class SyncMetaEntity(
     val datasetId: String?,
 )
 
-/** Araç deposu ekranı için birleşik satır. */
-data class VanStockRow(
+/** Cihazda yapılan satış. Gönderilene kadar BEKLIYOR; sunucunun cevabına göre GONDERILDI ya da HATA. */
+@Entity(tableName = "sale")
+data class SaleEntity(
+    @PrimaryKey val clientUuid: String,
+    val customerId: Long,
+    val soldAtMillis: Long,
+    val syncState: String,
+    val serverSaleNo: String? = null,
+    /** Sunucunun uyarısı (ör. geri çağrılmış lot) ya da ret nedeni. */
+    val serverMessage: String? = null,
+)
+
+/** Satış satırı: bir satır = bir lot (FR-401). Lot numarası gönderim için satırda da saklanır. */
+@Entity(tableName = "sale_line", primaryKeys = ["saleUuid", "lineNo"], indices = [Index("lotId")])
+data class SaleLineEntity(
+    val saleUuid: String,
+    val lineNo: Int,
+    val productId: Long,
+    val lotId: Long,
     val lotNo: String,
+    val qtyMilli: Long,
+    val unitPriceCents: Long,
+    val amountCents: Long,
+)
+
+object SyncState {
+    const val PENDING = "BEKLIYOR"
+    const val SENT = "GONDERILDI"
+    const val FAILED = "HATA"
+}
+
+/** Araç deposundaki lot: sunucu bakiyesi ve gönderilmemiş satışlar düşüldükten sonra kullanılabilir miktar. */
+data class VanStockRow(
+    val lotId: Long,
+    val lotNo: String,
+    val productId: Long,
     val productName: String,
     val baseUnit: String,
+    val salePriceCents: Long?,
     val qtyMilli: Long,
+    val availableMilli: Long,
     val status: String,
     val expiryDate: String?,
+)
+
+/** Satış listesi satırı. */
+data class SaleSummaryRow(
+    val clientUuid: String,
+    val soldAtMillis: Long,
+    val syncState: String,
+    val serverSaleNo: String?,
+    val serverMessage: String?,
+    val customerName: String?,
+    val totalCents: Long,
+    val lineCount: Int,
 )

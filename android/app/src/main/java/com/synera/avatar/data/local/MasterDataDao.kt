@@ -58,18 +58,30 @@ abstract class MasterDataDao {
     @Query("SELECT COUNT(*) FROM customer")
     abstract fun observeCustomerCount(): Flow<Int>
 
+    /**
+     * Araç stoku, ilk biten ilk çıkar sırasıyla (FR-402). Kullanılabilir = sunucu bakiyesi − henüz
+     * gönderilmemiş satışlar; aksi hâlde çevrimdışı satılan mal yeniden satılabilir görünürdü.
+     */
     @Query(
         """
-        SELECT l.lotNo AS lotNo, p.name AS productName, p.baseUnit AS baseUnit, s.qtyMilli AS qtyMilli,
+        SELECT l.id AS lotId, l.lotNo AS lotNo, p.id AS productId, p.name AS productName, p.baseUnit AS baseUnit,
+               p.salePriceCents AS salePriceCents, s.qtyMilli AS qtyMilli,
+               s.qtyMilli - COALESCE((
+                   SELECT SUM(sl.qtyMilli) FROM sale_line sl JOIN sale sa ON sa.clientUuid = sl.saleUuid
+                   WHERE sa.syncState = 'BEKLIYOR' AND sl.lotId = l.id
+               ), 0) AS availableMilli,
                l.status AS status, l.expiryDate AS expiryDate
         FROM stock s
         JOIN lot l ON l.id = s.lotId
         JOIN product p ON p.id = l.productId
         WHERE s.qtyMilli > 0
-        ORDER BY l.expiryDate, l.lotNo
+        ORDER BY l.expiryDate IS NULL, l.expiryDate, l.lotNo
         """,
     )
     abstract fun observeVanStock(): Flow<List<VanStockRow>>
+
+    @Query("SELECT * FROM customer ORDER BY name")
+    abstract fun observeCustomers(): Flow<List<CustomerEntity>>
 
     @Query("DELETE FROM product")
     protected abstract suspend fun clearProducts()

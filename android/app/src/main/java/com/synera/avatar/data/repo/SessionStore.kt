@@ -3,12 +3,15 @@ package com.synera.avatar.data.repo
 import android.content.Context
 import androidx.core.content.edit
 import com.synera.avatar.BuildConfig
+import java.util.UUID
 
 data class Session(
     val token: String,
     val username: String,
     val fullName: String,
     val warehouseCode: String?,
+    /** Satış gönderiminde kullanılır; eski sürümden kalan oturumda yoktur (yeniden giriş istenir). */
+    val warehouseId: Long?,
 )
 
 /**
@@ -29,6 +32,7 @@ class SessionStore(context: Context) {
             username = prefs.getString(KEY_USERNAME, "").orEmpty(),
             fullName = prefs.getString(KEY_FULL_NAME, "").orEmpty(),
             warehouseCode = prefs.getString(KEY_WAREHOUSE, null),
+            warehouseId = prefs.getLong(KEY_WAREHOUSE_ID, NO_ID).takeIf { it != NO_ID },
         )
     }
 
@@ -39,7 +43,14 @@ class SessionStore(context: Context) {
         putString(KEY_USERNAME, session.username)
         putString(KEY_FULL_NAME, session.fullName)
         putString(KEY_WAREHOUSE, session.warehouseCode)
+        if (session.warehouseId != null) putLong(KEY_WAREHOUSE_ID, session.warehouseId) else remove(KEY_WAREHOUSE_ID)
     }
+
+    /** Bu kurulumun kalıcı kimliği (satışların hangi cihazdan geldiği); ilk kullanımda üretilir. */
+    val deviceId: String
+        get() = prefs.getString(KEY_DEVICE, null) ?: ("android-" + UUID.randomUUID().toString().take(8)).also {
+            prefs.edit { putString(KEY_DEVICE, it) }
+        }
 
     /** Çıkışta belirteç silinir; kullanıcı adı bir sonraki girişte veri temizliği kararı için kalır. */
     fun clearToken() = prefs.edit { remove(KEY_TOKEN) }
@@ -50,5 +61,8 @@ class SessionStore(context: Context) {
         const val KEY_USERNAME = "username"
         const val KEY_FULL_NAME = "full_name"
         const val KEY_WAREHOUSE = "warehouse_code"
+        const val KEY_WAREHOUSE_ID = "warehouse_id"
+        const val KEY_DEVICE = "device_id"
+        const val NO_ID = -1L
     }
 }

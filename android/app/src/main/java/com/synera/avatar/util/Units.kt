@@ -20,6 +20,12 @@ object Money {
 
     fun fromCents(cents: Long): BigDecimal = BigDecimal.valueOf(cents, 2)
 
+    /** API'ye gönderilecek metin: 2490 → "24.90". */
+    fun toApiText(cents: Long): String = fromCents(cents).toPlainString()
+
+    /** Kullanıcının yazdığı tutar: "24,90" ya da "24.90" → 2490; geçersiz ya da kuruştan inceyse null. */
+    fun parseInput(text: String): Long? = parseScaled(text, 2)
+
     /** 154350 → "1.543,50 €" */
     fun format(cents: Long): String = moneyFormat().format(fromCents(cents)) + " €"
 }
@@ -34,11 +40,25 @@ object Quantity {
     /** API'ye gönderilecek metin: 2500 → "2.500". */
     fun toApiText(milli: Long): String = fromMilli(milli).toPlainString()
 
+    /** Kullanıcının yazdığı miktar: "2,5" ya da "2.5" → 2500; geçersiz ya da gramdan inceyse null. */
+    fun parseInput(text: String): Long? = parseScaled(text, 3)
+
     /** Ekranda: 2500 + KG → "2,5 kg"; 85000 + ADET → "85 adet". */
     fun format(milli: Long, baseUnit: String): String {
         val unit = if (baseUnit == "ADET") "adet" else "kg"
         return qtyFormat().format(fromMilli(milli)) + " " + unit
     }
+}
+
+private val plainDecimal = Regex("""^\d+([.,]\d+)?$""")
+
+/** Binlik ayırıcı kabul edilmez (1.543 ile 1,543 karışmasın); ondalık ayırıcı virgül ya da nokta. */
+private fun parseScaled(text: String, scale: Int): Long? {
+    val trimmed = text.trim()
+    if (!plainDecimal.matches(trimmed)) return null
+    val value = BigDecimal(trimmed.replace(',', '.'))
+    if (value.scale() > scale) return null
+    return value.movePointRight(scale).setScale(0, RoundingMode.UNNECESSARY).longValueExact()
 }
 
 private val turkish: Locale = Locale.forLanguageTag("tr-TR")

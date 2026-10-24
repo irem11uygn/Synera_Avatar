@@ -22,6 +22,9 @@ interface AvatarApi {
 
     @GET("api/v1/sync/pull")
     suspend fun pull(@Header("Authorization") bearer: String, @Query("since") since: Long): PullResponse
+
+    @POST("api/v1/sync/push")
+    suspend fun push(@Header("Authorization") bearer: String, @Body body: PushRequest): PushResponse
 }
 
 /** Kullanıcıya gösterilecek, Türkçe mesajlı API hatası. */
@@ -53,8 +56,11 @@ object ApiClient {
             throw ApiException(error?.message ?: "Sunucu hatası (HTTP ${e.code()}).", error?.code)
         } catch (e: IOException) {
             Log.w(TAG, "Sunucuya ulaşılamadı", e)
-            throw ApiException("Sunucuya ulaşılamadı. Bağlantıyı ve sunucu adresini kontrol edin.")
+            throw ApiException("Sunucuya ulaşılamadı. Bağlantıyı ve sunucu adresini kontrol edin.", NETWORK)
         }
+
+    /** Ağ hatası kodu: arka plandaki gönderim bu durumda daha sonra yeniden dener. */
+    const val NETWORK = "NETWORK"
 
     private const val TAG = "AvatarApi"
 }

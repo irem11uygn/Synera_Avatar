@@ -66,6 +66,40 @@ data class PullResponse(
 )
 
 @Serializable
+data class PushLineDto(
+    @SerialName("lot_no") val lotNo: String,
+    val qty: String,
+    @SerialName("unit_price") val unitPrice: String,
+)
+
+@Serializable
+data class PushSaleDto(
+    @SerialName("client_uuid") val clientUuid: String,
+    @SerialName("customer_id") val customerId: Long,
+    @SerialName("warehouse_id") val warehouseId: Long,
+    @SerialName("sold_at") val soldAt: String,
+    val lines: List<PushLineDto>,
+)
+
+@Serializable
+data class PushRequest(@SerialName("device_id") val deviceId: String, val sales: List<PushSaleDto>)
+
+@Serializable
+data class PushErrorDto(val code: String, val message: String)
+
+@Serializable
+data class PushResultDto(
+    @SerialName("client_uuid") val clientUuid: String,
+    val status: String,
+    @SerialName("sale_no") val saleNo: String? = null,
+    val warnings: List<String> = emptyList(),
+    val error: PushErrorDto? = null,
+)
+
+@Serializable
+data class PushResponse(val results: List<PushResultDto>)
+
+@Serializable
 data class ApiErrorBody(val error: ApiError)
 
 @Serializable
