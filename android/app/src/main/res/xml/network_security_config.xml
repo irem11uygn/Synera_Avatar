@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Prototip: API yerel ağda HTTP ile çalışıyor (emülatörde 10.0.2.2, telefonda bilgisayarın yerel ağ adresi).
+     Gerçek bir kurulumda HTTPS kullanılmalı ve bu izin kaldırılmalıdır (docs/architecture.md §13). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
