@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from sqlalchemy import Row, text
 from sqlalchemy.orm import Session
 
+from app.domain.money import tr_number
+
 DESCRIPTIONS = {
     "I-1": "Lotun kalan miktarı, hareketlerinin miktar toplamına eşit",
     "I-2": "Lotun kalan değeri, hareketlerinin değer toplamına eşit",
@@ -54,17 +56,23 @@ def check_invariants(session: Session) -> list[InvariantResult]:
 
 
 def _lot_qty_violations(rows: Sequence[Row]) -> list[str]:
-    return [f"{r.lot_no}: özet {r.remaining_qty}, hareketler {r.moved_qty}" for r in rows
-            if r.remaining_qty != r.moved_qty]  # fmt: skip
+    return [
+        f"{r.lot_no}: özet {tr_number(r.remaining_qty)}, hareketler {tr_number(r.moved_qty)}"
+        for r in rows
+        if r.remaining_qty != r.moved_qty
+    ]
 
 
 def _lot_value_violations(rows: Sequence[Row]) -> list[str]:
-    return [f"{r.lot_no}: özet {r.remaining_value}, hareketler {r.moved_value}" for r in rows
-            if r.remaining_value != r.moved_value]  # fmt: skip
+    return [
+        f"{r.lot_no}: özet {tr_number(r.remaining_value, 2)}, hareketler {tr_number(r.moved_value, 2)}"
+        for r in rows
+        if r.remaining_value != r.moved_value
+    ]
 
 
 def _empty_lot_value_violations(rows: Sequence[Row]) -> list[str]:
-    return [f"{r.lot_no}: kalan değer {r.remaining_value}" for r in rows
+    return [f"{r.lot_no}: kalan değer {tr_number(r.remaining_value, 2)}" for r in rows
             if r.remaining_qty == 0 and r.remaining_value != 0]  # fmt: skip
 
 
@@ -102,9 +110,13 @@ def _cutting_violations(session: Session) -> list[str]:
     found = []
     for r in rows:
         if r.allocated != r.total_cost:
-            found.append(f"{r.cutting_no}: dağıtılan {r.allocated} ≠ toplam {r.total_cost}")
+            found.append(
+                f"{r.cutting_no}: dağıtılan {tr_number(r.allocated, 2)} ≠ toplam {tr_number(r.total_cost, 2)}"
+            )
         if abs(r.input_qty - r.outputs) > r.tolerance_kg:
-            found.append(f"{r.cutting_no}: giriş {r.input_qty} kg, çıkışlar {r.outputs} kg")
+            found.append(
+                f"{r.cutting_no}: giriş {tr_number(r.input_qty)} kg, çıkışlar {tr_number(r.outputs)} kg"
+            )
     return found
 
 
@@ -122,7 +134,8 @@ def _production_violations(session: Session) -> list[str]:
         )
     ).all()
     return [
-        f"{r.order_no}: mamul değeri {r.initial_value} ≠ tüketim {r.consumed} + hizmet {r.service}"
+        f"{r.order_no}: mamul değeri {tr_number(r.initial_value, 2)} ≠ tüketim {tr_number(r.consumed, 2)} "
+        f"+ hizmet {tr_number(r.service, 2)}"
         for r in rows
         if r.initial_value != r.consumed + r.service
     ]

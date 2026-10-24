@@ -26,3 +26,12 @@ def round_percent(percent: Decimal) -> Decimal:
 
 def is_cent_exact(amount: Decimal) -> bool:
     return amount == round_money(amount)
+
+
+def tr_number(value: Decimal, places: int | None = None) -> str:
+    """Kullanıcı mesajlarında Türkçe sayı: 1543.5 → "1.543,5"; places verilirse sabit basamak (para: 2).
+
+    Ham Decimal yazılmaz: "3.000 kg" Türkçede üç bin kilogram diye okunur.
+    """
+    text = f"{value:,.{places}f}" if places is not None else f"{value.normalize():,f}"
+    return text.translate(str.maketrans(",.", ".,"))

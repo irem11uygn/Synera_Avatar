@@ -8,6 +8,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.domain.costing import line_amount
+from app.domain.money import tr_number
 from app.errors import AmountMismatchNoteRequired, InvalidInput, NotFound
 from app.models import Partner, Product, Purchase, PurchaseCost, PurchaseLine
 from app.models.enums import DocType, LotOrigin, MovementType, PurchaseCostKind
@@ -77,7 +78,8 @@ def _add_line(
     note = (line.discrepancy_note or "").strip() or None
     if invoice != computed and note is None:
         raise AmountMismatchNoteRequired(
-            f"{line.lot_no}: fatura tutarı ({invoice} €) miktar × birim fiyattan ({computed} €) farklı; "
+            f"{line.lot_no}: fatura tutarı ({tr_number(invoice, 2)} €) miktar × birim fiyattan "
+            f"({tr_number(computed, 2)} €) farklı; "
             "farkın nedenini açıklayın.",
             lot_no=line.lot_no,
             computed_amount=computed,

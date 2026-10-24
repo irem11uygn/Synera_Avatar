@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.domain.costing import ProductionCost, Profitability, line_amount, production_cost, profitability
-from app.domain.money import round_percent
+from app.domain.money import round_percent, tr_number
 from app.errors import AmountMismatchNoteRequired, InvalidInput, InvalidState, LotBlocked, NotFound
 from app.models import Lot, Partner, Product, ProductionInput, ProductionOrder, StockMovement, Warehouse
 from app.models.enums import (
@@ -382,8 +382,9 @@ def _validated_results(
             raise InvalidInput(f"{lot_no}: tüketilen ve iade edilen miktar eksi olamaz.")
         if result.consumed_qty + result.returned_qty != row.shipped_qty:
             raise InvalidInput(
-                f"{lot_no}: tüketilen ({result.consumed_qty}) + iade edilen ({result.returned_qty}) "
-                f"sevk edilen miktara ({row.shipped_qty}) eşit olmalı.",
+                f"{lot_no}: tüketilen ({tr_number(result.consumed_qty)}) + iade edilen "
+                f"({tr_number(result.returned_qty)}) sevk edilen miktara ({tr_number(row.shipped_qty)}) "
+                "eşit olmalı.",
                 lot_no=lot_no,
             )
     if all(result.consumed_qty == 0 for result in inputs):
@@ -405,7 +406,8 @@ def _service_amount(
         raise InvalidInput("Hizmet faturası tutarı eksi olamaz.")
     if suggested is not None and final != suggested and not (note or "").strip():
         raise AmountMismatchNoteRequired(
-            f"Hizmet faturası ({final} €) teslim alınan miktar × birim ücretten ({suggested} €) farklı; "
+            f"Hizmet faturası ({tr_number(final, 2)} €) teslim alınan miktar × birim ücretten "
+            f"({tr_number(suggested, 2)} €) farklı; "
             "farkın nedenini açıklayın.",
             suggested_amount=suggested,
             invoice_amount=final,

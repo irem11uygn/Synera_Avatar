@@ -70,3 +70,16 @@ def test_invalid_quantities_are_rejected():
 def test_lamb_purchase_line_amount_differs_from_invoice():
     """Görev 2 notu: 25 kg × 11,50 € = 287,50 € (faturadaki 351,00 € ile farklı)."""
     assert line_amount(D("25"), D("11.50")) == D("287.50")
+
+
+def test_numbers_in_messages_are_turkish():
+    """Mesajdaki "3.000 kg" Türkçede üç bin okunur; mesajlar Türkçe sayı biçimi kullanır."""
+    from app.domain.money import tr_number
+
+    assert [tr_number(D(v)) for v in ("3.000", "0.150", "100.000", "1543.5")] == [
+        "3",
+        "0,15",
+        "100",
+        "1.543,5",
+    ]
+    assert tr_number(D("1543.5"), 2) == "1.543,50"
