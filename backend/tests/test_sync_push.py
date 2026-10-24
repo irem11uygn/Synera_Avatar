@@ -111,7 +111,8 @@ def test_offline_sale_of_recalled_lot_is_kept_and_flagged(client, seller, sessio
     assert "ET-2026-001" in result["warnings"][0]
     assert session.scalars(select(Sale)).one().recall_violation is True
     alert = session.scalars(select(Alert)).one()
-    assert alert.kind == "GERI_CAGIRMA_IHLALI" and "Market A" in alert.message
+    assert alert.kind == "GERI_CAGIRMA_IHLALI"
+    assert "ET-2026-001 lotundan 4 kg Market A" in alert.message
     assert van_qty(session, van) == D("6")
 
 

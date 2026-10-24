@@ -477,6 +477,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sales */
+        get: operations["list_sales_api_v1_sales_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/{sale_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sale */
+        get: operations["get_sale_api_v1_sales__sale_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sync/pull": {
         parameters: {
             query?: never;
@@ -488,6 +522,26 @@ export interface paths {
         get: operations["pull_api_v1_sync_pull_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sync/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Push
+         * @description Cihazdaki bekleyen satÄ±ÅŸlarÄ± kaydeder; her satÄ±ÅŸÄ±n sonucu ayrÄ± dÃ¶ner (api.md Â§4.4).
+         */
+        post: operations["push_api_v1_sync_push_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1127,6 +1181,69 @@ export interface components {
             /** Total Value */
             total_value: string;
         };
+        /** PushErrorOut */
+        PushErrorOut: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+        };
+        /** PushIn */
+        PushIn: {
+            /** Device Id */
+            device_id?: string | null;
+            /** Sales */
+            sales: components["schemas"]["PushSaleIn"][];
+        };
+        /** PushLineIn */
+        PushLineIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Qty */
+            qty: number | string;
+            /** Unit Price */
+            unit_price: number | string;
+        };
+        /** PushResponse */
+        PushResponse: {
+            /** Results */
+            results: components["schemas"]["PushResultOut"][];
+        };
+        /** PushResultOut */
+        PushResultOut: {
+            /** Client Uuid */
+            client_uuid: string;
+            status: components["schemas"]["PushStatus"];
+            /** Sale No */
+            sale_no: string | null;
+            /** Warnings */
+            warnings: string[];
+            error: components["schemas"]["PushErrorOut"] | null;
+        };
+        /** PushSaleIn */
+        PushSaleIn: {
+            /**
+             * Client Uuid
+             * Format: uuid
+             */
+            client_uuid: string;
+            /** Customer Id */
+            customer_id: number;
+            /** Warehouse Id */
+            warehouse_id: number;
+            /**
+             * Sold At
+             * Format: date-time
+             */
+            sold_at: string;
+            /** Lines */
+            lines: components["schemas"]["PushLineIn"][];
+        };
+        /**
+         * PushStatus
+         * @enum {string}
+         */
+        PushStatus: "ACCEPTED" | "ACCEPTED_WITH_WARNING" | "DUPLICATE" | "REJECTED";
         /** RecipeIn */
         RecipeIn: {
             /** Code */
@@ -1200,6 +1317,65 @@ export interface components {
             tolerance_kg: string;
             /** Lines */
             lines: components["schemas"]["RecipeLineOut"][];
+        };
+        /**
+         * SaleChannel
+         * @enum {string}
+         */
+        SaleChannel: "ANDROID" | "WEB";
+        /** SaleLineOut */
+        SaleLineOut: {
+            /** Line No */
+            line_no: number;
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Qty */
+            qty: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Amount */
+            amount: string;
+            /** Cost Amount */
+            cost_amount: string;
+        };
+        /** SaleOut */
+        SaleOut: {
+            /** Id */
+            id: number;
+            /** Sale No */
+            sale_no: string;
+            /** Client Uuid */
+            client_uuid: string;
+            channel: components["schemas"]["SaleChannel"];
+            /** Customer Id */
+            customer_id: number;
+            /** Customer Name */
+            customer_name: string;
+            /** Warehouse Id */
+            warehouse_id: number;
+            /** Device Id */
+            device_id: string | null;
+            /**
+             * Sold At
+             * Format: date-time
+             */
+            sold_at: string;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Recall Violation */
+            recall_violation: boolean;
+            /** Lines */
+            lines: components["schemas"]["SaleLineOut"][];
+            /** Total Amount */
+            total_amount: string;
+            /** Total Cost */
+            total_cost: string;
         };
         /** SalesOut */
         SalesOut: {
@@ -2501,6 +2677,57 @@ export interface operations {
             };
         };
     };
+    list_sales_api_v1_sales_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleOut"][];
+                };
+            };
+        };
+    };
+    get_sale_api_v1_sales__sale_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sale_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     pull_api_v1_sync_pull_get: {
         parameters: {
             query?: {
@@ -2520,6 +2747,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PullResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    push_api_v1_sync_push_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushResponse"];
                 };
             };
             /** @description Validation Error */

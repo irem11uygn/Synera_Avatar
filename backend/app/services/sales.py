@@ -148,13 +148,15 @@ def _record_sale(session: Session, user: User, device_id: str | None, data: Sale
             )
         )
         if lot.status == LotStatus.BLOKE:
+            product = session.get(Product, lot.product_id)
+            unit = "adet" if product is not None and product.base_unit == BaseUnit.ADET else "kg"
             session.add(
                 Alert(
                     kind=AlertKind.GERI_CAGIRMA_IHLALI,
                     ref_type="SALE",
                     ref_id=sale.id,
                     message=(
-                        f"{sale.sale_no}: bloke {lot.lot_no} lotundan {tr_number(line.qty)} birim "
+                        f"{sale.sale_no}: bloke {lot.lot_no} lotundan {tr_number(line.qty)} {unit} "
                         f"{customer.name} müşterisine satıldı (çevrimdışı satış). Müşteriyi geri çağırma "
                         "listesine ekleyin."
                     ),

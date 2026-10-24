@@ -1614,6 +1614,83 @@
         }
       }
     },
+    "/api/v1/sales": {
+      "get": {
+        "tags": [
+          "satÄ±ÅŸ"
+        ],
+        "summary": "List Sales",
+        "operationId": "list_sales_api_v1_sales_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SaleOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Sales Api V1 Sales Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sales/{sale_id}": {
+      "get": {
+        "tags": [
+          "satÄ±ÅŸ"
+        ],
+        "summary": "Get Sale",
+        "operationId": "get_sale_api_v1_sales__sale_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sale Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sync/pull": {
       "get": {
         "tags": [
@@ -1663,6 +1740,53 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/sync/push": {
+      "post": {
+        "tags": [
+          "senkronizasyon"
+        ],
+        "summary": "Push",
+        "description": "Cihazdaki bekleyen satÄ±ÅŸlarÄ± kaydeder; her satÄ±ÅŸÄ±n sonucu ayrÄ± dÃ¶ner (api.md Â§4.4).",
+        "operationId": "push_api_v1_sync_push_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     }
   },
@@ -3815,6 +3939,208 @@
         ],
         "title": "PurchaseOut"
       },
+      "PushErrorOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "PushErrorOut"
+      },
+      "PushIn": {
+        "properties": {
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "sales": {
+            "items": {
+              "$ref": "#/components/schemas/PushSaleIn"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Sales"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales"
+        ],
+        "title": "PushIn"
+      },
+      "PushLineIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty",
+          "unit_price"
+        ],
+        "title": "PushLineIn"
+      },
+      "PushResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/PushResultOut"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "title": "PushResponse"
+      },
+      "PushResultOut": {
+        "properties": {
+          "client_uuid": {
+            "type": "string",
+            "title": "Client Uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PushStatus"
+          },
+          "sale_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale No"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PushErrorOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_uuid",
+          "status",
+          "sale_no",
+          "warnings",
+          "error"
+        ],
+        "title": "PushResultOut"
+      },
+      "PushSaleIn": {
+        "properties": {
+          "client_uuid": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Client Uuid"
+          },
+          "customer_id": {
+            "type": "integer",
+            "title": "Customer Id"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/PushLineIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_uuid",
+          "customer_id",
+          "warehouse_id",
+          "sold_at",
+          "lines"
+        ],
+        "title": "PushSaleIn"
+      },
+      "PushStatus": {
+        "type": "string",
+        "enum": [
+          "ACCEPTED",
+          "ACCEPTED_WITH_WARNING",
+          "DUPLICATE",
+          "REJECTED"
+        ],
+        "title": "PushStatus"
+      },
       "RecipeIn": {
         "properties": {
           "code": {
@@ -4071,6 +4397,150 @@
           "lines"
         ],
         "title": "RecipeOut"
+      },
+      "SaleChannel": {
+        "type": "string",
+        "enum": [
+          "ANDROID",
+          "WEB"
+        ],
+        "title": "SaleChannel"
+      },
+      "SaleLineOut": {
+        "properties": {
+          "line_no": {
+            "type": "integer",
+            "title": "Line No"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "unit_price": {
+            "type": "string",
+            "title": "Unit Price"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "cost_amount": {
+            "type": "string",
+            "title": "Cost Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line_no",
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "qty",
+          "unit_price",
+          "amount",
+          "cost_amount"
+        ],
+        "title": "SaleLineOut"
+      },
+      "SaleOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "sale_no": {
+            "type": "string",
+            "title": "Sale No"
+          },
+          "client_uuid": {
+            "type": "string",
+            "title": "Client Uuid"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/SaleChannel"
+          },
+          "customer_id": {
+            "type": "integer",
+            "title": "Customer Id"
+          },
+          "customer_name": {
+            "type": "string",
+            "title": "Customer Name"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "recall_violation": {
+            "type": "boolean",
+            "title": "Recall Violation"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SaleLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "total_amount": {
+            "type": "string",
+            "title": "Total Amount"
+          },
+          "total_cost": {
+            "type": "string",
+            "title": "Total Cost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sale_no",
+          "client_uuid",
+          "channel",
+          "customer_id",
+          "customer_name",
+          "warehouse_id",
+          "device_id",
+          "sold_at",
+          "received_at",
+          "recall_violation",
+          "lines",
+          "total_amount",
+          "total_cost"
+        ],
+        "title": "SaleOut"
       },
       "SalesOut": {
         "properties": {
