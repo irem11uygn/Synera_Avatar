@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI
 
 from app import __version__
-from app.api import auth, health, sync
+from app.api import auth, health, lots, master, production, purchases, sync, transfers
 from app.api.errors import register_error_handlers
 from app.config import get_settings
 
@@ -23,7 +23,17 @@ def create_app() -> FastAPI:
         version=__version__,
     )
     register_error_handlers(app)
-    for router in (health.router, auth.router, sync.router):
+    routers = (
+        health.router,
+        auth.router,
+        master.router,
+        purchases.router,
+        lots.router,
+        transfers.router,
+        production.router,
+        sync.router,
+    )
+    for router in routers:
         app.include_router(router, prefix=API_PREFIX)
     return app
 

@@ -58,12 +58,22 @@ def session(engine: Engine) -> Iterator[Session]:
 
 @pytest.fixture
 def client(session: Session) -> TestClient:
-    """API istemcisi; istekler testin geri alınan işlemi içinde çalışır, kalıcı veri bırakmaz."""
+    """API istemcisi; istekler testin geri alınan işlemi içinde çalışır, kalıcı veri bırakmaz.
+
+    Her istek kendi kayıt noktasında (savepoint) yürür: hata verirse yalnız o isteğin yazdıkları
+    geri alınır — canlıdaki "istek başına tek işlem" davranışının aynısı (NFR-003).
+    """
     app = create_app()
 
     def test_db() -> Iterator[Session]:
-        yield session
-        session.flush()
+        request = session.begin_nested()
+        try:
+            yield session
+            session.flush()
+            request.commit()
+        except Exception:
+            request.rollback()
+            raise
 
     app.dependency_overrides[get_db] = test_db
     return TestClient(app)

@@ -25,7 +25,9 @@ def get_db() -> Iterator[Session]:
             raise
 
 
-Db = Annotated[Session, Depends(get_db)]
+# scope="function": kayıt (commit) yanıt GÖNDERİLMEDEN önce yapılır. Varsayılanda bu kod yanıttan sonra
+# çalışıyordu; istemci "başarılı" yanıtı alıp hemen yeni istek atınca veriyi henüz göremiyordu.
+Db = Annotated[Session, Depends(get_db, scope="function")]
 
 _bearer = HTTPBearer(auto_error=False)
 
@@ -51,3 +53,6 @@ def require_role(*roles: UserRole) -> Callable[[User], User]:
         return user
 
     return check
+
+
+AdminUser = Annotated[User, Depends(require_role(UserRole.YONETICI))]

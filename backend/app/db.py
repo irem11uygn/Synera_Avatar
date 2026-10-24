@@ -30,7 +30,9 @@ class Base(DeclarativeBase):
 
 @lru_cache
 def get_engine() -> Engine:
-    return create_engine(get_settings().database_url, pool_pre_ping=True)
+    # READ COMMITTED: kilitli okumadan (FOR UPDATE) sonraki düz okumalar da son kaydedilmiş veriyi görür.
+    # InnoDB'nin varsayılanı REPEATABLE READ'de bu okumalar işlemin başındaki eski görüntüden gelebilir.
+    return create_engine(get_settings().database_url, pool_pre_ping=True, isolation_level="READ COMMITTED")
 
 
 @lru_cache
