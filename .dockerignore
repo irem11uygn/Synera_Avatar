@@ -1,0 +1,13 @@
+# API imajının derleme bağlamı depo köküdür; yalnız gerekenler gönderilir.
+_kaynak/
+android/
+web/
+docs/
+reports/
+tests/
+.git/
+.env
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.venv/

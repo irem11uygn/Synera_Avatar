@@ -1,0 +1,85 @@
+{
+  "_aciklama": "SEED_PROFILE=base: ana veriler + hammadde alışları. Bütün firma ve kişi adları uydurmadır; e-postalar ayrılmış example.com alanında. Demo kullanıcı parolaları yalnız yerel demo içindir. Belge sayaçları şartname senaryosundaki numaraları üretecek biçimde ayarlıdır (ilk dış üretim emri URT-2026-045). Alışlar alış servisi ve stok defteri üzerinden yüklenir. Kuzu alışında 287,50 € mal bedeline 63,50 € kesim + nakliye eklenir; lot değeri 351,00 € olur (Görev 2 notundaki tutarın bizim modelimizdeki karşılığı).",
+  "partners": [
+    {"code": "TED-ET", "name": "Örnek Et Tedarik", "is_supplier": true, "contact_person": "Mehmet Kaya", "phone": "+90 000 000 01 01", "email": "et-tedarik@example.com", "address": "Konya"},
+    {"code": "TED-BAH", "name": "Örnek Baharat", "is_supplier": true, "contact_person": "Elif Şahin", "phone": "+90 000 000 01 02", "email": "baharat@example.com", "address": "Gaziantep"},
+    {"code": "TED-BAG", "name": "Örnek Bağırsak", "is_supplier": true, "contact_person": "Hasan Arslan", "phone": "+90 000 000 01 03", "email": "bagirsak@example.com", "address": "Kayseri"},
+    {"code": "TED-KUZU", "name": "Örnek Kuzu Çiftliği", "is_supplier": true, "contact_person": "Fatma Çelik", "phone": "+90 000 000 01 04", "email": "kuzu@example.com", "address": "Balıkesir"},
+    {"code": "FSN-01", "name": "Örnek Fason Gıda", "is_subcontractor": true, "contact_person": "Ali Yıldız", "phone": "+90 000 000 02 01", "email": "fason@example.com", "address": "Afyonkarahisar"},
+    {"code": "M-A", "name": "Market A", "is_customer": true, "contact_person": "Ayşe Demir", "phone": "+90 000 000 03 01", "email": "market-a@example.com", "address": "İzmir"},
+    {"code": "M-B", "name": "Market B", "is_customer": true, "contact_person": "Can Öztürk", "phone": "+90 000 000 03 02", "email": "market-b@example.com", "address": "Manisa"},
+    {"code": "M-C", "name": "Market C", "is_customer": true, "contact_person": "Zeynep Aydın", "phone": "+90 000 000 03 03", "email": "market-c@example.com", "address": "Aydın"},
+    {"code": "M-B-S1", "name": "Market B Şube 1", "parent_code": "M-B", "contact_person": "Burak Koç", "phone": "+90 000 000 03 12", "email": "market-b-sube1@example.com", "address": "Manisa"},
+    {"code": "M-B-S2", "name": "Market B Şube 2", "parent_code": "M-B", "contact_person": "Selin Kurt", "phone": "+90 000 000 03 13", "email": "market-b-sube2@example.com", "address": "Akhisar"}
+  ],
+  "warehouses": [
+    {"code": "ANA", "name": "Ana depo", "kind": "ANA"},
+    {"code": "DIS-FSN-01", "name": "Örnek Fason Gıda deposu", "kind": "DIS_URETICI", "partner_code": "FSN-01"},
+    {"code": "ARAC-01", "name": "Satış aracı 1", "kind": "ARAC"}
+  ],
+  "products": [
+    {"code": "ET", "name": "Sucukluk et", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "ET", "default_purchase_price": "9.70", "shelf_life_days": 7},
+    {"code": "BAHARAT", "name": "Sucuk baharatı", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "BAH", "default_purchase_price": "24.00", "shelf_life_days": 365},
+    {"code": "BAGIRSAK", "name": "Doğal bağırsak", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "BAG", "default_purchase_price": "11.60", "shelf_life_days": 180},
+    {"code": "KUZU-BUTUN", "name": "Bütün kuzu (karkas)", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "KUZU", "default_purchase_price": "11.50", "shelf_life_days": 5},
+    {"code": "NARIN-SUCUK", "name": "Narin Sucuk 1 kg", "kind": "MAMUL", "base_unit": "ADET", "unit_weight_kg": "1.000", "lot_prefix": "SUC", "sale_price": "24.90", "shelf_life_days": 60},
+    {"code": "KUZU-BUT", "name": "Kuzu but", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "BUT", "sale_price": "22.00", "shelf_life_days": 7},
+    {"code": "KUZU-SIRT", "name": "Kuzu sırt (pirzola)", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "SIRT", "sale_price": "26.00", "shelf_life_days": 7},
+    {"code": "KUZU-OMUZ", "name": "Kuzu omuz", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "OMUZ", "sale_price": "18.00", "shelf_life_days": 7},
+    {"code": "KUZU-KABURGA", "name": "Kuzu kaburga", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KABURGA", "sale_price": "14.00", "shelf_life_days": 7},
+    {"code": "KUZU-KIYMA", "name": "Kuzu kıyma", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KIYMA", "sale_price": "16.00", "shelf_life_days": 3}
+  ],
+  "users": [
+    {"username": "yonetici", "full_name": "Demo Yönetici", "role": "YONETICI", "password": "yonetici123"},
+    {"username": "satis1", "full_name": "Demo Satış Elemanı", "role": "SATIS", "warehouse_code": "ARAC-01", "password": "satis123"}
+  ],
+  "cutting_recipes": [
+    {
+      "code": "KUZU-STD",
+      "name": "Bütün kuzu — standart parçalama",
+      "input_product_code": "KUZU-BUTUN",
+      "species": "KUZU",
+      "default_method": "DEGER",
+      "tolerance_kg": "0.200",
+      "lines": [
+        {"line_type": "PARCA", "product_code": "KUZU-BUT", "standard_ratio": "0.2700", "value_per_kg": "22.00"},
+        {"line_type": "PARCA", "product_code": "KUZU-SIRT", "standard_ratio": "0.1700", "value_per_kg": "26.00"},
+        {"line_type": "PARCA", "product_code": "KUZU-OMUZ", "standard_ratio": "0.2000", "value_per_kg": "18.00"},
+        {"line_type": "PARCA", "product_code": "KUZU-KABURGA", "standard_ratio": "0.1200", "value_per_kg": "14.00"},
+        {"line_type": "PARCA", "product_code": "KUZU-KIYMA", "standard_ratio": "0.1200", "value_per_kg": "16.00"},
+        {"line_type": "FIRE", "standard_ratio": "0.1200", "bears_cost": false}
+      ]
+    }
+  ],
+  "number_sequences": [
+    {"prefix": "URT", "year": 2026, "last_no": 44},
+    {"prefix": "PRC", "year": 2026, "last_no": 11},
+    {"prefix": "SAT", "year": 2026, "last_no": 100}
+  ],
+  "purchases": [
+    {
+      "doc_no": "FAT-ET-2026-0412", "supplier_code": "TED-ET", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "lines": [{"product_code": "ET", "lot_no": "ET-2026-001", "qty": "100", "unit_price": "9.70"}]
+    },
+    {
+      "doc_no": "FAT-BAH-2026-0098", "supplier_code": "TED-BAH", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "lines": [{"product_code": "BAHARAT", "lot_no": "BAH-2026-014", "qty": "2", "unit_price": "24.00"}]
+    },
+    {
+      "doc_no": "FAT-BAG-2026-0057", "supplier_code": "TED-BAG", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "lines": [{"product_code": "BAGIRSAK", "lot_no": "BAG-2026-007", "qty": "5", "unit_price": "11.60"}]
+    },
+    {
+      "doc_no": "FAT-KUZU-2026-0233", "supplier_code": "TED-KUZU", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "lines": [
+        {
+          "product_code": "KUZU-BUTUN", "lot_no": "KUZU-2026-012", "qty": "25", "unit_price": "11.50",
+          "extra_costs": [
+            {"kind": "KESIM", "amount": "40.00", "note": "Kesim ücreti"},
+            {"kind": "NAKLIYE", "amount": "23.50", "note": "Soğuk zincir nakliye"}
+          ]
+        }
+      ]
+    }
+  ]
+}

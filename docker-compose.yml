@@ -1,0 +1,52 @@
+# Tek komutla çalıştırma: docker compose up --build
+# Parolaların varsayılanları yalnız yerel geliştirme/demo içindir; .env dosyasıyla değiştirilebilir (bkz. .env.example).
+name: avatar
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: avatar
+      MYSQL_USER: avatar
+      MYSQL_PASSWORD: ${DB_PASSWORD:-avatar_yerel}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-avatar_root_yerel}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      # İkili günlük açıkken yönetici olmayan uygulama kullanıcısının, defteri koruyan
+      # tetikleyicileri (ADR-008) şema göçünde oluşturabilmesi için gerekir.
+      - --log-bin-trust-function-creators=1
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./scripts/mysql-init:/docker-entrypoint-initdb.d:ro  # test veritabanı (avatar_test)
+    healthcheck:
+      # TCP üzerinden ping: ilk kurulumdaki geçici (yalnız soket) sunucuyu "hazır" saymaz.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: mysql+pymysql://avatar:${DB_PASSWORD:-avatar_yerel}@db:3306/avatar?charset=utf8mb4
+      TEST_DATABASE_URL: mysql+pymysql://avatar:${DB_PASSWORD:-avatar_yerel}@db:3306/avatar_test?charset=utf8mb4
+      SEED_PROFILE: ${SEED_PROFILE:-base}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+
+  web:
+    build: ./web
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  db_data:
