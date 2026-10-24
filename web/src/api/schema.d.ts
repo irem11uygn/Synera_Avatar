@@ -366,6 +366,117 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cutting-recipes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Recipes */
+        get: operations["list_recipes_api_v1_cutting_recipes_get"];
+        put?: never;
+        /** Create Recipe */
+        post: operations["create_recipe_api_v1_cutting_recipes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cutting-recipes/{recipe_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Recipe */
+        get: operations["get_recipe_api_v1_cutting_recipes__recipe_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cuttings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Cuttings */
+        get: operations["list_cuttings_api_v1_cuttings_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_cuttings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cuttings/{cutting_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Cutting */
+        get: operations["get_cutting_api_v1_cuttings__cutting_id__get"];
+        /**
+         * Record Actuals
+         * @description Fiili kg'larÄ± taslaÄŸa kaydeder (deftere yazmaz).
+         */
+        put: operations["record_actuals_api_v1_cuttings__cutting_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cuttings/{cutting_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview
+         * @description GÃ¶nderilen kg'larla denge ve daÄŸÄ±tÄ±mÄ± hesaplar; hiÃ§bir ÅŸey kaydetmez.
+         */
+        post: operations["preview_api_v1_cuttings__cutting_id__preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cuttings/{cutting_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve */
+        post: operations["approve_api_v1_cuttings__cutting_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sync/pull": {
         parameters: {
             query?: never;
@@ -387,15 +498,27 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** BalanceOut */
-        BalanceOut: {
-            /** Warehouse Code */
-            warehouse_code: string;
-            /** Warehouse Name */
-            warehouse_name: string;
-            /** Qty */
-            qty: string;
+        /** ActualIn */
+        ActualIn: {
+            /** Recipe Line Id */
+            recipe_line_id: number;
+            /** Actual Qty */
+            actual_qty: number | string | null;
         };
+        /** ActualsIn */
+        ActualsIn: {
+            method?: components["schemas"]["AllocationMethod"] | null;
+            /**
+             * Outputs
+             * @default []
+             */
+            outputs: components["schemas"]["ActualIn"][];
+        };
+        /**
+         * AllocationMethod
+         * @enum {string}
+         */
+        AllocationMethod: "MIKTAR" | "DEGER";
         /**
          * BaseUnit
          * @enum {string}
@@ -446,6 +569,91 @@ export interface components {
             /** Address */
             address: string | null;
         };
+        /** CuttingIn */
+        CuttingIn: {
+            /** Recipe Id */
+            recipe_id: number;
+            /** Input Lot No */
+            input_lot_no: string;
+            /** Input Qty */
+            input_qty: number | string;
+            method?: components["schemas"]["AllocationMethod"] | null;
+        };
+        /** CuttingLineOut */
+        CuttingLineOut: {
+            /** Output Id */
+            output_id: number;
+            /** Recipe Line Id */
+            recipe_line_id: number;
+            line_type: components["schemas"]["RecipeLineType"];
+            /** Product Id */
+            product_id: number | null;
+            /** Product Code */
+            product_code: string | null;
+            /** Product Name */
+            product_name: string | null;
+            /** Standard Ratio */
+            standard_ratio: string;
+            /** Standard Kg */
+            standard_kg: string;
+            /** Predicted Kg */
+            predicted_kg: string | null;
+            /** Actual Kg */
+            actual_kg: string | null;
+            /** Value Per Kg */
+            value_per_kg: string | null;
+            /** Bears Cost */
+            bears_cost: boolean;
+            /** Allocated Cost */
+            allocated_cost: string | null;
+            /** Cost Per Kg */
+            cost_per_kg: string | null;
+            /** Output Lot No */
+            output_lot_no: string | null;
+        };
+        /** CuttingOut */
+        CuttingOut: {
+            /** Id */
+            id: number;
+            /** Cutting No */
+            cutting_no: string;
+            status: components["schemas"]["CuttingStatus"];
+            /** Recipe Id */
+            recipe_id: number;
+            /** Recipe Code */
+            recipe_code: string;
+            /** Recipe Name */
+            recipe_name: string;
+            method: components["schemas"]["AllocationMethod"];
+            /** Input Lot No */
+            input_lot_no: string;
+            /** Input Product Name */
+            input_product_name: string;
+            /** Input Qty */
+            input_qty: string;
+            /** Total Cost */
+            total_cost: string | null;
+            input_cost: components["schemas"]["InputCostOut"] | null;
+            balance: components["schemas"]["app__api__cutting__BalanceOut"];
+            /** Lines */
+            lines: components["schemas"]["CuttingLineOut"][];
+            /** Allocated Total */
+            allocated_total: string | null;
+            /** Allocation Note */
+            allocation_note: string | null;
+            /**
+             * Cut At
+             * Format: date-time
+             */
+            cut_at: string;
+            /** Approved At */
+            approved_at: string | null;
+        };
+        /**
+         * CuttingStatus
+         * @enum {string}
+         */
+        CuttingStatus: "TASLAK" | "ONAYLANDI";
         /**
          * DocType
          * @enum {string}
@@ -486,6 +694,27 @@ export interface components {
             database: "ok" | "error";
             /** Version */
             version: string;
+        };
+        /** InputCostOut */
+        InputCostOut: {
+            /** Doc No */
+            doc_no: string;
+            /** Supplier Name */
+            supplier_name: string;
+            /** Qty */
+            qty: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Computed Amount */
+            computed_amount: string;
+            /** Invoice Amount */
+            invoice_amount: string;
+            /** Discrepancy Note */
+            discrepancy_note: string | null;
+            /** Extra Costs */
+            extra_costs: components["schemas"]["ExtraCostOut"][];
+            /** Lot Value */
+            lot_value: string;
         };
         /** InputOut */
         InputOut: {
@@ -575,7 +804,7 @@ export interface components {
             /** Expiry Date */
             expiry_date: string | null;
             /** Balances */
-            balances: components["schemas"]["BalanceOut"][];
+            balances: components["schemas"]["app__api__lots__BalanceOut"][];
             /** Parents */
             parents: components["schemas"]["LinkOut"][];
             /** Children */
@@ -898,6 +1127,80 @@ export interface components {
             /** Total Value */
             total_value: string;
         };
+        /** RecipeIn */
+        RecipeIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Input Product Id */
+            input_product_id: number;
+            species: components["schemas"]["Species"];
+            default_method: components["schemas"]["AllocationMethod"];
+            /** Tolerance Kg */
+            tolerance_kg: number | string;
+            /** Lines */
+            lines: components["schemas"]["RecipeLineIn"][];
+        };
+        /** RecipeLineIn */
+        RecipeLineIn: {
+            line_type: components["schemas"]["RecipeLineType"];
+            /** Product Id */
+            product_id?: number | null;
+            /** Standard Ratio */
+            standard_ratio: number | string;
+            /** Value Per Kg */
+            value_per_kg?: number | string | null;
+            /**
+             * Bears Cost
+             * @default true
+             */
+            bears_cost: boolean;
+        };
+        /** RecipeLineOut */
+        RecipeLineOut: {
+            /** Id */
+            id: number;
+            line_type: components["schemas"]["RecipeLineType"];
+            /** Product Id */
+            product_id: number | null;
+            /** Product Code */
+            product_code: string | null;
+            /** Product Name */
+            product_name: string | null;
+            /** Standard Ratio */
+            standard_ratio: string;
+            /** Value Per Kg */
+            value_per_kg: string | null;
+            /** Bears Cost */
+            bears_cost: boolean;
+            /** Sort Order */
+            sort_order: number;
+        };
+        /**
+         * RecipeLineType
+         * @enum {string}
+         */
+        RecipeLineType: "PARCA" | "YAN_URUN" | "FIRE";
+        /** RecipeOut */
+        RecipeOut: {
+            /** Id */
+            id: number;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Input Product Id */
+            input_product_id: number;
+            /** Input Product Name */
+            input_product_name: string;
+            species: components["schemas"]["Species"];
+            default_method: components["schemas"]["AllocationMethod"];
+            /** Tolerance Kg */
+            tolerance_kg: string;
+            /** Lines */
+            lines: components["schemas"]["RecipeLineOut"][];
+        };
         /** SalesOut */
         SalesOut: {
             /** Vkp */
@@ -907,6 +1210,11 @@ export interface components {
             /** Margin Pct */
             margin_pct: string;
         };
+        /**
+         * Species
+         * @enum {string}
+         */
+        Species: "KUZU" | "KOYUN" | "KECI";
         /** StockOut */
         StockOut: {
             /** Lot Id */
@@ -1051,6 +1359,30 @@ export interface components {
             yield_total_pct: string;
             /** Yield Main Pct */
             yield_main_pct: string;
+        };
+        /** BalanceOut */
+        app__api__cutting__BalanceOut: {
+            /** Input Kg */
+            input_kg: string;
+            /** Outputs Kg */
+            outputs_kg: string;
+            /** Difference Kg */
+            difference_kg: string;
+            /** Tolerance Kg */
+            tolerance_kg: string;
+            /** Ok */
+            ok: boolean;
+            /** Missing Lines */
+            missing_lines: number;
+        };
+        /** BalanceOut */
+        app__api__lots__BalanceOut: {
+            /** Warehouse Code */
+            warehouse_code: string;
+            /** Warehouse Name */
+            warehouse_name: string;
+            /** Qty */
+            qty: string;
         };
         /** LotOut */
         app__api__lots__LotOut: {
@@ -1887,6 +2219,275 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_recipes_api_v1_cutting_recipes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeOut"][];
+                };
+            };
+        };
+    };
+    create_recipe_api_v1_cutting_recipes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecipeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_recipe_api_v1_cutting_recipes__recipe_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recipe_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_cuttings_api_v1_cuttings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingOut"][];
+                };
+            };
+        };
+    };
+    create_api_v1_cuttings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CuttingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cutting_api_v1_cuttings__cutting_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cutting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_actuals_api_v1_cuttings__cutting_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cutting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_v1_cuttings__cutting_id__preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cutting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_api_v1_cuttings__cutting_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cutting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingOut"];
                 };
             };
             /** @description Validation Error */

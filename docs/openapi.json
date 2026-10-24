@@ -1211,6 +1211,409 @@
         }
       }
     },
+    "/api/v1/cutting-recipes": {
+      "get": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "List Recipes",
+        "operationId": "list_recipes_api_v1_cutting_recipes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecipeOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Recipes Api V1 Cutting Recipes Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Create Recipe",
+        "operationId": "create_recipe_api_v1_cutting_recipes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cutting-recipes/{recipe_id}": {
+      "get": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Get Recipe",
+        "operationId": "get_recipe_api_v1_cutting_recipes__recipe_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Recipe Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cuttings": {
+      "get": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "List Cuttings",
+        "operationId": "list_cuttings_api_v1_cuttings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CuttingOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Cuttings Api V1 Cuttings Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_cuttings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CuttingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cuttings/{cutting_id}": {
+      "get": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Get Cutting",
+        "operationId": "get_cutting_api_v1_cuttings__cutting_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cutting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cutting Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Record Actuals",
+        "description": "Fiili kg'larÄ± taslaÄŸa kaydeder (deftere yazmaz).",
+        "operationId": "record_actuals_api_v1_cuttings__cutting_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cutting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cutting Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cuttings/{cutting_id}/preview": {
+      "post": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Preview",
+        "description": "GÃ¶nderilen kg'larla denge ve daÄŸÄ±tÄ±mÄ± hesaplar; hiÃ§bir ÅŸey kaydetmez.",
+        "operationId": "preview_api_v1_cuttings__cutting_id__preview_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cutting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cutting Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cuttings/{cutting_id}/approve": {
+      "post": {
+        "tags": [
+          "parÃ§alama"
+        ],
+        "summary": "Approve",
+        "operationId": "approve_api_v1_cuttings__cutting_id__approve_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cutting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cutting Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sync/pull": {
       "get": {
         "tags": [
@@ -1265,28 +1668,66 @@
   },
   "components": {
     "schemas": {
-      "BalanceOut": {
+      "ActualIn": {
         "properties": {
-          "warehouse_code": {
-            "type": "string",
-            "title": "Warehouse Code"
+          "recipe_line_id": {
+            "type": "integer",
+            "title": "Recipe Line Id"
           },
-          "warehouse_name": {
-            "type": "string",
-            "title": "Warehouse Name"
-          },
-          "qty": {
-            "type": "string",
-            "title": "Qty"
+          "actual_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Qty"
           }
         },
         "type": "object",
         "required": [
-          "warehouse_code",
-          "warehouse_name",
-          "qty"
+          "recipe_line_id",
+          "actual_qty"
         ],
-        "title": "BalanceOut"
+        "title": "ActualIn"
+      },
+      "ActualsIn": {
+        "properties": {
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AllocationMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/ActualIn"
+            },
+            "type": "array",
+            "title": "Outputs",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ActualsIn"
+      },
+      "AllocationMethod": {
+        "type": "string",
+        "enum": [
+          "MIKTAR",
+          "DEGER"
+        ],
+        "title": "AllocationMethod"
       },
       "BaseUnit": {
         "type": "string",
@@ -1481,6 +1922,334 @@
         ],
         "title": "CustomerOut"
       },
+      "CuttingIn": {
+        "properties": {
+          "recipe_id": {
+            "type": "integer",
+            "title": "Recipe Id"
+          },
+          "input_lot_no": {
+            "type": "string",
+            "title": "Input Lot No"
+          },
+          "input_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Input Qty"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AllocationMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipe_id",
+          "input_lot_no",
+          "input_qty"
+        ],
+        "title": "CuttingIn"
+      },
+      "CuttingLineOut": {
+        "properties": {
+          "output_id": {
+            "type": "integer",
+            "title": "Output Id"
+          },
+          "recipe_line_id": {
+            "type": "integer",
+            "title": "Recipe Line Id"
+          },
+          "line_type": {
+            "$ref": "#/components/schemas/RecipeLineType"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "standard_ratio": {
+            "type": "string",
+            "title": "Standard Ratio"
+          },
+          "standard_kg": {
+            "type": "string",
+            "title": "Standard Kg"
+          },
+          "predicted_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted Kg"
+          },
+          "actual_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Kg"
+          },
+          "value_per_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Per Kg"
+          },
+          "bears_cost": {
+            "type": "boolean",
+            "title": "Bears Cost"
+          },
+          "allocated_cost": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allocated Cost"
+          },
+          "cost_per_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Kg"
+          },
+          "output_lot_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Lot No"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_id",
+          "recipe_line_id",
+          "line_type",
+          "product_id",
+          "product_code",
+          "product_name",
+          "standard_ratio",
+          "standard_kg",
+          "predicted_kg",
+          "actual_kg",
+          "value_per_kg",
+          "bears_cost",
+          "allocated_cost",
+          "cost_per_kg",
+          "output_lot_no"
+        ],
+        "title": "CuttingLineOut"
+      },
+      "CuttingOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "cutting_no": {
+            "type": "string",
+            "title": "Cutting No"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CuttingStatus"
+          },
+          "recipe_id": {
+            "type": "integer",
+            "title": "Recipe Id"
+          },
+          "recipe_code": {
+            "type": "string",
+            "title": "Recipe Code"
+          },
+          "recipe_name": {
+            "type": "string",
+            "title": "Recipe Name"
+          },
+          "method": {
+            "$ref": "#/components/schemas/AllocationMethod"
+          },
+          "input_lot_no": {
+            "type": "string",
+            "title": "Input Lot No"
+          },
+          "input_product_name": {
+            "type": "string",
+            "title": "Input Product Name"
+          },
+          "input_qty": {
+            "type": "string",
+            "title": "Input Qty"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "input_cost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InputCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "balance": {
+            "$ref": "#/components/schemas/app__api__cutting__BalanceOut"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CuttingLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "allocated_total": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allocated Total"
+          },
+          "allocation_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allocation Note"
+          },
+          "cut_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cut At"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "cutting_no",
+          "status",
+          "recipe_id",
+          "recipe_code",
+          "recipe_name",
+          "method",
+          "input_lot_no",
+          "input_product_name",
+          "input_qty",
+          "total_cost",
+          "input_cost",
+          "balance",
+          "lines",
+          "allocated_total",
+          "allocation_note",
+          "cut_at",
+          "approved_at"
+        ],
+        "title": "CuttingOut"
+      },
+      "CuttingStatus": {
+        "type": "string",
+        "enum": [
+          "TASLAK",
+          "ONAYLANDI"
+        ],
+        "title": "CuttingStatus"
+      },
       "DocType": {
         "type": "string",
         "enum": [
@@ -1603,6 +2372,69 @@
           "version"
         ],
         "title": "HealthResponse"
+      },
+      "InputCostOut": {
+        "properties": {
+          "doc_no": {
+            "type": "string",
+            "title": "Doc No"
+          },
+          "supplier_name": {
+            "type": "string",
+            "title": "Supplier Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "unit_price": {
+            "type": "string",
+            "title": "Unit Price"
+          },
+          "computed_amount": {
+            "type": "string",
+            "title": "Computed Amount"
+          },
+          "invoice_amount": {
+            "type": "string",
+            "title": "Invoice Amount"
+          },
+          "discrepancy_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancy Note"
+          },
+          "extra_costs": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraCostOut"
+            },
+            "type": "array",
+            "title": "Extra Costs"
+          },
+          "lot_value": {
+            "type": "string",
+            "title": "Lot Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "doc_no",
+          "supplier_name",
+          "qty",
+          "unit_price",
+          "computed_amount",
+          "invoice_amount",
+          "discrepancy_note",
+          "extra_costs",
+          "lot_value"
+        ],
+        "title": "InputCostOut"
       },
       "InputOut": {
         "properties": {
@@ -1849,7 +2681,7 @@
           },
           "balances": {
             "items": {
-              "$ref": "#/components/schemas/BalanceOut"
+              "$ref": "#/components/schemas/app__api__lots__BalanceOut"
             },
             "type": "array",
             "title": "Balances"
@@ -2983,6 +3815,263 @@
         ],
         "title": "PurchaseOut"
       },
+      "RecipeIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "input_product_id": {
+            "type": "integer",
+            "title": "Input Product Id"
+          },
+          "species": {
+            "$ref": "#/components/schemas/Species"
+          },
+          "default_method": {
+            "$ref": "#/components/schemas/AllocationMethod"
+          },
+          "tolerance_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Tolerance Kg"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/RecipeLineIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "input_product_id",
+          "species",
+          "default_method",
+          "tolerance_kg",
+          "lines"
+        ],
+        "title": "RecipeIn"
+      },
+      "RecipeLineIn": {
+        "properties": {
+          "line_type": {
+            "$ref": "#/components/schemas/RecipeLineType"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "standard_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Standard Ratio"
+          },
+          "value_per_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Per Kg"
+          },
+          "bears_cost": {
+            "type": "boolean",
+            "title": "Bears Cost",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "line_type",
+          "standard_ratio"
+        ],
+        "title": "RecipeLineIn"
+      },
+      "RecipeLineOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "line_type": {
+            "$ref": "#/components/schemas/RecipeLineType"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "standard_ratio": {
+            "type": "string",
+            "title": "Standard Ratio"
+          },
+          "value_per_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Per Kg"
+          },
+          "bears_cost": {
+            "type": "boolean",
+            "title": "Bears Cost"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "line_type",
+          "product_id",
+          "product_code",
+          "product_name",
+          "standard_ratio",
+          "value_per_kg",
+          "bears_cost",
+          "sort_order"
+        ],
+        "title": "RecipeLineOut"
+      },
+      "RecipeLineType": {
+        "type": "string",
+        "enum": [
+          "PARCA",
+          "YAN_URUN",
+          "FIRE"
+        ],
+        "title": "RecipeLineType"
+      },
+      "RecipeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "input_product_id": {
+            "type": "integer",
+            "title": "Input Product Id"
+          },
+          "input_product_name": {
+            "type": "string",
+            "title": "Input Product Name"
+          },
+          "species": {
+            "$ref": "#/components/schemas/Species"
+          },
+          "default_method": {
+            "$ref": "#/components/schemas/AllocationMethod"
+          },
+          "tolerance_kg": {
+            "type": "string",
+            "title": "Tolerance Kg"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/RecipeLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name",
+          "input_product_id",
+          "input_product_name",
+          "species",
+          "default_method",
+          "tolerance_kg",
+          "lines"
+        ],
+        "title": "RecipeOut"
+      },
       "SalesOut": {
         "properties": {
           "vkp": {
@@ -3005,6 +4094,15 @@
           "margin_pct"
         ],
         "title": "SalesOut"
+      },
+      "Species": {
+        "type": "string",
+        "enum": [
+          "KUZU",
+          "KOYUN",
+          "KECI"
+        ],
+        "title": "Species"
       },
       "StockOut": {
         "properties": {
@@ -3420,6 +4518,67 @@
           "yield_main_pct"
         ],
         "title": "YieldOut"
+      },
+      "app__api__cutting__BalanceOut": {
+        "properties": {
+          "input_kg": {
+            "type": "string",
+            "title": "Input Kg"
+          },
+          "outputs_kg": {
+            "type": "string",
+            "title": "Outputs Kg"
+          },
+          "difference_kg": {
+            "type": "string",
+            "title": "Difference Kg"
+          },
+          "tolerance_kg": {
+            "type": "string",
+            "title": "Tolerance Kg"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "missing_lines": {
+            "type": "integer",
+            "title": "Missing Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_kg",
+          "outputs_kg",
+          "difference_kg",
+          "tolerance_kg",
+          "ok",
+          "missing_lines"
+        ],
+        "title": "BalanceOut"
+      },
+      "app__api__lots__BalanceOut": {
+        "properties": {
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "warehouse_name": {
+            "type": "string",
+            "title": "Warehouse Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "warehouse_code",
+          "warehouse_name",
+          "qty"
+        ],
+        "title": "BalanceOut"
       },
       "app__api__lots__LotOut": {
         "properties": {
