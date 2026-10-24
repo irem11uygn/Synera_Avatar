@@ -1,6 +1,6 @@
 """Lotlar, depo bakiyeleri ve hareket geçmişi (FR-104, FR-112)."""
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -9,9 +9,10 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.api.deps import AdminUser, Db
-from app.models import Lot, LotLink, Partner, Product, StockBalance, StockMovement, Warehouse
+from app.api.fields import UtcDateTime
+from app.models import Lot, LotLink, Partner, Product, StockBalance, StockMovement, User, Warehouse
 from app.models.enums import BaseUnit, DocType, LinkProcess, LotOrigin, LotStatus, MovementType
-from app.services.lookups import lot_by_no
+from app.services.lookups import document_numbers, lot_by_no
 
 router = APIRouter(prefix="/lots", tags=["lotlar"])
 
@@ -55,13 +56,15 @@ class LotDetailOut(LotOut):
 
 class MovementOut(BaseModel):
     id: int
-    posted_at: datetime
+    posted_at: UtcDateTime
     type: MovementType
     warehouse_code: str
     qty: Decimal
     value: Decimal
     doc_type: DocType
     doc_id: int
+    doc_no: str | None
+    user_name: str | None  # örnek kayıtlarda boş
     note: str | None
     reversal_of_id: int | None
 
@@ -144,11 +147,13 @@ def get_lot(lot_no: str, db: Db, _: AdminUser) -> dict:
 def lot_movements(lot_no: str, db: Db, _: AdminUser) -> list[MovementOut]:
     lot = lot_by_no(db, lot_no)
     rows = db.execute(
-        select(StockMovement, Warehouse.code)
+        select(StockMovement, Warehouse.code, User.full_name)
         .join(Warehouse, Warehouse.id == StockMovement.warehouse_id)
+        .outerjoin(User, User.id == StockMovement.user_id)
         .where(StockMovement.lot_id == lot.id)
         .order_by(StockMovement.id)
     ).all()
+    numbers = document_numbers(db, ((m.doc_type, m.doc_id) for m, _, _ in rows))
     return [
         MovementOut(
             id=m.id,
@@ -159,8 +164,10 @@ def lot_movements(lot_no: str, db: Db, _: AdminUser) -> list[MovementOut]:
             value=m.value,
             doc_type=m.doc_type,
             doc_id=m.doc_id,
+            doc_no=numbers.get((m.doc_type, m.doc_id)),
+            user_name=user_name,
             note=m.note,
             reversal_of_id=m.reversal_of_id,
         )
-        for m, code in rows
+        for m, code, user_name in rows
     ]

@@ -1,6 +1,5 @@
 """Depolar arası transfer (FR-303), ör. araç deposuna yükleme."""
 
-from datetime import datetime
 from decimal import Decimal
 
 from fastapi import APIRouter
@@ -8,6 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import AdminUser, Db
+from app.api.fields import UtcDateTime
 from app.models import Lot, Transfer, TransferLine, Warehouse
 from app.models.enums import TransferReason
 from app.services.lookups import lot_by_no
@@ -40,7 +40,7 @@ class TransferOut(BaseModel):
     to_warehouse_code: str
     reason: TransferReason
     production_order_id: int | None
-    transferred_at: datetime
+    transferred_at: UtcDateTime
     lines: list[TransferLineOut]
 
 

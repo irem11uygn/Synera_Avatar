@@ -63,6 +63,18 @@ def test_partner_card_with_contact_details(client, admin):
     assert (response.status_code, response.json()["email"]) == (201, "d@example.com")
 
 
+def test_new_subcontractor_gets_its_own_warehouse(client, admin):
+    """Web'den açılan dış üreticiyle hemen emir açılabilmeli: sevk onun deposuna yapılır (FR-106)."""
+    body = {"code": "FSN-02", "name": "İkinci Fason", "is_subcontractor": True}
+    partner = client.post(f"{API}/partners", json=body, headers=admin).json()
+    warehouses = client.get(f"{API}/warehouses", headers=admin).json()
+    own = [w for w in warehouses if w["partner_id"] == partner["id"]]
+    assert [(w["code"], w["kind"]) for w in own] == [("DIS-FSN-02", "DIS_URETICI")]
+    # İkinci kayıtta yeni depo açılmaz.
+    client.put(f"{API}/partners/{partner['id']}", json=body, headers=admin)
+    assert len(client.get(f"{API}/warehouses", headers=admin).json()) == len(warehouses)
+
+
 def test_purchase_creates_lot_with_real_total_cost(client, admin, session):
     body = {
         "supplier_id": by_code(session, Partner, "TED-KUZU").id,
@@ -115,9 +127,10 @@ def test_lot_detail_balances_and_history(client, admin):
     assert (detail["supplier_name"], D(detail["unit_cost"])) == ("Örnek Et Tedarik", D("9.70"))
     assert [(b["warehouse_code"], D(b["qty"])) for b in detail["balances"]] == [("ANA", D("100"))]
     history = client.get(f"{API}/lots/ET-2026-001/movements", headers=admin).json()
-    assert [(m["type"], D(m["qty"]), D(m["value"])) for m in history] == [
-        ("ALIS_GIRIS", D("100"), D("970.00"))
+    assert [(m["type"], D(m["qty"]), D(m["value"]), m["doc_no"]) for m in history] == [
+        ("ALIS_GIRIS", D("100"), D("970.00"), "FAT-ET-2026-0412")
     ]
+    assert history[0]["posted_at"].endswith("Z")  # UTC, saat dilimi ekiyle (api.md §1)
 
 
 def test_unknown_lot_is_404_in_turkish(client, admin):
@@ -140,6 +153,22 @@ def test_loading_the_van_is_a_transfer(client, admin, session):
         "ARAC-01": D("10"),
     }
     assert D(detail["remaining_value"]) == D("970.00")  # transfer değer taşımaz
+
+    # Hareket geçmişi kimin, hangi belgeyle yaptığını gösterir (FR-112).
+    history = client.get(f"{API}/lots/ET-2026-001/movements", headers=admin).json()
+    assert [(m["type"], m["warehouse_code"], m["doc_no"], m["user_name"]) for m in history[1:]] == [
+        ("TRANSFER_CIKIS", "ANA", "TRF-2026-0001", "Demo Yönetici"),
+        ("TRANSFER_GIRIS", "ARAC-01", "TRF-2026-0001", "Demo Yönetici"),
+    ]
+
+    # Depo kırılımında stok (FR-104).
+    van = by_code(session, Warehouse, "ARAC-01").id
+    rows = client.get(f"{API}/stock", params={"warehouse_id": van}, headers=admin).json()
+    assert [(r["lot_no"], r["warehouse_code"], D(r["qty"]), r["base_unit"]) for r in rows] == [
+        ("ET-2026-001", "ARAC-01", D("10"), "KG")
+    ]
+    everywhere = client.get(f"{API}/stock", headers=admin).json()
+    assert sum(D(r["qty"]) for r in everywhere if r["lot_no"] == "ET-2026-001") == D("100")
 
 
 def test_master_data_is_for_managers_only(client):

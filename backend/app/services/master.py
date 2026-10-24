@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.errors import InvalidInput
-from app.models import Partner, Product
-from app.models.enums import BaseUnit
+from app.models import Partner, Product, Warehouse
+from app.models.enums import BaseUnit, WarehouseKind
 
 
 def save_product(session: Session, product: Product | None, fields: dict[str, Any]) -> Product:
@@ -25,7 +25,33 @@ def save_partner(session: Session, partner: Partner | None, fields: dict[str, An
         raise InvalidInput("Bir cari kendisinin şubesi olamaz.")
     if parent_id is not None and session.get(Partner, parent_id) is None:
         raise InvalidInput("Ana firma bulunamadı.", parent_id=parent_id)
-    return _save(session, partner or Partner(), fields)
+    saved = _save(session, partner or Partner(), fields)
+    if saved.is_subcontractor:
+        _ensure_subcontractor_warehouse(session, saved)
+    return saved
+
+
+def _ensure_subcontractor_warehouse(session: Session, partner: Partner) -> None:
+    """Dış üreticiye sevk edilen hammadde onun deposunda izlenir (FR-106); deposu yoksa açılır."""
+    exists = session.scalar(
+        select(Warehouse.id).where(
+            Warehouse.partner_id == partner.id, Warehouse.kind == WarehouseKind.DIS_URETICI
+        )
+    )
+    if exists is not None:
+        return
+    code = f"DIS-{partner.code}"
+    if len(code) > 30 or session.scalar(select(Warehouse.id).where(Warehouse.code == code)) is not None:
+        code = f"DIS-C{partner.id}"
+    session.add(
+        Warehouse(
+            code=code,
+            name=f"{partner.name} deposu"[:100],
+            kind=WarehouseKind.DIS_URETICI,
+            partner_id=partner.id,
+        )
+    )
+    session.flush()
 
 
 def _save[T](session: Session, entity: T, fields: dict[str, Any]) -> T:

@@ -1,6 +1,5 @@
 """Dış üretim emri — Görev 1 (api.md §4.1)."""
 
-from datetime import datetime
 from decimal import Decimal
 from typing import Annotated
 
@@ -9,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import AdminUser, Db
+from app.api.fields import UtcDateTime
 from app.models import ProductionOrder
 from app.models.enums import BaseUnit, ProductionStatus
 from app.services import production
@@ -98,9 +98,9 @@ class OrderOut(BaseModel):
     service_invoice_no: str | None
     service_note: str | None
     output_lot_no: str | None
-    ordered_at: datetime
-    shipped_at: datetime | None
-    completed_at: datetime | None
+    ordered_at: UtcDateTime
+    shipped_at: UtcDateTime | None
+    completed_at: UtcDateTime | None
     inputs: list[InputOut]
     cost: CostOut | None
     sales: SalesOut | None

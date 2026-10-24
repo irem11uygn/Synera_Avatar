@@ -52,3 +52,10 @@ def test_expired_session_is_rejected(client, session):
         auth_session.expires_at = utcnow() - timedelta(seconds=1)
     session.flush()
     assert client.get("/api/v1/auth/me", headers=headers).status_code == 401
+
+
+def test_logout_ends_the_session_on_the_server(client):
+    headers = auth_header(client, "yonetici", "yonetici123")
+    assert client.post("/api/v1/auth/logout", headers=headers).status_code == 204
+    assert client.get("/api/v1/auth/me", headers=headers).status_code == 401
+    assert client.post("/api/v1/auth/logout", headers=headers).status_code == 401

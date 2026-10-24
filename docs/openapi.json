@@ -1,0 +1,3728 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AVATAR â€” Synera",
+    "description": "Ãœretim, maliyet, satÄ±ÅŸ ve lot izlenebilirliÄŸi API'si",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "sistem"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "kimlik"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "kimlik"
+        ],
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "kimlik"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "List Products",
+        "operationId": "list_products_api_v1_products_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ProductKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/app__api__master__ProductOut"
+                  },
+                  "title": "Response List Products Api V1 Products Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "Create Product",
+        "operationId": "create_product_api_v1_products_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__api__master__ProductOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products/{product_id}": {
+      "put": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "Update Product",
+        "operationId": "update_product_api_v1_products__product_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__api__master__ProductOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/partners": {
+      "get": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "List Partners",
+        "operationId": "list_partners_api_v1_partners_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "supplier",
+                    "customer",
+                    "subcontractor"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PartnerOut"
+                  },
+                  "title": "Response List Partners Api V1 Partners Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "Create Partner",
+        "operationId": "create_partner_api_v1_partners_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartnerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/partners/{partner_id}": {
+      "put": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "Update Partner",
+        "operationId": "update_partner_api_v1_partners__partner_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "partner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Partner Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartnerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/warehouses": {
+      "get": {
+        "tags": [
+          "ana veriler"
+        ],
+        "summary": "List Warehouses",
+        "operationId": "list_warehouses_api_v1_warehouses_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WarehouseOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Warehouses Api V1 Warehouses Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/purchases": {
+      "get": {
+        "tags": [
+          "alÄ±ÅŸ"
+        ],
+        "summary": "List Purchases",
+        "operationId": "list_purchases_api_v1_purchases_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Purchases Api V1 Purchases Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "alÄ±ÅŸ"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_purchases_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/purchases/{purchase_id}": {
+      "get": {
+        "tags": [
+          "alÄ±ÅŸ"
+        ],
+        "summary": "Get Purchase",
+        "operationId": "get_purchase_api_v1_purchases__purchase_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Purchase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lots": {
+      "get": {
+        "tags": [
+          "lotlar"
+        ],
+        "summary": "List Lots",
+        "operationId": "list_lots_api_v1_lots_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/LotStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "warehouse_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Warehouse Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/app__api__lots__LotOut"
+                  },
+                  "title": "Response List Lots Api V1 Lots Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lots/{lot_no}": {
+      "get": {
+        "tags": [
+          "lotlar"
+        ],
+        "summary": "Get Lot",
+        "operationId": "get_lot_api_v1_lots__lot_no__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lot_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lot No"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lots/{lot_no}/movements": {
+      "get": {
+        "tags": [
+          "lotlar"
+        ],
+        "summary": "Lot Movements",
+        "operationId": "lot_movements_api_v1_lots__lot_no__movements_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lot_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lot No"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovementOut"
+                  },
+                  "title": "Response Lot Movements Api V1 Lots  Lot No  Movements Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stock": {
+      "get": {
+        "tags": [
+          "stok"
+        ],
+        "summary": "List Stock",
+        "operationId": "list_stock_api_v1_stock_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "warehouse_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Warehouse Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockRowOut"
+                  },
+                  "title": "Response List Stock Api V1 Stock Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transfers": {
+      "get": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "List Transfers",
+        "operationId": "list_transfers_api_v1_transfers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransferOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Transfers Api V1 Transfers Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_transfers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/production-orders": {
+      "get": {
+        "tags": [
+          "dÄ±ÅŸ Ã¼retim"
+        ],
+        "summary": "List Orders",
+        "operationId": "list_orders_api_v1_production_orders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Orders Api V1 Production Orders Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "dÄ±ÅŸ Ã¼retim"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_production_orders_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/production-orders/{order_id}": {
+      "get": {
+        "tags": [
+          "dÄ±ÅŸ Ã¼retim"
+        ],
+        "summary": "Get Order",
+        "operationId": "get_order_api_v1_production_orders__order_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/production-orders/{order_id}/ship": {
+      "post": {
+        "tags": [
+          "dÄ±ÅŸ Ã¼retim"
+        ],
+        "summary": "Ship",
+        "operationId": "ship_api_v1_production_orders__order_id__ship_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/production-orders/{order_id}/complete": {
+      "post": {
+        "tags": [
+          "dÄ±ÅŸ Ã¼retim"
+        ],
+        "summary": "Complete",
+        "operationId": "complete_api_v1_production_orders__order_id__complete_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/production-orders/{order_id}/cancel": {
+      "post": {
+        "tags": [
+          "dÄ±ÅŸ Ã¼retim"
+        ],
+        "summary": "Cancel",
+        "operationId": "cancel_api_v1_production_orders__order_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync/pull": {
+      "get": {
+        "tags": [
+          "senkronizasyon"
+        ],
+        "summary": "Pull",
+        "operationId": "pull_api_v1_sync_pull_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "CihazÄ±n son aldÄ±ÄŸÄ± deÄŸiÅŸiklik numarasÄ±",
+              "default": 0,
+              "title": "Since"
+            },
+            "description": "CihazÄ±n son aldÄ±ÄŸÄ± deÄŸiÅŸiklik numarasÄ±"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BalanceOut": {
+        "properties": {
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "warehouse_name": {
+            "type": "string",
+            "title": "Warehouse Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "warehouse_code",
+          "warehouse_name",
+          "qty"
+        ],
+        "title": "BalanceOut"
+      },
+      "BaseUnit": {
+        "type": "string",
+        "enum": [
+          "KG",
+          "ADET"
+        ],
+        "title": "BaseUnit"
+      },
+      "CompleteIn": {
+        "properties": {
+          "received_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Received Qty"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputResultIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Inputs"
+          },
+          "service_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Amount"
+          },
+          "service_invoice_no": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Invoice No"
+          },
+          "service_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Note"
+          },
+          "output_lot_no": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Lot No"
+          }
+        },
+        "type": "object",
+        "required": [
+          "received_qty",
+          "inputs"
+        ],
+        "title": "CompleteIn"
+      },
+      "CostOut": {
+        "properties": {
+          "raw_materials": {
+            "type": "string",
+            "title": "Raw Materials"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "total": {
+            "type": "string",
+            "title": "Total"
+          },
+          "ekp": {
+            "type": "string",
+            "title": "Ekp"
+          },
+          "ekp_display": {
+            "type": "string",
+            "title": "Ekp Display"
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw_materials",
+          "service",
+          "total",
+          "ekp",
+          "ekp_display"
+        ],
+        "title": "CostOut"
+      },
+      "CustomerOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "contact_person": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Person"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name",
+          "contact_person",
+          "phone",
+          "email",
+          "address"
+        ],
+        "title": "CustomerOut"
+      },
+      "DocType": {
+        "type": "string",
+        "enum": [
+          "ALIS",
+          "TRANSFER",
+          "URETIM",
+          "PARCALAMA",
+          "SATIS",
+          "IADE",
+          "DUZELTME"
+        ],
+        "title": "DocType"
+      },
+      "ExtraCostIn": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/PurchaseCostKind"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "amount"
+        ],
+        "title": "ExtraCostIn"
+      },
+      "ExtraCostOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/PurchaseCostKind"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "amount",
+          "note"
+        ],
+        "title": "ExtraCostOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "title": "Status"
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ],
+            "title": "Database"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database",
+          "version"
+        ],
+        "title": "HealthResponse"
+      },
+      "InputOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "planned_qty": {
+            "type": "string",
+            "title": "Planned Qty"
+          },
+          "shipped_qty": {
+            "type": "string",
+            "title": "Shipped Qty"
+          },
+          "consumed_qty": {
+            "type": "string",
+            "title": "Consumed Qty"
+          },
+          "returned_qty": {
+            "type": "string",
+            "title": "Returned Qty"
+          },
+          "consumed_value": {
+            "type": "string",
+            "title": "Consumed Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "planned_qty",
+          "shipped_qty",
+          "consumed_qty",
+          "returned_qty",
+          "consumed_value"
+        ],
+        "title": "InputOut"
+      },
+      "InputResultIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "consumed_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Consumed Qty"
+          },
+          "returned_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Returned Qty",
+            "default": "0"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "consumed_qty"
+        ],
+        "title": "InputResultIn"
+      },
+      "LinkOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "process": {
+            "$ref": "#/components/schemas/LinkProcess"
+          },
+          "process_id": {
+            "type": "integer",
+            "title": "Process Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty",
+          "process",
+          "process_id"
+        ],
+        "title": "LinkOut"
+      },
+      "LinkProcess": {
+        "type": "string",
+        "enum": [
+          "URETIM",
+          "PARCALAMA",
+          "YENIDEN_ISLEME"
+        ],
+        "title": "LinkProcess"
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "LoginResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "user"
+        ],
+        "title": "LoginResponse"
+      },
+      "LotDetailOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_code": {
+            "type": "string",
+            "title": "Product Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LotOrigin"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LotStatus"
+          },
+          "initial_qty": {
+            "type": "string",
+            "title": "Initial Qty"
+          },
+          "initial_value": {
+            "type": "string",
+            "title": "Initial Value"
+          },
+          "remaining_qty": {
+            "type": "string",
+            "title": "Remaining Qty"
+          },
+          "remaining_value": {
+            "type": "string",
+            "title": "Remaining Value"
+          },
+          "unit_cost": {
+            "type": "string",
+            "title": "Unit Cost"
+          },
+          "produced_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Produced At"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "balances": {
+            "items": {
+              "$ref": "#/components/schemas/BalanceOut"
+            },
+            "type": "array",
+            "title": "Balances"
+          },
+          "parents": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "type": "array",
+            "title": "Parents"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "type": "array",
+            "title": "Children"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lot_no",
+          "product_code",
+          "product_name",
+          "base_unit",
+          "origin",
+          "supplier_name",
+          "status",
+          "initial_qty",
+          "initial_value",
+          "remaining_qty",
+          "remaining_value",
+          "unit_cost",
+          "produced_at",
+          "expiry_date",
+          "balances",
+          "parents",
+          "children"
+        ],
+        "title": "LotDetailOut"
+      },
+      "LotOrigin": {
+        "type": "string",
+        "enum": [
+          "ALIS",
+          "URETIM",
+          "PARCALAMA",
+          "YENIDEN_ISLEME"
+        ],
+        "title": "LotOrigin"
+      },
+      "LotStatus": {
+        "type": "string",
+        "enum": [
+          "AKTIF",
+          "BLOKE"
+        ],
+        "title": "LotStatus"
+      },
+      "MovementOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "posted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Posted At"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MovementType"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "doc_type": {
+            "$ref": "#/components/schemas/DocType"
+          },
+          "doc_id": {
+            "type": "integer",
+            "title": "Doc Id"
+          },
+          "doc_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc No"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reversal_of_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reversal Of Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "posted_at",
+          "type",
+          "warehouse_code",
+          "qty",
+          "value",
+          "doc_type",
+          "doc_id",
+          "doc_no",
+          "user_name",
+          "note",
+          "reversal_of_id"
+        ],
+        "title": "MovementOut"
+      },
+      "MovementType": {
+        "type": "string",
+        "enum": [
+          "ALIS_GIRIS",
+          "TRANSFER_CIKIS",
+          "TRANSFER_GIRIS",
+          "URETIM_TUKETIM",
+          "URETIM_GIRIS",
+          "PARCALAMA_TUKETIM",
+          "PARCALAMA_GIRIS",
+          "SATIS",
+          "IADE_GIRIS",
+          "FIRE",
+          "TERS_KAYIT"
+        ],
+        "title": "MovementType"
+      },
+      "OrderIn": {
+        "properties": {
+          "subcontractor_id": {
+            "type": "integer",
+            "title": "Subcontractor Id"
+          },
+          "output_product_id": {
+            "type": "integer",
+            "title": "Output Product Id"
+          },
+          "planned_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Planned Qty"
+          },
+          "service_unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Unit Price"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedInputIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Inputs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subcontractor_id",
+          "output_product_id",
+          "planned_qty",
+          "inputs"
+        ],
+        "title": "OrderIn"
+      },
+      "OrderOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "order_no": {
+            "type": "string",
+            "title": "Order No"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProductionStatus"
+          },
+          "subcontractor_id": {
+            "type": "integer",
+            "title": "Subcontractor Id"
+          },
+          "subcontractor_name": {
+            "type": "string",
+            "title": "Subcontractor Name"
+          },
+          "output_product_id": {
+            "type": "integer",
+            "title": "Output Product Id"
+          },
+          "output_product_name": {
+            "type": "string",
+            "title": "Output Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "planned_qty": {
+            "type": "string",
+            "title": "Planned Qty"
+          },
+          "received_qty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received Qty"
+          },
+          "quantity_difference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity Difference"
+          },
+          "service_unit_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Unit Price"
+          },
+          "service_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Amount"
+          },
+          "service_invoice_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Invoice No"
+          },
+          "service_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Note"
+          },
+          "output_lot_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Lot No"
+          },
+          "ordered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ordered At"
+          },
+          "shipped_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shipped At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputOut"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "yield": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/YieldOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_no",
+          "status",
+          "subcontractor_id",
+          "subcontractor_name",
+          "output_product_id",
+          "output_product_name",
+          "base_unit",
+          "planned_qty",
+          "received_qty",
+          "quantity_difference",
+          "service_unit_price",
+          "service_amount",
+          "service_invoice_no",
+          "service_note",
+          "output_lot_no",
+          "ordered_at",
+          "shipped_at",
+          "completed_at",
+          "inputs",
+          "cost",
+          "sales",
+          "yield"
+        ],
+        "title": "OrderOut"
+      },
+      "PartnerIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_supplier": {
+            "type": "boolean",
+            "title": "Is Supplier",
+            "default": false
+          },
+          "is_customer": {
+            "type": "boolean",
+            "title": "Is Customer",
+            "default": false
+          },
+          "is_subcontractor": {
+            "type": "boolean",
+            "title": "Is Subcontractor",
+            "default": false
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "contact_person": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Person"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "PartnerIn"
+      },
+      "PartnerOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_supplier": {
+            "type": "boolean",
+            "title": "Is Supplier",
+            "default": false
+          },
+          "is_customer": {
+            "type": "boolean",
+            "title": "Is Customer",
+            "default": false
+          },
+          "is_subcontractor": {
+            "type": "boolean",
+            "title": "Is Subcontractor",
+            "default": false
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "contact_person": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Person"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "id"
+        ],
+        "title": "PartnerOut"
+      },
+      "PlannedInputIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty"
+        ],
+        "title": "PlannedInputIn"
+      },
+      "ProductIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ProductKind"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "unit_weight_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Weight Kg"
+          },
+          "lot_prefix": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Prefix"
+          },
+          "default_purchase_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Purchase Price"
+          },
+          "sale_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Price"
+          },
+          "shelf_life_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shelf Life Days"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "kind",
+          "base_unit"
+        ],
+        "title": "ProductIn"
+      },
+      "ProductKind": {
+        "type": "string",
+        "enum": [
+          "HAMMADDE",
+          "MAMUL",
+          "PARCA",
+          "YAN_URUN"
+        ],
+        "title": "ProductKind"
+      },
+      "ProductionStatus": {
+        "type": "string",
+        "enum": [
+          "TASLAK",
+          "SEVK_EDILDI",
+          "TAMAMLANDI",
+          "IPTAL"
+        ],
+        "title": "ProductionStatus"
+      },
+      "PullResponse": {
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "next_since": {
+            "type": "integer",
+            "title": "Next Since"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/app__api__sync__ProductOut"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "customers": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerOut"
+            },
+            "type": "array",
+            "title": "Customers"
+          },
+          "lots": {
+            "items": {
+              "$ref": "#/components/schemas/app__api__sync__LotOut"
+            },
+            "type": "array",
+            "title": "Lots"
+          },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/StockOut"
+            },
+            "type": "array",
+            "title": "Stock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset_id",
+          "next_since",
+          "products",
+          "customers",
+          "lots",
+          "stock"
+        ],
+        "title": "PullResponse"
+      },
+      "PurchaseCostKind": {
+        "type": "string",
+        "enum": [
+          "NAKLIYE",
+          "KESIM",
+          "VETERINER",
+          "DIGER"
+        ],
+        "title": "PurchaseCostKind"
+      },
+      "PurchaseIn": {
+        "properties": {
+          "supplier_id": {
+            "type": "integer",
+            "title": "Supplier Id"
+          },
+          "doc_no": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Doc No"
+          },
+          "doc_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Doc Date"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/PurchaseLineIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "supplier_id",
+          "doc_no",
+          "doc_date",
+          "lines"
+        ],
+        "title": "PurchaseIn"
+      },
+      "PurchaseLineIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "lot_no": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "invoice_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Amount"
+          },
+          "discrepancy_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancy Note"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "extra_costs": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraCostIn"
+            },
+            "type": "array",
+            "title": "Extra Costs",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "lot_no",
+          "qty",
+          "unit_price"
+        ],
+        "title": "PurchaseLineIn"
+      },
+      "PurchaseLineOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_code": {
+            "type": "string",
+            "title": "Product Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "unit_price": {
+            "type": "string",
+            "title": "Unit Price"
+          },
+          "computed_amount": {
+            "type": "string",
+            "title": "Computed Amount"
+          },
+          "invoice_amount": {
+            "type": "string",
+            "title": "Invoice Amount"
+          },
+          "discrepancy_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancy Note"
+          },
+          "extra_costs": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraCostOut"
+            },
+            "type": "array",
+            "title": "Extra Costs"
+          },
+          "lot_value": {
+            "type": "string",
+            "title": "Lot Value"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_code",
+          "product_name",
+          "qty",
+          "unit_price",
+          "computed_amount",
+          "invoice_amount",
+          "discrepancy_note",
+          "extra_costs",
+          "lot_value",
+          "expiry_date"
+        ],
+        "title": "PurchaseLineOut"
+      },
+      "PurchaseOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "doc_no": {
+            "type": "string",
+            "title": "Doc No"
+          },
+          "doc_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Doc Date"
+          },
+          "supplier_id": {
+            "type": "integer",
+            "title": "Supplier Id"
+          },
+          "supplier_name": {
+            "type": "string",
+            "title": "Supplier Name"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/PurchaseLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "total_value": {
+            "type": "string",
+            "title": "Total Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "doc_no",
+          "doc_date",
+          "supplier_id",
+          "supplier_name",
+          "note",
+          "lines",
+          "total_value"
+        ],
+        "title": "PurchaseOut"
+      },
+      "SalesOut": {
+        "properties": {
+          "vkp": {
+            "type": "string",
+            "title": "Vkp"
+          },
+          "gross_profit_per_unit": {
+            "type": "string",
+            "title": "Gross Profit Per Unit"
+          },
+          "margin_pct": {
+            "type": "string",
+            "title": "Margin Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vkp",
+          "gross_profit_per_unit",
+          "margin_pct"
+        ],
+        "title": "SalesOut"
+      },
+      "StockOut": {
+        "properties": {
+          "lot_id": {
+            "type": "integer",
+            "title": "Lot Id"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_id",
+          "qty"
+        ],
+        "title": "StockOut"
+      },
+      "StockRowOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "lot_status": {
+            "$ref": "#/components/schemas/LotStatus"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "unit_cost": {
+            "type": "string",
+            "title": "Unit Cost"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_code": {
+            "type": "string",
+            "title": "Product Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "warehouse_name": {
+            "type": "string",
+            "title": "Warehouse Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "lot_status",
+          "expiry_date",
+          "unit_cost",
+          "product_id",
+          "product_code",
+          "product_name",
+          "base_unit",
+          "warehouse_id",
+          "warehouse_code",
+          "warehouse_name",
+          "qty"
+        ],
+        "title": "StockRowOut"
+      },
+      "TransferIn": {
+        "properties": {
+          "from_warehouse_id": {
+            "type": "integer",
+            "title": "From Warehouse Id"
+          },
+          "to_warehouse_id": {
+            "type": "integer",
+            "title": "To Warehouse Id"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/TransferReason",
+            "default": "ARAC_YUKLEME"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/TransferLineIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_warehouse_id",
+          "to_warehouse_id",
+          "lines"
+        ],
+        "title": "TransferIn"
+      },
+      "TransferLineIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty"
+        ],
+        "title": "TransferLineIn"
+      },
+      "TransferLineOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty"
+        ],
+        "title": "TransferLineOut"
+      },
+      "TransferOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "transfer_no": {
+            "type": "string",
+            "title": "Transfer No"
+          },
+          "from_warehouse_code": {
+            "type": "string",
+            "title": "From Warehouse Code"
+          },
+          "to_warehouse_code": {
+            "type": "string",
+            "title": "To Warehouse Code"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/TransferReason"
+          },
+          "production_order_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Production Order Id"
+          },
+          "transferred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Transferred At"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/TransferLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "transfer_no",
+          "from_warehouse_code",
+          "to_warehouse_code",
+          "reason",
+          "production_order_id",
+          "transferred_at",
+          "lines"
+        ],
+        "title": "TransferOut"
+      },
+      "TransferReason": {
+        "type": "string",
+        "enum": [
+          "ARAC_YUKLEME",
+          "DIS_URETIM_SEVK",
+          "DIS_URETIM_IADE",
+          "DIGER"
+        ],
+        "title": "TransferReason"
+      },
+      "UserOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          },
+          "warehouse_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "full_name",
+          "role",
+          "warehouse_id",
+          "warehouse_code"
+        ],
+        "title": "UserOut"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "YONETICI",
+          "SATIS"
+        ],
+        "title": "UserRole"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WarehouseKind": {
+        "type": "string",
+        "enum": [
+          "ANA",
+          "DIS_URETICI",
+          "ARAC"
+        ],
+        "title": "WarehouseKind"
+      },
+      "WarehouseOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/WarehouseKind"
+          },
+          "partner_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name",
+          "kind",
+          "partner_id"
+        ],
+        "title": "WarehouseOut"
+      },
+      "YieldOut": {
+        "properties": {
+          "output_kg": {
+            "type": "string",
+            "title": "Output Kg"
+          },
+          "inputs_kg": {
+            "type": "string",
+            "title": "Inputs Kg"
+          },
+          "main_input_kg": {
+            "type": "string",
+            "title": "Main Input Kg"
+          },
+          "yield_total_pct": {
+            "type": "string",
+            "title": "Yield Total Pct"
+          },
+          "yield_main_pct": {
+            "type": "string",
+            "title": "Yield Main Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_kg",
+          "inputs_kg",
+          "main_input_kg",
+          "yield_total_pct",
+          "yield_main_pct"
+        ],
+        "title": "YieldOut"
+      },
+      "app__api__lots__LotOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_code": {
+            "type": "string",
+            "title": "Product Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LotOrigin"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LotStatus"
+          },
+          "initial_qty": {
+            "type": "string",
+            "title": "Initial Qty"
+          },
+          "initial_value": {
+            "type": "string",
+            "title": "Initial Value"
+          },
+          "remaining_qty": {
+            "type": "string",
+            "title": "Remaining Qty"
+          },
+          "remaining_value": {
+            "type": "string",
+            "title": "Remaining Value"
+          },
+          "unit_cost": {
+            "type": "string",
+            "title": "Unit Cost"
+          },
+          "produced_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Produced At"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lot_no",
+          "product_code",
+          "product_name",
+          "base_unit",
+          "origin",
+          "supplier_name",
+          "status",
+          "initial_qty",
+          "initial_value",
+          "remaining_qty",
+          "remaining_value",
+          "unit_cost",
+          "produced_at",
+          "expiry_date"
+        ],
+        "title": "LotOut"
+      },
+      "app__api__master__ProductOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ProductKind"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "unit_weight_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Weight Kg"
+          },
+          "lot_prefix": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Prefix"
+          },
+          "default_purchase_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Purchase Price"
+          },
+          "sale_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Price"
+          },
+          "shelf_life_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shelf Life Days"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "kind",
+          "base_unit",
+          "id"
+        ],
+        "title": "ProductOut"
+      },
+      "app__api__sync__LotOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LotStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lot_no",
+          "product_id",
+          "expiry_date",
+          "status"
+        ],
+        "title": "LotOut"
+      },
+      "app__api__sync__ProductOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "unit_weight_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Weight Kg"
+          },
+          "sale_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Price"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name",
+          "base_unit",
+          "unit_weight_kg",
+          "sale_price",
+          "active"
+        ],
+        "title": "ProductOut"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

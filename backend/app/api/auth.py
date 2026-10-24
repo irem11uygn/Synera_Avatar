@@ -1,9 +1,12 @@
 """Giriş ve oturumdaki kullanıcı (api.md §2 — Kimlik)."""
 
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
-from app.api.deps import CurrentUser, Db
+from app.api.deps import CurrentUser, Db, bearer
 from app.models import User, Warehouse
 from app.models.enums import UserRole
 from app.services import auth
@@ -51,3 +54,10 @@ def login(body: LoginRequest, db: Db) -> LoginResponse:
 @router.get("/me", response_model=UserOut)
 def me(user: CurrentUser, db: Db) -> UserOut:
     return _user_out(db, user)
+
+
+@router.post("/logout", status_code=204)
+def logout(
+    _: CurrentUser, db: Db, credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer)]
+) -> None:
+    auth.logout(db, credentials.credentials)

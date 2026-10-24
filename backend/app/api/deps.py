@@ -29,11 +29,11 @@ def get_db() -> Iterator[Session]:
 # çalışıyordu; istemci "başarılı" yanıtı alıp hemen yeni istek atınca veriyi henüz göremiyordu.
 Db = Annotated[Session, Depends(get_db, scope="function")]
 
-_bearer = HTTPBearer(auto_error=False)
+bearer = HTTPBearer(auto_error=False)
 
 
 def current_user(
-    session: Db, credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)]
+    session: Db, credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]
 ) -> User:
     if credentials is None:
         raise Unauthorized("Oturum açılmamış.")

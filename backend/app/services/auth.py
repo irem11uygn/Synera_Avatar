@@ -36,5 +36,13 @@ def user_for_token(session: Session, token: str) -> User | None:
     return user if user is not None and user.active else None
 
 
+def logout(session: Session, token: str) -> None:
+    """Oturumu sunucuda kapatır; belirteç bundan sonra geçersizdir."""
+    auth_session = session.get(AuthSession, _digest(token))
+    if auth_session is not None:
+        session.delete(auth_session)
+        session.flush()
+
+
 def _digest(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
