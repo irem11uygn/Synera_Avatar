@@ -158,6 +158,8 @@ Bir cari "dış üretici" olarak kaydedilince ona ait `DIS_URETICI` deposu otoma
 | 3. Ön izleme | `POST /cuttings/{id}/preview` | Ağırlık dengesi + dağıtım sonucu, kaydetmeden gösterilir |
 | 4. Onay | `POST /cuttings/{id}/approve` | Tek işlemde: giriş lotundan `PARCALAMA_TUKETIM`, her parça/yan ürün için lot + `PARCALAMA_GIRIS` (değer = dağıtılan pay), `lot_links` |
 
+Uygulama ayrıntıları (T-11): toplam maliyet, giriş lotundan çıkan değerdir (lotun tamamı parçalanırsa kalan değerin tamamı, kısmen parçalanırsa orantılı payı). Fiili ağırlığı 0 olan parça için lot açılmaz. Parça lotunun SKT'si kendi raf ömrüyle hesaplanır ama girdi lotunun SKT'sini geçemez. Lot bağındaki miktar, girdi lotundan o parçaya giden kg'dır. Taslakta ön izleme, ağırlıklar kaydedilmeden de istenebilir.
+
 ### 4.3 Geri çağırma (Görev 3)
 
 ```mermaid

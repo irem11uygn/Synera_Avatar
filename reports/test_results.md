@@ -199,3 +199,28 @@ Bilinen eksikler:
 
 - Bileşen ve uçtan uca arayüz testleri otomatik değil (T-23).
 - Üretim emrinde Model A tahmini yok (T-21).
+
+## 24 Ekim 2026 — T-11 Görev 2 parçalama API'si
+
+| Kontrol | Komut | Sonuç |
+|---|---|---|
+| Sunucu testleri | `docker compose run --rm --no-deps api pytest -q` | **126 geçti** (13 yeni: parçalama 12, Türkçe sayı biçimi 1) |
+| Python kod denetimi | `… ruff check . && ruff format --check .` | Sorun yok |
+| Web tipleri | `npm run api:types` + `tsc --noEmit` | Yeni uçlarla üretildi, hata yok |
+| Canlı senaryo | Çalışan sistemde gerçek HTTP (deneme betiği, depoda değil) | Aşağıda |
+| Bütünlük | `check_invariants` | 8/8 tutarlı (I-5 parçalama dahil) |
+
+Canlı senaryo (KUZU-2026-012, 25 kg, 351,00 € = alış 287,50 + kesim 40,00 + nakliye 23,50):
+
+1. Taslak: **PRC-2026-012**; beklenen maliyet 351,00 €; reçetenin 6 satırı açıldı.
+2. Parçalar 22 kg girildi, fire boş bırakıldı: onay **422** "Bütün satırların fiili ağırlığı girilmeli (fire yoksa 0 yazın)."
+3. Fire 0: onay **409 WEIGHT_IMBALANCE** "giriş 25 kg, çıkışlar 22 kg, fark 3 kg (tolerans 0,2 kg)". Bu ret deftere iz bırakmadı.
+4. Fire 3 kg, miktar ağırlıklı ön izleme (kaydetmeden): 111,68 / 63,82 / 79,77 / 47,87 / 47,86 / fire 0,00.
+5. Onay (değer ağırlıklı): toplam ve dağıtılan **351,00 €**. Paylar: but 123,41 (17,63 €/kg), sırt 83,34, omuz 72,12, kaburga 33,66, kıyma 38,47, fire 0,00.
+6. Açılan lotlar: BUT-/SIRT-/OMUZ-/KABURGA-/KIYMA-PRC-2026-012. Kuzu lotu 0 kg / 0,00 €, beş çocuk lotu var.
+7. BUT-PRC-2026-012: 7 kg, 123,41 €, SKT 29.10.2026. Bugün + 7 gün 31.10 olurdu; girdi lotunun SKT'sini geçemediği için 29.10. Kaynak: KUZU-2026-012.
+
+Yolda bulunan ve düzeltilenler:
+
+1. **Sunucu mesajlarında sayılar İngilizce biçimdeydi.** Örneğin "fark 3.000 kg" Türkçede üç bin diye okunur. Dış üretim ve alış mesajlarında da vardı ("40.000", "190.00 €"). Artık bütün kullanıcı mesajlarında ve bütünlük raporunda Türkçe biçim kullanılıyor: 3 kg, 0,2 kg, 1.543,50 €.
+2. Fire satırı için birim maliyet "0 €/kg" yazılıyordu. Maliyet almayan satırlarda artık boş.

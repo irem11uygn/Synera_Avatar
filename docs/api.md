@@ -6,7 +6,7 @@
 | Tarih | 24 Ekim 2026 |
 | Karşıladığı teslimat | CR-008 "API açıklaması" |
 | Dayanak | `architecture.md`, `data_model.md` |
-| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET /sync/pull`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
+| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET, POST /cutting-recipes`, `GET /cutting-recipes/{id}`; `POST, GET /cuttings`, `GET, PUT /cuttings/{id}`, `POST /cuttings/{id}/preview`, `POST /cuttings/{id}/approve`; `GET /sync/pull`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
 
 ## 1. Genel kurallar
 
@@ -80,11 +80,11 @@ Rol: **Y** = yönetici, **S** = satış.
 
 | Yöntem | Yol | Rol | Açıklama |
 |---|---|---|---|
-| POST | `/cuttings` | Y | Taslak: reçete + giriş lotu + giriş kg; **Model B beklenen kg'ları döner** |
+| POST | `/cuttings` | Y | Taslak: reçete + giriş lotu + giriş kg (+ isteğe bağlı yöntem); her satırda referans beklenti (`standard_kg` = standart oran × giriş); **Model B tahmini T-21'de** |
 | GET | `/cuttings`, `/cuttings/{id}` | Y | — |
-| PUT | `/cuttings/{id}` | Y | Fiili kg'lar (taslakta) |
-| POST | `/cuttings/{id}/preview` | Y | Denge + dağıtım ön izlemesi, kaydetmeden (§4.2) |
-| POST | `/cuttings/{id}/approve` | Y | Deftere yazar, parça lotlarını açar |
+| PUT | `/cuttings/{id}` | Y | Fiili kg'lar `{"method"?, "outputs": [{"recipe_line_id", "actual_qty"}]}` (taslakta; boş = tartılmadı) |
+| POST | `/cuttings/{id}/preview` | Y | PUT ile aynı gövde; denge + dağıtım ön izlemesi, **hiçbir şey kaydetmez** (§4.2) |
+| POST | `/cuttings/{id}/approve` | Y | Eksik tartım → `VALIDATION_ERROR`; denge yok → `WEIGHT_IMBALANCE` (fark `details`'te); yoksa deftere yazar, parça lotlarını (`<lot öneki>-<parçalama no>`) açar |
 
 ### Satış, iade, ikinci kademe (FR-401, FR-308)
 

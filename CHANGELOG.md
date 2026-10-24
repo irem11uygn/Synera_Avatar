@@ -68,3 +68,9 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - API tipleri OpenAPI tanımından üretiliyor (`docs/openapi.json`, `web/src/api/schema.d.ts`).
 - Sunucu: `GET /stock`, `POST /auth/logout`; hareket geçmişinde belge numarası ve kullanıcı; zamanlar `Z` ekli UTC; dış üretici olarak kaydedilen cariye otomatik depo.
 - Testler: 113 sunucu testi, 16 web birim testi (Vitest 5.0.5), 9 Android testi; senaryo tarayıcıda denendi (`reports/test_results.md`).
+
+### 24 Ekim 2026 (onuncu tur) — Görev 2 parçalama API'si (T-11)
+- `app/services/cutting.py`: reçete oluşturma ve doğrulama; parçalama taslağı, tartım, ön izleme (kaydetmeden), onay (tüketim, iki yöntemle maliyet dağıtımı, parça lotları, lot bağları).
+- Uçlar: `/cutting-recipes`, `/cuttings` (`docs/api.md`).
+- Sunucu mesajlarındaki sayılar Türkçe biçimde (`tr_number`): "fark 3.000 kg" yerine "fark 3 kg", "1.543,50 €".
+- 126 sunucu testi; AT-03 ve AT-04 API üzerinden geçti; canlı senaryo ve bütünlük 8/8 (`reports/test_results.md`).
