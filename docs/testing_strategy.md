@@ -25,7 +25,7 @@ Beklenen değerler şartnameden (**Belge**) veya bizim tanımladığımız örne
 
 | Kimlik | Senaryo | Beklenen sonuç | Kaynak | Doğruladığı gereksinimler | Durum |
 |---|---|---|---|---|---|
-| AT-01 | Narin Sucuk dış üretimi: 100 kg et × 9,70; 2 kg baharat × 24,00; 5 kg bağırsak × 11,60; 85 paket × 5,50 hizmet; 85 paket kabul | Toplam 1.543,50 €; EKP gösterimi 18,16 € (saklanan ≥ 18,1588); lot değeri 1.543,50 € | Belge | FR-107, FR-108, FR-110, NFR-001 | Kısmen geçti (24.10): maliyet hesabı ve defter düzeyinde (`test_costing`, `test_ledger`); üretim emri akışı T-09 |
+| AT-01 | Narin Sucuk dış üretimi: 100 kg et × 9,70; 2 kg baharat × 24,00; 5 kg bağırsak × 11,60; 85 paket × 5,50 hizmet; 85 paket kabul | Toplam 1.543,50 €; EKP gösterimi 18,16 € (saklanan ≥ 18,1588); lot değeri 1.543,50 € | Belge | FR-107, FR-108, FR-110, NFR-001 | Geçti (24.10): üretim emri API'den baştan sona (`test_production::test_at01_*`) ve çalışan sistemde gerçek HTTP ile; maliyet hesabı ayrıca `test_costing` |
 | AT-02 | AT-01 + VKP 24,90 € | Brüt kâr 6,74 €; marj %27,07 | Örnek (VKP bizim) | FR-111, AS-002 | Geçti (24.10, `test_costing`) |
 | AT-03 | Kuzu parçalama, toplam 351,00 €, parçalar but 7 / sırt 4 / omuz 5 / kaburga 3 / kıyma 3 kg, fire 3 kg | Miktar ağırlıklı: 111,68 / 63,82 / 79,77 / 47,87 / 47,86 (eşit kalanlarda reçete sırası); değer ağırlıklı (22/26/18/14/16 €/kg): 123,41 / 83,34 / 72,12 / 33,66 / 38,47; ikisinde de toplam **351,00** | Örnek (`project_analysis.md` §3.3) | FR-202, FR-206, NFR-001 | Geçti (24.10, `test_allocation`); parçalama onay akışı T-11 |
 | AT-04 | 25 kg giriş, 22 kg parça, fire girilmemiş | İşlem onaylanmaz, fark (3 kg) gösterilir; 3 kg fire girilince onaylanır | Belge (not) | FR-205, CR-012 | Hesap geçti (24.10, `test_balance_and_graph`); onayın reddi T-11 |
@@ -39,7 +39,7 @@ Beklenen değerler şartnameden (**Belge**) veya bizim tanımladığımız örne
 | AT-12 | Cihaz çevrimdışıyken lot geri çağrılır, cihaz o lottan satış yapar, sonra bağlanır | Mimaride kararlaştırılacak kurala göre (öneri: satış kaydedilir + uyarı üretilir + geri çağırma listesine eklenir) | Çıkarım | FR-403, FR-405 | Kural bekleniyor |
 | AT-13 | YZ değerlendirmesi (Model A ve B) | Ayrılmış test verisinde referans yöntem ve model hataları raporlanır; hedef: model < referans. Hedefe ulaşılmazsa dürüstçe raporlanır | Belge | FR-501–507, CR-006 | Yazılmadı |
 | AT-14 | Temiz klonda kurulum | README adımlarıyla sistem ayağa kalkar, örnek kayıtlar yüklü, AT-06 arayüzden yapılabilir | Çıkarım | NFR-006, CR-001, CR-011 | Yazılmadı |
-| AT-15 | Dış üretimde miktar farkı: planlanan 87, teslim 85 paket; 0,5 kg baharat iade | Farklar emirde ve üretim raporunda görünür; EKP teslim edilen 85'e göre | Örnek | FR-109, FR-602 | Yazılmadı |
+| AT-15 | Dış üretimde miktar farkı: planlanan 87, teslim 85 paket; 0,5 kg baharat iade | Farklar emirde ve üretim raporunda görünür; EKP teslim edilen 85'e göre | Örnek | FR-109, FR-602 | Kısmen geçti (24.10): farklar emirde, iade ana depoya döner, EKP 85'e göre 18,02 € (`test_production::test_at15_*`); üretim raporu T-22 |
 
 **Tasarım doğrulaması (24 Ekim 2026):** AT-01, AT-03, AT-04, AT-06, AT-07, AT-08 (yalnız bloke durumu), AT-10 ve AT-11 senaryoları, veri modelinin sade bir kopyasında çalıştırıldı ve 20/20 kontrol geçti (`reports/design_validation/`). Bu sonuç tasarımın mantığını doğrular; yukarıdaki ürün testlerinin durumu bu yüzden hâlâ "Yazılmadı"dır. AT-10'un denetleyeceği değişmezler: `data_model.md` §5 (I-1…I-8).
 

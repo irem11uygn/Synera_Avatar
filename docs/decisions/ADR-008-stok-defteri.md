@@ -30,3 +30,4 @@ Değerleme için:
 - Defter ile özetlerin uyumu, kodun her yazım yolunda tek fonksiyonu kullanmasına bağlı. Bu, kod incelemesi ve bütünlük testleriyle korunur.
 - Depo bazında "değer" doğrudan tutulmaz; gerekirse miktar × lot birim değeriyle yaklaşık raporlanır.
 - (T-06'da görüldü) MySQL 8.4'te ikili günlük açıkken yönetici olmayan uygulama kullanıcısı tetikleyici oluşturamıyor (hata 1419). Bu yüzden MySQL `--log-bin-trust-function-creators=1` ile başlatılıyor (`docker-compose.yml`). Tetikleyiciler yalnız hata verdiği için bu ayar güvenli. Gerçek bir kurulumda tetikleyiciler yönetici hesabıyla oluşturulabilir.
+- (T-09'da görüldü) Bağlantılar READ COMMITTED yalıtımıyla açılıyor. MySQL'in varsayılanı REPEATABLE READ'de bir işlem ilk okumadaki anlık görüntüyü görmeye devam ediyor; kilitli okuma ile düz okuma farklı sonuç verebiliyordu. Defterin doğruluğu zaten satır kilitlerine (önce lot, sonra bakiye) dayandığı için bu düzey yeterli ve daha öngörülebilir.

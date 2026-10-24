@@ -127,7 +127,7 @@ Miktar farkları (FR-109) bu iki tablodan okunur: planned_qty ↔ received_qty (
 | Tablo | Alanlar | Kısıtlar ve notlar |
 |---|---|---|
 | `ai_forecasts` | model (`A_URETIM`/`B_PARCALAMA`), model_version, target_type (`URETIM_EMRI`/`PARCALAMA`), target_id, features (JSON), prediction (JSON), created_at | Tahmin iş anında yazılır, sonradan değişmez. Model B'nin parça tahminleri ayrıca `cutting_outputs.predicted_qty`'ye kopyalanır (ekranda kolay okuma). |
-| `sync_counter` | value | Tek satır (id = 1, ilk göçte eklenir); değişiklik numarası üretir (`architecture.md` §5). |
+| `sync_counter` | value, dataset_id | Tek satır (id = 1, ilk göçte eklenir); değişiklik numarası üretir (`architecture.md` §5). `dataset_id`: şema kurulurken verilen UUID (ikinci göç `e93069315efb`); cihaz bunu değişmiş görürse yerel kopyasını baştan kurar. |
 
 Veritabanı düzeyindeki ek korumalar (ilk göçte): `stock_movements` için UPDATE/DELETE engelleyen iki tetikleyici; FR-207'yi kayıt düzeyinde de zorlayan `purchase_lines` kısıtı (fatura ≠ miktar × fiyat ise açıklama zorunlu); eksi bakiye, sıfır miktarlı hareket ve kendine bağlanan lotu engelleyen denetim kısıtları. Kısıt adları sabit bir adlandırma kuralıyla üretilir (`ck_<tablo>_<ad>`).
 
@@ -185,7 +185,7 @@ Uygulanan tablolar (T-13; `android/.../data/local/Entities.kt`). Cihazda değiş
 | `customer` | id, code, name, contactPerson, phone | Sunucudan |
 | `lot` | id, lotNo, productId, expiryDate, status | Sunucudan; `BLOKE` lot ekranda kırmızı "satılamaz" işaretlenir |
 | `stock` | lotId, qtyMilli | Sunucudaki araç deposu bakiyesi |
-| `sync_meta` | lastChangeSeq, lastPullAtMillis | Tek satır |
+| `sync_meta` | lastChangeSeq, lastPullAtMillis, datasetId | Tek satır. `datasetId` Room sürüm 2'de eklendi (göç 1 → 2, `ALTER TABLE … ADD COLUMN`); sürüm 1'den gelen cihazda boştur ve ilk çekişte yerel kopya baştan kurulur. |
 
 Satış akışıyla (T-14/T-15) eklenecekler:
 

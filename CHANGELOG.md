@@ -54,3 +54,11 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - `android/`: Gradle 9.8.2 (sağlama özetli wrapper), AGP 9.4.1, Kotlin 2.4.21, Compose, Room, Retrofit; giriş ve ana ekran; Room tabloları; para kuruş, miktar binde bir birim; 8 birim testi.
 - Android 17 yerel ağ izni (`ACCESS_LOCAL_NETWORK`): yalnız sunucu yerel ağdaysa girişte istenir.
 - Emülatörde uçtan uca denendi: giriş, ilk çekme (15 kayıt), araç stoku, bloke lotun cihaza inmesi.
+
+### 24 Ekim 2026 (sekizinci tur) — Görev 1 dış üretim emri (T-09)
+- Yerel git kaydı başlatıldı; uzak depo yok, GitHub'a gönderim proje bitince ve ön izlemeyle.
+- `app/services/production.py`: dış üretim emri — oluşturma, girdilerin dış üretici deposuna sevki, kabul (tüketim, iade, hizmet bedeli, mamul lotu, lot bağları), iptal; maliyet, EKP/VKP/kâr/marj ve verim özeti.
+- Yeni uçlar: ürün ve cari kartları, depolar, alış, lot listesi/ayrıntısı/hareketleri, transfer, üretim emirleri (`docs/api.md`).
+- Hata düzeltmesi: API işlemi yanıt gönderildikten sonra kaydediyordu; hemen ardından gelen istek veriyi göremiyordu. Kayıt artık yanıttan önce; bağlantılar READ COMMITTED.
+- Hata düzeltmesi: sunucu veritabanı sıfırlanınca telefon eski kayıtları tutuyordu. Çekme yanıtına veri kümesi kimliği eklendi (göç `e93069315efb`); telefon kimlik değişince yerel kopyasını baştan kurar (Room sürüm 2).
+- 111 sunucu testi, 9 Android birim testi geçiyor; senaryo çalışan sistemde ve telefonda denendi (`reports/test_results.md`).

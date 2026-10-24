@@ -206,6 +206,8 @@ sequenceDiagram
 
 **Değişiklik numarası nasıl üretilir:** Tek satırlı `sync_counter` tablosu, değişiklik yapan her işlemde `UPDATE … SET value = value + 1` ile artırılır. Bu satır kilidi işlem bitene kadar tutulduğu için numaralar **işlenme sırasıyla** dağıtılır. Böylece "küçük numaralı değişiklik daha geç kaydedildi, cihaz onu atladı" sorunu yaşanmaz. Senkronize edilen tablolardaki (`products`, `partners`, `lots`, `stock_balances`) satır her değiştiğinde `change_seq` sütununa bu numara yazılır. Bu iş bir SQLAlchemy olay kancasıyla tek yerde yapılır (DRY). Demo ölçeğinde bu sıralamanın performans maliyeti önemsizdir.
 
+**Sunucu sıfırlanırsa:** Değişiklik numarası yalnız ileri gittiği sürece artımlı çekme doğrudur. Veritabanı sıfırdan kurulursa ya da eski bir yedekten dönerse cihazın elindeki numara anlamını yitirir ve sunucuda artık olmayan kayıtlar cihazda kalır (T-09 denemesinde görüldü). Bu yüzden `sync_counter` satırı şema kurulurken bir veri kümesi kimliği (UUID) alır ve her çekme yanıtında gönderilir. Cihaz kimliği değişmiş görürse ya da `next_since` kendi numarasından küçükse tam kopyayı çeker ve yerel kopyayı tek SQLite işleminde onunla değiştirir; çekme başarısız olursa eski kopya durur.
+
 **Cihazdaki kullanılabilir stok:** Sunucunun gönderdiği araç deposu bakiyesi, cihazdaki henüz gönderilmemiş satışları içermez. Bu yüzden cihazda gösterilen kullanılabilir miktar = sunucu bakiyesi − bekleyen satış miktarları. Aksi hâlde çekişten sonra çevrimdışı satılmış mal yeniden satılabilir görünürdü.
 
 **Reddedilen satış:** Araç deposu modeli eksi stoku önler. Yine de sunucuda yapılan bir düzeltme yüzünden yetersiz stok çıkarsa satış `REJECTED` döner, cihazda "HATA" olarak kalır ve yöneticinin çözmesi için görünür olur; sessizce kaybolmaz.
@@ -229,6 +231,7 @@ sequenceDiagram
 
 - İş kuralı ihlalleri `DomainError` alt sınıflarıyla fırlatılır. Her birinin sabit bir **kodu** ve Türkçe mesajı vardır. Tek bir hata işleyici bunları HTTP yanıtına çevirir (kod listesi: `api.md` §3).
 - Servisler işlemi `with session.begin():` içinde yürütür. Herhangi bir hata **bütün işlemi geri alır**; yarım kayıt kalmaz (NFR-003, AT-10).
+- API'de istek başına tek işlem vardır ve işlem **yanıt gönderilmeden önce** kaydedilir (`Depends(get_db, scope="function")`). Böylece istemci "başarılı" yanıtını aldığında veri herkese görünürdür; hemen ardından gelen istek (ör. yeni oturum belirteciyle) onu bulur. Bağlantılar READ COMMITTED yalıtımıyla açılır: her sorgu son kaydedilmiş veriyi görür; tutarlılık satır kilitleriyle sağlanır (ADR-008 kilit sırası).
 - Beklenmeyen hatalar 500 döner. Yanıtta iç ayrıntı gösterilmez; günlüğe yığın izi ve istek kimliği yazılır.
 - Web, hata kodunu form alanına veya bildirime çevirir. Android, satış ekranında anlaşılır Türkçe mesaj gösterir; senkron hatası olan satış listede kırmızı görünür.
 

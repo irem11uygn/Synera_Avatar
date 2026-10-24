@@ -6,7 +6,7 @@
 | Tarih | 24 Ekim 2026 |
 | Karşıladığı teslimat | CR-008 "API açıklaması" |
 | Dayanak | `architecture.md`, `data_model.md` |
-| Uygulanan uçlar (24.10.2026) | `GET /health`, `POST /auth/login`, `GET /auth/me`, `GET /sync/pull` ve §3'teki hata biçimi. Diğerleri sırayla eklenecek. |
+| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET /sync/pull`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
 
 ## 1. Genel kurallar
 
@@ -274,6 +274,7 @@ Durumlar: `ACCEPTED`, `ACCEPTED_WITH_WARNING` (ör. çevrimdışıyken geri ça�
 
 ```json
 {
+  "dataset_id": "16d30143-cfa1-11f1-a6f8-8e27a966419b",
   "next_since": 1852,
   "products":  [{"id": 5, "code": "NARIN-SUCUK", "name": "Narin Sucuk 1 kg", "base_unit": "ADET",
                  "unit_weight_kg": "1.000", "sale_price": "24.90", "active": true}],
@@ -285,3 +286,5 @@ Durumlar: `ACCEPTED`, `ACCEPTED_WITH_WARNING` (ör. çevrimdışıyken geri ça�
 ```
 
 Yalnız `SATIS` rolü ve araç deposu atanmış kullanıcı çekebilir (aksi hâlde `FORBIDDEN`). `since=0` ilk çekiştir. Lotlar, araç deposunda bakiyesi olanlarla sınırlıdır; lotun kendisi (ör. bloke edildi) ya da bakiyesi değişince yeniden gelir.
+
+`dataset_id` veritabanının kimliğidir; şema sıfırdan kurulunca değişir. Cihaz kayıtlı kimlikten farklı bir kimlik görürse ya da `next_since` gönderdiği `since` değerinden küçükse (sunucu sıfırlandı veya eski bir yedekten döndü) yerel kopyasını `since=0` ile baştan kurar; aksi hâlde sunucuda artık olmayan kayıtlar cihazda kalırdı.

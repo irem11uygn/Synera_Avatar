@@ -114,3 +114,34 @@ Yolda bulunan ve düzeltilen hatalar:
 5. AGP proje yolundaki ASCII dışı karakter ("Yeni klasör") yüzünden derlemeyi durduruyordu → `android.overridePathCheck=true` (ASCII yolda etkisiz).
 
 Test otomasyonu notları (uygulama hatası değil): emülatörde adb ile yazarken Gboard'un kalem eğitimi açıldı ve yanlış koordinatlara dokunuldu; arayüz ağacından konum bulan küçük bir yardımcıyla çözüldü. İzin penceresi, üstünde başka bir pencere varken dokunmaları yok saydığı için "İzin ver" klavyeyle seçildi.
+
+## 24 Ekim 2026 — T-09 Görev 1 dış üretim emri (+ ana veri, alış, lot, transfer uçları)
+
+| Kontrol | Komut | Sonuç |
+|---|---|---|
+| Sunucu testleri | `docker compose run --rm --no-deps api pytest -q` | **111 geçti** (22 yeni: dış üretim 12, ana veri/alış/lot/transfer 9, senkron veri kümesi kimliği 1) |
+| Python kod denetimi | `… ruff check . && ruff format --check .` | Sorun yok; 71 dosya biçimli |
+| Şema göçü | API açılışında `alembic upgrade head` | Dolu geliştirme veritabanında `df3690a4b5d8 → e93069315efb` uygulandı; var olan sayaç satırına UUID verildi |
+| Android birim testleri | `./gradlew testDebugUnitTest` | **9 geçti**, 0 kaldı (UnitsTest 5, PullMappingTest 2, LocalNetworkTest 2) |
+| Android derleme | `./gradlew assembleDebug` | Başarılı (Room veritabanı sürüm 2, göç 1 → 2) |
+| Canlı senaryo | Çalışan sistemde gerçek HTTP istekleriyle (deneme betiği, depoda değil) | Aşağıda |
+
+Canlı senaryo (`docker compose up` ile çalışan sistem, yönetici hesabı):
+
+1. Emir: `POST /production-orders` → HTTP 201, **URT-2026-045** (TASLAK); girdiler ET-2026-001 100 kg, BAH-2026-014 2 kg, BAG-2026-007 5 kg.
+2. Sevk: HTTP 200 → SEVK_EDILDI; girdiler ana depodan dış üretici deposuna transfer edildi.
+3. Kabul: HTTP 200 → TAMAMLANDI, mamul lotu **SUC-2026-045**. Maliyet: hammadde 1.076,00 + hizmet 467,50 = **1.543,50 €**; EKP 18,158824 → **18,16 €**; VKP 24,90 € ile brüt kâr **6,74 €**, marj **%27,07**; verim et bazlı %85,00, toplam girdi %79,44.
+4. Lot SUC-2026-045: 85 adet, 1.543,50 €, SKT 23.12.2026; kaynakları ET-2026-001 100, BAH-2026-014 2, BAG-2026-007 5.
+5. Araca yükleme: `POST /transfers` → HTTP 201, TRF-2026-0002 (85 adet).
+6. Bütünlük denetimi: 8/8 değişmez tutarlı.
+7. Telefon (emülatör, Android 17): "Verileri güncelle" → araç stokunda "Narin Sucuk 1 kg · Lot SUC-2026-045 · SKT 23.12.2026 · 85 adet".
+
+Geliştirme veritabanında bu senaryonun sonuçları duruyor (temiz örnek kayıtlar için `docker compose down -v` + `up`).
+
+Yolda bulunan ve düzeltilen hatalar:
+
+1. **Kayıt yanıttan sonra yapılıyordu.** Senaryo betiğinde girişten hemen sonraki istek ara ara 401 aldı; sevkten hemen sonraki kabul, sevk edilen miktarı 0 gördü. Neden: FastAPI'de `yield` bağımlılığının kapanış kodu (commit) varsayılan olarak yanıt gönderildikten sonra çalışıyor; istemci "başarılı" yanıtını veri kaydedilmeden alıyordu. Düzeltme: `Depends(get_db, scope="function")` ile kayıt yanıt gönderilmeden yapılıyor; bağlantılar READ COMMITTED yalıtımıyla açılıyor (`architecture.md` §7, ADR-008 notu). Doğrulama: 30 kez "giriş + hemen istek" denemesi 30/30 başarılı; senaryo baştan sona geçti.
+2. **Sunucu sıfırlanınca telefon eski kayıtları tutuyordu.** Geliştirme veritabanı sıfırdan kurulduktan sonra telefon eski değişiklik numarasıyla (since=27) çekmeye devam etti; sunucuda artık olmayan "ET-2026-001 · 10 kg · BLOKE" satırı araç stokunda kaldı. Düzeltme: `sync_counter.dataset_id` (şema kurulurken UUID, göç `e93069315efb`) her çekme yanıtında gönderiliyor. Telefon kimliği değişmiş görürse ya da sunucunun numarası kendininkinden küçükse tam kopyayı çekip yerel kopyayı tek işlemde değiştiriyor (Room sürüm 2, göç 1 → 2). Doğrulama (emülatörde):
+   - Yeni APK eski veritabanının üzerine kuruldu; göç 1 → 2 hatasız çalıştı.
+   - Sunucu `docker compose down -v` + `up` ile sıfırlandı (kimlik `9fdc1300…` → `16d30143…`, sayaç 41 → 23). Telefon: eski oturum 401 → giriş ekranı → yeniden giriş. Sunucu kayıtlarında sırasıyla `GET /sync/pull?since=41` ve `GET /sync/pull?since=0`; ekranda "0 lot araçta", eski SUC-2026-045 satırı silindi.
+   - Senaryo yeniden çalıştırıldı → "Verileri güncelle" → `GET /sync/pull?since=23` (artımlı, tam çekme yok), "2 kayıt güncellendi", SUC-2026-045 · 85 adet göründü.
