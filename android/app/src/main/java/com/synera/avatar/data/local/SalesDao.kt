@@ -61,6 +61,19 @@ abstract class SalesDao {
         clearSales()
     }
 
+    @Query("DELETE FROM sale_line WHERE saleUuid IN (SELECT clientUuid FROM sale WHERE syncState <> 'BEKLIYOR')")
+    protected abstract suspend fun clearFinishedLines()
+
+    @Query("DELETE FROM sale WHERE syncState <> 'BEKLIYOR'")
+    protected abstract suspend fun clearFinishedSales()
+
+    /** Sunucu sıfırlanınca (veri kümesi değişti) eski sunucuya ait satış geçmişi silinir; bekleyenler kalır. */
+    @Transaction
+    open suspend fun clearFinished() {
+        clearFinishedLines()
+        clearFinishedSales()
+    }
+
     @Query("SELECT * FROM sale WHERE syncState = 'BEKLIYOR' ORDER BY soldAtMillis")
     abstract suspend fun pendingSales(): List<SaleEntity>
 

@@ -140,6 +140,7 @@ class AvatarRepository(
         if (meta.isStaleFor(changes)) {
             changes = fetchChanges(session, 0)
             dao.replaceAll(changes, now())
+            sales.clearFinished() // eski sunucuya gönderilmiş satışlar "son satışlar"da kalmasın
         } else {
             dao.applyPull(changes, now())
         }

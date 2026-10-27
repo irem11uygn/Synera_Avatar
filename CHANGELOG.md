@@ -93,3 +93,16 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Testler yeniden çalıştırıldı: 134 sunucu, 16 web, 17 Android — hepsi geçti.
 - Düzeltme: `docs/openapi.json` ve web tiplerinde bozuk Türkçe karakterler (yanlış kodlamayla üretilmişti) doğru UTF-8 ile yeniden üretildi; yenileme betiği Node.js ile yazıldı.
 - Ekip paketi temiz kopyada sıfırdan kurulup denendi: 134 sunucu, 16 web, 17 Android testi, APK (`reports/test_results.md`).
+
+### 27 Ekim 2026 (ikinci tur) — Görev 3, raporlar, yapay zekâ, 3D arayüz
+- İş bölümü teknik kulvarlara göre yeniden yazıldı (`docs/is_bolumu.md`): Kişi 1 sunucu, web, yapay zekâ; Kişi 2 Android, eşitleme ve teslim. Depo adı önerisi: `synera-avatar`.
+- Görev 3 sunucu: ileri/geri izleme (`/trace`), geri çağırma (başlat, liste, CSV iletişim listesi, kapat: imha/serbest), uyarılar, ikinci kademe teslimat (kesin / kısmen / bilinmiyor), müşteri iadesi, fire/imha, ters kayıt.
+- Demo profili (varsayılan): kurulumdan sonra ET-2026-001 → URT-2026-045 → SUC-2026-045 → Market A 30 / B 25 / C 30 ve örnek parçalama hazır (FR-309).
+- Göç: iade ve fire kaydının hareket bağı, kayıt ve hareket aynı işlemde yazılabilsin diye boş geçilebilir oldu.
+- Raporlar (`/reports`): alış, üretim, parçalama, lot hareketleri, satış, geri çağırma, bütünlük; süzgeç ve CSV.
+- Yapay zekâ: sabit tohumlu sentetik veri, Model A (et bazlı verim → paket ve EKP) ve Model B (parça payları); kronolojik %80/%20, zaman sıralı çapraz doğrulama, referans yöntemle karşılaştırma. Tahmin iş anında kaydediliyor; model yoksa iş akışı durmuyor. Rapor: `reports/ai_degerlendirme.md`.
+- Web: izleme, geri çağırma, uyarı, satış/iade, rapor ve yapay zekâ ekranları; lotta fire ve ters kayıt; üretim emrinde tahmin kartı; derinlikli (3D) tasarım.
+- Android: marka renkleri, derinlikli kartlar (dokununca eğilme), üst bant ve gösterge kutuları, geri çağrılan lot için açıklamalı kırmızı kart.
+- Belgeler: `docs/senkronizasyon.md`, `reports/gorev2_tutarsizliklar.md`, README'de beş dakikalık senaryo.
+- Testler: 166 sunucu, 4 yapay zekâ, 16 web, 17 Android — hepsi geçti (`reports/test_results.md`).
+

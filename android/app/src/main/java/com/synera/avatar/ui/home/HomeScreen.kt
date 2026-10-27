@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -25,6 +24,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.synera.avatar.data.local.SaleSummaryRow
 import com.synera.avatar.data.local.SyncState
 import com.synera.avatar.data.local.VanStockRow
+import com.synera.avatar.ui.theme.BrandBanner
+import com.synera.avatar.ui.theme.DepthCard
+import com.synera.avatar.ui.theme.StatTile
+import com.synera.avatar.ui.theme.Tone
 import com.synera.avatar.util.Money
 import com.synera.avatar.util.Quantity
 import java.time.Instant
@@ -56,17 +59,33 @@ fun HomeScreen(viewModel: HomeViewModel, onNewSale: () -> Unit, onSignedOut: () 
     ) {
         item {
             Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(viewModel.session?.fullName.orEmpty(), style = MaterialTheme.typography.titleMedium)
-                    Text("Araç deposu: ${viewModel.session?.warehouseCode.orEmpty()}", style = MaterialTheme.typography.bodyMedium)
-                }
+                BrandBanner(
+                    title = viewModel.session?.fullName.orEmpty(),
+                    subtitle = "AVATAR · Synera — araç deposu ${viewModel.session?.warehouseCode.orEmpty()}",
+                    modifier = Modifier.weight(1f),
+                )
                 TextButton(onClick = viewModel::logout) { Text("Çıkış") }
             }
         }
 
         item {
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            val blocked = vanStock.count { it.status == "BLOKE" }
+            Row(Modifier.padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StatTile("Araçta lot", vanStock.size.toString(), Modifier.weight(1f))
+                StatTile(
+                    "Bloke lot",
+                    blocked.toString(),
+                    Modifier.weight(1f),
+                    tone = if (blocked > 0) Tone.DANGER else Tone.SUCCESS,
+                    hint = if (blocked > 0) "Geri çağrıldı" else "Yok",
+                )
+                StatTile("Bekleyen satış", pending.toString(), Modifier.weight(1f), tone = if (pending > 0) Tone.WARNING else Tone.SUCCESS)
+            }
+        }
+
+        item {
+            DepthCard {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Eşitleme", style = MaterialTheme.typography.titleSmall)
                     val last = syncMeta?.lastPullAtMillis
                     Text(if (last == null) "Henüz eşitlenmedi." else "Son eşitleme: " + formatMillis(last))
@@ -108,8 +127,9 @@ fun HomeScreen(viewModel: HomeViewModel, onNewSale: () -> Unit, onSignedOut: () 
 
 @Composable
 private fun VanStockItem(row: VanStockRow) {
-    Card(Modifier.fillMaxWidth()) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    val blocked = row.status == "BLOKE"
+    DepthCard(tone = if (blocked) Tone.DANGER else Tone.NORMAL) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(row.productName, style = MaterialTheme.typography.titleSmall)
                 val expiry = row.expiryDate?.let { " · SKT " + date.format(LocalDate.parse(it)) }.orEmpty()
@@ -120,18 +140,31 @@ private fun VanStockItem(row: VanStockRow) {
                 if (row.availableMilli != row.qtyMilli) {
                     Text("araçta ${Quantity.format(row.qtyMilli, row.baseUnit)}, gönderilmemiş satış var", style = MaterialTheme.typography.labelSmall)
                 }
-                if (row.status == "BLOKE") {
+                if (blocked) {
                     Text("BLOKE — satılamaz", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
             }
+        }
+        if (blocked) {
+            Text(
+                "Bu lot geri çağrıldı. Satılamaz; merkez talimatına göre ana depoya iade edin.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 6.dp),
+            )
         }
     }
 }
 
 @Composable
 private fun SaleItem(sale: SaleSummaryRow) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    val tone = when (sale.syncState) {
+        SyncState.PENDING -> Tone.WARNING
+        SyncState.SENT -> Tone.NORMAL
+        else -> Tone.DANGER
+    }
+    DepthCard(tone = tone) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(sale.customerName ?: "Müşteri", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 Text(Money.format(sale.totalCents), style = MaterialTheme.typography.titleSmall)

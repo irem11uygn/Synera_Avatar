@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -33,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AvatarTheme {
-                Surface(Modifier.fillMaxSize().safeDrawingPadding()) {
+                Surface(Modifier.fillMaxSize().safeDrawingPadding(), color = MaterialTheme.colorScheme.background) {
                     var token by rememberSaveable { mutableStateOf(repository.currentSession()?.token) }
                     var selling by rememberSaveable { mutableStateOf(false) }
                     var saleCount by rememberSaveable { mutableIntStateOf(0) }

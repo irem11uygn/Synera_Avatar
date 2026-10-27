@@ -326,3 +326,66 @@ Yolda bulunan ve düzeltilen hatalar:
 3. Bu bilgisayarda 8000 portu başka bir projede kullanılıyor. Port `.env` ile değiştirilebiliyor (`API_PORT`, `WEB_PORT`); web geliştirme sunucusu da artık `API_PORT`'u okuyor.
 
 Not: Bu deneme T-26'nın yerini tutmaz. Gerçek temiz kurulum testi, ekip arkadaşının kendi bilgisayarında yapılacak (`is_bolumu.md`).
+
+## 27 Ekim 2026 — Görev 3, raporlar, yapay zekâ, 3D arayüz
+
+### Otomatik testler
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` (+ `ruff check`, `ruff format --check`) | **166 geçti** (önceki 134 + 16 Görev 3 + 10 rapor + 6 yapay zekâ) |
+| Yapay zekâ paketi | `docker compose run --rm --no-deps api sh -c "cd /ml && pytest -q"` | **4 geçti** |
+| Web | `tsc -b`, `oxlint`, `vitest run`, `npm run build` | Tip ve lint temiz; **16 geçti**; üretim derlemesi başarılı |
+| Android | `./gradlew assembleDebug testDebugUnitTest` | Derleme başarılı, **17 geçti**, APK üretildi |
+
+Yeni sunucu testlerinin karşıladığı kabul testleri:
+
+| Kabul testi | Test |
+|---|---|
+| AT-06 ileri izleme: ET-2026-001 → SUC-2026-045 → Market A 30 / B 25 / C 30, stok 0 | `test_at06_forward_trace_finds_markets` |
+| AT-07 geri izleme: üç hammadde lotu, tedarikçiler, URT-2026-045 | `test_at07_backward_trace_finds_raw_materials_and_suppliers` |
+| AT-08 geri çağırma: kaynak + türevler bloke, liste, CSV | `test_at08_recall_blocks_source_and_descendants_and_lists_markets`, `test_at08_contact_list_downloads_as_csv` |
+| AT-09 ikinci kademe: kayıtlı ↔ bilinmiyor ayrımı | `test_at09_onward_delivery_is_certain_only_when_recorded` |
+| AT-10 iade, imha, bütünlük | `test_at10_blocked_lot_is_returned_destroyed_and_books_stay_consistent` |
+| AT-12 geri çağırmadan sonra çevrimdışı satış listede ve uyarıda | `test_at12_offline_sale_after_recall_is_flagged_in_the_list` |
+| FR-309 demo senaryosu tutarlı (bütünlük 8/8) | `test_demo_scenario_is_consistent` |
+| FR-601…607 raporlar demo verisiyle dolu, toplamlar doğru, CSV | `tests/test_reports.py` |
+| FR-501…504 tahmin kaydı, sapma, model yokken iş akışı | `tests/test_ai.py` |
+
+### Yapay zekâ ölçümleri (ayrılmış test verisi, `ml/models/metadata.json`)
+
+| | Referans | Model |
+|---|---|---|
+| Model A paket MAE | 1,81 | 1,23 |
+| Model A EKP MAE | 0,203 € | 0,127 € |
+| Model B parça MAE | 0,212 kg | 0,135 kg |
+
+Model B'de omuz payında model referanstan biraz kötü (0,150 → 0,158 kg); raporda yazılı. Ayrıntı: `reports/ai_degerlendirme.md`.
+
+### Temiz kopyada demo profili
+
+Ayrı Compose projesi (`-p avatar-temiz`), API 18100. Geliştirme veritabanına dokunulmadı.
+
+| Kontrol | Sonuç |
+|---|---|
+| Sıfırdan kurulum, varsayılan `SEED_PROFILE=demo` | Günlükte "Demo senaryosu yüklendi: URT-2026-045 → SUC-2026-045, PRC-2026-012" |
+| `GET /trace/forward/ET-2026-001` | ET-2026-001 → SUC-2026-045; Market A 30 (bilinmiyor), B 25 (kayıtlı), C 30 (bilinmiyor); stok boş |
+| Sistemdeki gerçek tahmin (URT-2026-045) | Model A 84 paket, gerçek 85 (sapma +1); referans 82 (sapma +3). EKP tahmini 18,31 €, gerçek 18,16 € |
+| Parçalama PRC-2026-012 | Dağıtılan 351,00 € = toplam; Model B tahmini her parçada gerçeğe 0,32 kg'dan yakın |
+
+### Tarayıcıda deneme (web, API 18100)
+
+- Ana sayfa: 3D gösterge kutuları (son EKP 18,16 €, açık geri çağırma, uyarı, bütünlük 8/8).
+- Ana sayfadan "ET-2026-001 nereye gitti?": 3D lot zinciri, alıcılar, iletişim. "Geri çağırma başlat" → GC-2026-001; lotlar kırmızı (bloke), liste 3 market / 85 adet.
+- Üretim raporu: EKP 18,16 €, YZ 84 / 18,31 €, sapmalar; üretim emri ekranında Model A kartı.
+- Yapay zekâ ekranı: referans–model çubukları, örnek tahminler, gerçek kayıtlar, sınırlılıklar.
+- Telefon genişliği (375 px): ana sayfa, izleme, geri çağırma, raporlar, rapor, yapay zekâ, satışlar, uyarılar — hiçbirinde yatay taşma yok. Önce izleme ekranı taşıyordu (516 px: uzun yön etiketleri ve üst çubuk başlığı); kısaltılarak düzeltildi.
+- Düzeltilen: logodaki harf üst çubuğun satır yüksekliği yüzünden kutudan taşıyordu; antd `List` (kullanımdan kalkıyor) ve `rowKey` sıra numarası uyarıları giderildi.
+
+### Emülatörde deneme (Android, Medium_Phone)
+
+- Yeni görünüm: üst bant, gösterge kutuları (araçta lot, bloke lot, bekleyen satış), derinlikli kartlar.
+- Uygulama, 24 Ekim'den kalan oturumla 8000 portundaki **başka bir projeye** bağlanmaya çalışıyordu (HTTP 400). Çıkış yapılıp sunucu adresi `http://10.0.2.2:18100` girildi; veri kümesi değiştiği için yerel kopya baştan çekildi (19 kayıt).
+- Web/API'den KUZU-2026-012 geri çağrıldı (GC-2026-002, 6 lot) → telefonda "Verileri güncelle" → but ve sırt lotları kırmızı "BLOKE — satılamaz", "Bloke lot 2".
+- Bulunan ve düzeltilen: sunucu sıfırlanınca telefon eski sunucuya gönderilmiş satışları "Son satışlar"da göstermeye devam ediyordu. Artık veri kümesi değişince gönderilmiş/reddedilmiş satış geçmişi siliniyor, bekleyen satışlar korunuyor. Room sorguları derlemede denetlendi; bu durum emülatörde ayrıca yeniden oluşturulmadı.
+

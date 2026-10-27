@@ -6,7 +6,8 @@
 | Tarih | 24 Ekim 2026 |
 | Karşıladığı teslimat | CR-008 "API açıklaması" |
 | Dayanak | `architecture.md`, `data_model.md` |
-| Uygulanan uçlar (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET, POST /cutting-recipes`, `GET /cutting-recipes/{id}`; `POST, GET /cuttings`, `GET, PUT /cuttings/{id}`, `POST /cuttings/{id}/preview`, `POST /cuttings/{id}/approve`; `GET /sync/pull`, `POST /sync/push`; `GET /sales`, `GET /sales/{id}`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
+| Uygulanan uçlar (27.10.2026) | Aşağıdaki tablolardaki bütün uçlar uygulandı. Yalnız `POST /sales` (web kanalından satış) yok: satışlar Android'den `/sync/push` ile gelir. Uç listesinin asıl kaynağı `docs/openapi.json` ve çalışan sistemde `/docs`. |
+| Önceki not (24.10.2026) | `GET /health`; `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`; `GET /stock`; `GET, POST /products`, `PUT /products/{id}`; `GET, POST /partners`, `PUT /partners/{id}`; `GET /warehouses`; `POST, GET /purchases`, `GET /purchases/{id}`; `GET /lots`, `GET /lots/{lot_no}`, `GET /lots/{lot_no}/movements`; `POST, GET /transfers`; `POST, GET /production-orders`, `GET /production-orders/{id}`, `POST …/{id}/ship`, `…/complete`, `…/cancel`; `GET, POST /cutting-recipes`, `GET /cutting-recipes/{id}`; `POST, GET /cuttings`, `GET, PUT /cuttings/{id}`, `POST /cuttings/{id}/preview`, `POST /cuttings/{id}/approve`; `GET /sync/pull`, `POST /sync/push`; `GET /sales`, `GET /sales/{id}`; §3'teki hata biçimi. Farklar: satış rolü ürünleri web uçlarından değil çekme senkronundan alır; üretim emrine Model A tahmini T-21'de eklenecek. Diğer uçlar sırayla eklenecek. |
 
 ## 1. Genel kurallar
 
@@ -220,25 +221,27 @@ Yanıt (özet):
 }
 ```
 
-### 4.3 İleri izleme — `GET /trace/forward/ET-2026-001`
+### 4.3 İleri izleme — `GET /trace/forward/ET-2026-001` (kısaltılmış; tam alanlar `docs/openapi.json` → `TraceOut`)
 
 ```json
 {
   "source": {"lot_no": "ET-2026-001", "product": "Et", "supplier": "Örnek Et Tedarik", "status": "BLOKE"},
   "lots": [
     {"lot_no": "ET-2026-001",  "depth": 0, "remaining_qty": "0"},
-    {"lot_no": "SUC-2026-045", "depth": 1, "via": "URT-2026-045", "link_qty": "100", "remaining_qty": "0"}
+    {"lot_no": "SUC-2026-045", "depth": 1, "remaining_qty": "0"}
   ],
+  "links": [{"parent_lot_no": "ET-2026-001", "child_lot_no": "SUC-2026-045", "qty": "100", "process": "URETIM", "doc_no": "URT-2026-045"}],
   "stock": [],
   "recipients": [
-    {"customer": "Market A", "lot_no": "SUC-2026-045", "qty": "30", "sales": ["SAT-2026-0101"],
-     "contact": {"person": "…", "phone": "…", "email": "…"}, "onward": {"status": "BILINMIYOR", "items": []}},
-    {"customer": "Market B", "lot_no": "SUC-2026-045", "qty": "25", "sales": ["SAT-2026-0102"],
+    {"customer": "Market A", "lot_no": "SUC-2026-045", "qty": "30",
+     "sales": [{"sale_no": "SAT-2026-0101", "sale_line_id": 1, "channel": "ANDROID", "qty": "30", "returned_qty": "0"}],
+     "contact": {"person": "…", "phone": "…", "email": "…"}, "onward_status": "BILINMIYOR", "onward_items": []},
+    {"customer": "Market B", "lot_no": "SUC-2026-045", "qty": "25", "sales": [{"sale_no": "SAT-2026-0102", "qty": "25"}],
      "contact": {"person": "…", "phone": "…", "email": "…"},
-     "onward": {"status": "KAYITLI", "items": [{"recipient": "Market B Şube 1", "qty": "15"},
-                                                {"recipient": "Market B Şube 2", "qty": "10"}]}},
-    {"customer": "Market C", "lot_no": "SUC-2026-045", "qty": "30", "sales": ["SAT-2026-0103"],
-     "contact": {"person": "…", "phone": "…", "email": "…"}, "onward": {"status": "BILINMIYOR", "items": []}}
+     "onward_status": "KAYITLI", "onward_items": [{"recipient": "Market B Şube 1", "qty": "15"},
+                                                  {"recipient": "Market B Şube 2", "qty": "10"}]},
+    {"customer": "Market C", "lot_no": "SUC-2026-045", "qty": "30", "sales": [{"sale_no": "SAT-2026-0103", "qty": "30"}],
+     "contact": {"person": "…", "phone": "…", "email": "…"}, "onward_status": "BILINMIYOR", "onward_items": []}
   ]
 }
 ```

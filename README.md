@@ -2,7 +2,7 @@
 
 Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok hareketlerini, gerçek maliyeti ve lot izlenebilirliğini yöneten sistem: merkezi sunucu ve MySQL, web yönetim/raporlama arayüzü, Kotlin Android satış uygulaması (yerelde SQLite) ve iki yapay zekâ modeli (üretim verimi/EKP tahmini, parçalama verimi tahmini).
 
-> **Durum (27 Ekim 2026):** Görev 1 (dış üretim, EKP) ve Görev 2 (parçalama, maliyet dağıtımı) sunucuda ve web'de uçtan uca çalışıyor; Kotlin uygulamasıyla lot bazlı satış çevrimdışı da yapılabiliyor ve bağlantı gelince sunucuya gönderiliyor. Görev 3 (izleme, geri çağırma), iki YZ modeli ve raporlar yapım aşamasında. İki kişilik iş bölümü: [docs/is_bolumu.md](docs/is_bolumu.md).
+> **Durum (27 Ekim 2026, akşam):** Üç görev ve iki yapay zekâ modeli uçtan uca çalışıyor. Görev 1 (dış üretim, EKP 18,16 €), Görev 2 (parçalama, kuruşu kuruşuna dağıtım, Kotlin ile lot bazlı satış) ve Görev 3 (ileri/geri izleme, geri çağırma, market listesi ve CSV, ikinci kademe) sunucu, web ve Android'de hazır. Model A ve B referans yöntemi geçti (`reports/ai_degerlendirme.md`). Yedi rapor, derinlikli (3D) web ve Android arayüzü tamam. Kalan: kabul testleri, temiz bilgisayarda kurulum, video, teslim ([docs/is_bolumu.md](docs/is_bolumu.md)).
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
@@ -30,7 +30,10 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 | 11 | Görev 1 API ve web (T-09, T-10) | Tamamlandı — URT-2026-045 senaryosu arayüzden yürüyor |
 | 12 | Görev 2 API ve web (T-11, T-12) | Tamamlandı — şartname dağıtım rakamları birebir |
 | 13 | Android satış ve gönderim (T-14, T-15) | Tamamlandı — çevrimdışı satış, tekrar güvenli gönderim |
-| 14 | Görev 3, YZ modelleri, raporlar, kabul testleri, teslim | Sürüyor — [docs/is_bolumu.md](docs/is_bolumu.md) |
+| 14 | Görev 3 API ve web (T-16, T-17), iade, fire, ters kayıt, demo profili | Tamamlandı — ET-2026-001 → Market A 30 / B 25 / C 30 kurulumdan sonra hazır |
+| 15 | Yapay zekâ (T-18…T-21) ve değerlendirme raporu | Tamamlandı — iki model de referans yöntemden iyi |
+| 16 | Raporlar (T-22) ve derinlikli (3D) web/Android arayüzü | Tamamlandı |
+| 17 | Kabul testleri, temiz kurulum, video, teslim (T-23, T-26…T-28) | Sürüyor — [docs/is_bolumu.md](docs/is_bolumu.md) |
 
 Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/development_plan.md).
 
@@ -46,6 +49,9 @@ Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/deve
 | `docs/api.md` | API sözleşmesi: uç noktalar, hata kodları, örnek istek/yanıtlar |
 | `docs/development_plan.md` | İş listesi, takvim, durum günlüğü |
 | `docs/is_bolumu.md` | İki kişilik iş bölümü: gereksinim kapsamı, kim neyin sahibi, takvim, birlikte çalışma |
+| `docs/senkronizasyon.md` | SQLite ↔ MySQL senkronizasyonu: veriler nasıl tutarlı kalır |
+| `reports/ai_degerlendirme.md` | Yapay zekâ değerlendirmesi: yöntem, veri, referansla karşılaştırma, hata, sınırlılıklar |
+| `reports/gorev2_tutarsizliklar.md` | Görev 2 örnek görselindeki iki tutarsızlık ve çözümümüz |
 | `docs/testing_strategy.md` | Test seviyeleri, şartname kabul testleri, gereksinim–test eşlemesi |
 | `docs/submission_checklist.md` | Teslim kontrol listesi |
 | `docs/decisions/` | Karar kayıtları (ADR) |
@@ -84,7 +90,14 @@ Parolaların varsayılan değerleri yalnız yerel kullanım içindir. Değiştir
 
 **8000 ya da 8080 portu başka bir uygulamada kullanılıyorsa** `.env` içinde `API_PORT` ve `WEB_PORT` değiştirilir (ör. 18000 ve 18080); adresler de buna göre değişir.
 
-İlk açılışta veritabanı şeması kurulur ve boş veritabanına örnek kayıtlar (`data/seed/base.json`) yüklenir: ana veriler ve şartname senaryosunun hammadde lotları (ET-2026-001 vb.). Bütün firma ve kişi adları uydurmadır.
+İlk açılışta veritabanı şeması kurulur ve boş veritabanına **demo profili** yüklenir (`SEED_PROFILE=demo`). Ana veriler ve hammadde alışları `data/seed/base.json`'dan gelir. Üstüne şartnamenin zorunlu senaryosu uygulamanın kendi servisleriyle yazılır (`backend/app/demo.py`):
+
+- URT-2026-045: ET-2026-001 + baharat + bağırsak → SUC-2026-045, 85 paket, EKP 18,16 €.
+- SUC-2026-045 araca yüklenir ve Android kanalından satılır: Market A 30, Market B 25, Market C 30 paket.
+- Market B'nin şubelerine dağıtımı kayıtlıdır (15 + 10).
+- Görev 2 için KUZU-2026-012'den örnek parçalama yapılır.
+
+Yalnız ana verileri istiyorsanız `.env` içinde `SEED_PROFILE=base` yapın. Bütün firma ve kişi adları uydurmadır.
 
 | Demo kullanıcısı | Parola | Rol |
 |---|---|---|
@@ -92,6 +105,16 @@ Parolaların varsayılan değerleri yalnız yerel kullanım içindir. Değiştir
 | `satis1` | `satis123` | Satış elemanı (Android, araç deposu ARAC-01) |
 
 Bu parolalar yalnız yerel demo içindir.
+
+### Şartname senaryosunu 5 dakikada denemek
+
+1. Web'e `yonetici` ile girin. Ana sayfadaki **"ET-2026-001 nereye gitti?"** düğmesi ileri izlemeyi açar. Zincir ve etkilenen marketler (A 30 / B 25 / C 30), iletişim bilgileri ve ikinci kademe görünür.
+2. **"Geri çağırma başlat"** → neden yazın. ET-2026-001 ve SUC-2026-045 tek işlemde bloke olur, liste hemen çıkar. **"İletişim listesi (CSV)"** ile indirin.
+3. **"SUC-2026-045 neden yapıldı?"** geri izlemeyi açar: üç hammadde lotu, tedarikçiler, URT-2026-045.
+4. **Dış üretim emirleri → URT-2026-045:** EKP dökümü (1.543,50 € / 85 = 18,16 €), kâr, marj ve yapay zekâ kartında tahmin–gerçek–sapma.
+5. **Parçalama → PRC-2026-012:** ağırlık dengesi (25 = 22 + 3 fire) ve 351,00 €'nun kuruşu kuruşuna dağıtımı.
+6. **Raporlar** (yedi rapor, CSV) ve **Yapay zekâ** ekranı (referansla karşılaştırma).
+7. Android'de `satis1` ile girip eşitleyin. Geri çağrılan lotlar kırmızı görünür ve satılamaz.
 
 Durdurmak için `docker compose down`; veritabanını da silmek için `docker compose down -v`.
 

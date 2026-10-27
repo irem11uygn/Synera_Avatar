@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -30,6 +28,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.synera.avatar.data.local.VanStockRow
+import com.synera.avatar.ui.theme.DepthCard
+import com.synera.avatar.ui.theme.Tone
 import com.synera.avatar.util.Money
 import com.synera.avatar.util.Quantity
 import java.time.LocalDate
@@ -128,12 +128,13 @@ fun SaleScreen(viewModel: SaleViewModel, onClose: () -> Unit) {
 @Composable
 private fun LotCard(row: VanStockRow, suggested: Boolean, selected: Boolean, onSelect: () -> Unit) {
     val blocked = row.status == "BLOKE"
-    val colors = if (selected) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer) else CardDefaults.cardColors()
-    Card(
-        modifier = Modifier.fillMaxWidth().selectable(selected = selected, enabled = !blocked, onClick = onSelect, role = Role.Button),
-        colors = colors,
+    DepthCard(
+        tone = if (blocked) Tone.DANGER else Tone.NORMAL,
+        selected = selected,
+        enabled = !blocked,
+        onClick = onSelect,
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(row.productName, style = MaterialTheme.typography.titleSmall)
                 val expiry = row.expiryDate?.let { " · SKT " + date.format(LocalDate.parse(it)) }.orEmpty()
@@ -144,6 +145,14 @@ private fun LotCard(row: VanStockRow, suggested: Boolean, selected: Boolean, onS
                 Text(Quantity.format(row.availableMilli, row.baseUnit), style = MaterialTheme.typography.titleSmall)
                 if (blocked) Text("BLOKE — satılamaz", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
             }
+        }
+        if (blocked) {
+            Text(
+                "Geri çağrıldı: bu lot hiçbir kanaldan satılamaz.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 6.dp),
+            )
         }
     }
 }
