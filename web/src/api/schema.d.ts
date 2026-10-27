@@ -511,6 +511,235 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Returns */
+        get: operations["list_returns_api_v1_returns_get"];
+        put?: never;
+        /**
+         * Create
+         * @description Satılan lot aynı lot numarasıyla depoya geri girer; bloke lota da iade alınır (geri toplama).
+         */
+        post: operations["create_api_v1_returns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sale-lines/{sale_line_id}/onward-deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Onward */
+        get: operations["list_onward_api_v1_sale_lines__sale_line_id__onward_deliveries_get"];
+        put?: never;
+        /**
+         * Create Onward
+         * @description Müşterinin bildirdiği ikinci kademe teslimat; izleme listesinde "kesin" olarak görünür.
+         */
+        post: operations["create_onward_api_v1_sale_lines__sale_line_id__onward_deliveries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Adjustments */
+        get: operations["list_adjustments_api_v1_adjustments_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_adjustments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/movements/{movement_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reverse One
+         * @description Hareketi silmeden düzeltir: aslının tam tersi yeni hareket(ler) yazılır (gerekçe zorunlu).
+         */
+        post: operations["reverse_one_api_v1_movements__movement_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trace/forward/{lot_no}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Forward
+         * @description Türev lotlar, bizdeki stok, alıcılar (miktar, satış belgesi, iletişim, ikinci kademe).
+         */
+        get: operations["forward_api_v1_trace_forward__lot_no__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trace/backward/{lot_no}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Backward
+         * @description Lotu oluşturan bütün lotlar, tedarikçiler ve alış belgeleri, üretim emirleri ve parçalamalar.
+         */
+        get: operations["backward_api_v1_trace_backward__lot_no__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recalls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Recalls */
+        get: operations["list_recalls_api_v1_recalls_get"];
+        put?: never;
+        /**
+         * Create
+         * @description Kaynak lot ve bütün türevleri tek işlemde bloke edilir; liste hemen döner.
+         */
+        post: operations["create_api_v1_recalls_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recalls/{recall_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Recall */
+        get: operations["get_recall_api_v1_recalls__recall_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recalls/{recall_id}/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Csv
+         * @description İletişim listesi: müşteri × lot başına bir satır, ikinci kademe alıcılar ayrı satırlarda.
+         */
+        get: operations["export_csv_api_v1_recalls__recall_id__export_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recalls/{recall_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close */
+        post: operations["close_api_v1_recalls__recall_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Alerts */
+        get: operations["list_alerts_api_v1_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/{alert_id}/ack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge */
+        post: operations["acknowledge_api_v1_alerts__alert_id__ack_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sync/pull": {
         parameters: {
             query?: never;
@@ -568,6 +797,61 @@ export interface components {
              */
             outputs: components["schemas"]["ActualIn"][];
         };
+        /** AdjustmentIn */
+        AdjustmentIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Warehouse Id */
+            warehouse_id: number;
+            /** Qty */
+            qty: number | string;
+            /** Reason */
+            reason: string;
+        };
+        /** AdjustmentOut */
+        AdjustmentOut: {
+            /** Id */
+            id: number;
+            /** Adj No */
+            adj_no: string;
+            /** Lot No */
+            lot_no: string;
+            /** Warehouse Code */
+            warehouse_code: string;
+            /** Qty */
+            qty: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * AlertKind
+         * @enum {string}
+         */
+        AlertKind: "GERI_CAGIRMA_IHLALI";
+        /** AlertOut */
+        AlertOut: {
+            /** Id */
+            id: number;
+            kind: components["schemas"]["AlertKind"];
+            /** Ref Type */
+            ref_type: string;
+            /** Ref Id */
+            ref_id: number;
+            /** Message */
+            message: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Acknowledged At */
+            acknowledged_at: string | null;
+        };
         /**
          * AllocationMethod
          * @enum {string}
@@ -592,6 +876,17 @@ export interface components {
             service_note?: string | null;
             /** Output Lot No */
             output_lot_no?: string | null;
+        };
+        /** ContactOut */
+        ContactOut: {
+            /** Person */
+            person: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Address */
+            address: string | null;
         };
         /** CostOut */
         CostOut: {
@@ -907,6 +1202,51 @@ export interface components {
          * @enum {string}
          */
         MovementType: "ALIS_GIRIS" | "TRANSFER_CIKIS" | "TRANSFER_GIRIS" | "URETIM_TUKETIM" | "URETIM_GIRIS" | "PARCALAMA_TUKETIM" | "PARCALAMA_GIRIS" | "SATIS" | "IADE_GIRIS" | "FIRE" | "TERS_KAYIT";
+        /** OnwardIn */
+        OnwardIn: {
+            /** Recipient Partner Id */
+            recipient_partner_id: number;
+            /** Qty */
+            qty: number | string;
+            /** Delivered At */
+            delivered_at?: string | null;
+            /** Source Note */
+            source_note?: string | null;
+        };
+        /** OnwardItemOut */
+        OnwardItemOut: {
+            /** Recipient */
+            recipient: string;
+            /** Qty */
+            qty: string;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Source Note */
+            source_note: string | null;
+            contact: components["schemas"]["ContactOut"];
+        };
+        /** OnwardOut */
+        OnwardOut: {
+            /** Id */
+            id: number;
+            /** Sale Line Id */
+            sale_line_id: number;
+            /** Recipient Partner Id */
+            recipient_partner_id: number;
+            /** Recipient Name */
+            recipient_name: string;
+            /** Qty */
+            qty: string;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Source Note */
+            source_note: string | null;
+        };
+        /**
+         * OnwardStatus
+         * @enum {string}
+         */
+        OnwardStatus: "KAYITLI" | "KISMEN" | "BILINMIYOR";
         /** OrderIn */
         OrderIn: {
             /** Subcontractor Id */
@@ -1039,6 +1379,16 @@ export interface components {
             lot_no: string;
             /** Qty */
             qty: number | string;
+        };
+        /** ProcessRefOut */
+        ProcessRefOut: {
+            process: components["schemas"]["LinkProcess"];
+            /** Doc No */
+            doc_no: string | null;
+            /** Input Lots */
+            input_lots: string[];
+            /** Output Lots */
+            output_lots: string[];
         };
         /** ProductIn */
         ProductIn: {
@@ -1244,6 +1594,103 @@ export interface components {
          * @enum {string}
          */
         PushStatus: "ACCEPTED" | "ACCEPTED_WITH_WARNING" | "DUPLICATE" | "REJECTED";
+        /** RecallCloseIn */
+        RecallCloseIn: {
+            resolution: components["schemas"]["RecallResolution"];
+            /** Note */
+            note?: string | null;
+        };
+        /** RecallIn */
+        RecallIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Reason */
+            reason: string;
+        };
+        /** RecallOut */
+        RecallOut: {
+            /** Id */
+            id: number;
+            /** Recall No */
+            recall_no: string;
+            /** Source Lot No */
+            source_lot_no: string;
+            /** Reason */
+            reason: string;
+            status: components["schemas"]["RecallStatus"];
+            resolution: components["schemas"]["RecallResolution"] | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Started By Name */
+            started_by_name: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            /** Close Note */
+            close_note: string | null;
+            /** Lot Count */
+            lot_count: number;
+            /** Customer Count */
+            customer_count: number;
+            /** Violation Count */
+            violation_count: number;
+            /** Held By Customers */
+            held_by_customers: {
+                [key: string]: string;
+            };
+            /** Lots */
+            lots: components["schemas"]["TracedLotOut"][];
+            /** Stock */
+            stock: components["schemas"]["StockItemOut"][];
+            /** Recipients */
+            recipients: components["schemas"]["RecipientOut"][];
+        };
+        /**
+         * RecallResolution
+         * @enum {string}
+         */
+        RecallResolution: "IMHA" | "SERBEST";
+        /**
+         * RecallStatus
+         * @enum {string}
+         */
+        RecallStatus: "ACIK" | "KAPANDI";
+        /** RecallSummaryOut */
+        RecallSummaryOut: {
+            /** Id */
+            id: number;
+            /** Recall No */
+            recall_no: string;
+            /** Source Lot No */
+            source_lot_no: string;
+            /** Reason */
+            reason: string;
+            status: components["schemas"]["RecallStatus"];
+            resolution: components["schemas"]["RecallResolution"] | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Started By Name */
+            started_by_name: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            /** Close Note */
+            close_note: string | null;
+            /** Lot Count */
+            lot_count: number;
+            /** Customer Count */
+            customer_count: number;
+            /** Violation Count */
+            violation_count: number;
+            /** Held By Customers */
+            held_by_customers: {
+                [key: string]: string;
+            };
+        };
         /** RecipeIn */
         RecipeIn: {
             /** Code */
@@ -1318,6 +1765,90 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["RecipeLineOut"][];
         };
+        /** RecipientOut */
+        RecipientOut: {
+            /** Customer Id */
+            customer_id: number;
+            /** Customer */
+            customer: string;
+            contact: components["schemas"]["ContactOut"];
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Sold Qty */
+            sold_qty: string;
+            /** Returned Qty */
+            returned_qty: string;
+            /** Qty */
+            qty: string;
+            /** Sales */
+            sales: components["schemas"]["SaleRefOut"][];
+            onward_status: components["schemas"]["OnwardStatus"];
+            /** Onward Items */
+            onward_items: components["schemas"]["OnwardItemOut"][];
+            /** Onward Unknown Qty */
+            onward_unknown_qty: string;
+            /** Recall Violation */
+            recall_violation: boolean;
+        };
+        /** ReturnIn */
+        ReturnIn: {
+            /** Sale Line Id */
+            sale_line_id: number;
+            /** Qty */
+            qty: number | string;
+            /** Warehouse Id */
+            warehouse_id?: number | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** ReturnOut */
+        ReturnOut: {
+            /** Id */
+            id: number;
+            /** Return No */
+            return_no: string;
+            /** Sale No */
+            sale_no: string;
+            /** Customer Name */
+            customer_name: string;
+            /** Lot No */
+            lot_no: string;
+            /** Qty */
+            qty: string;
+            /** Warehouse Code */
+            warehouse_code: string;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ReversalOut */
+        ReversalOut: {
+            /** Id */
+            id: number;
+            /** Reversal Of Id */
+            reversal_of_id: number;
+            type: components["schemas"]["MovementType"];
+            /** Lot No */
+            lot_no: string;
+            /** Warehouse Code */
+            warehouse_code: string;
+            /** Qty */
+            qty: string;
+            /** Value */
+            value: string;
+        };
+        /** ReverseIn */
+        ReverseIn: {
+            /** Reason */
+            reason: string;
+        };
         /**
          * SaleChannel
          * @enum {string}
@@ -1377,6 +1908,27 @@ export interface components {
             /** Total Cost */
             total_cost: string;
         };
+        /** SaleRefOut */
+        SaleRefOut: {
+            /** Sale Id */
+            sale_id: number;
+            /** Sale No */
+            sale_no: string;
+            /** Sale Line Id */
+            sale_line_id: number;
+            channel: components["schemas"]["SaleChannel"];
+            /**
+             * Sold At
+             * Format: date-time
+             */
+            sold_at: string;
+            /** Qty */
+            qty: string;
+            /** Returned Qty */
+            returned_qty: string;
+            /** Recall Violation */
+            recall_violation: boolean;
+        };
         /** SalesOut */
         SalesOut: {
             /** Vkp */
@@ -1391,6 +1943,21 @@ export interface components {
          * @enum {string}
          */
         Species: "KUZU" | "KOYUN" | "KECI";
+        /** StockItemOut */
+        StockItemOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Warehouse Code */
+            warehouse_code: string;
+            /** Warehouse Name */
+            warehouse_name: string;
+            warehouse_kind: components["schemas"]["WarehouseKind"];
+            /** Qty */
+            qty: string;
+        };
         /** StockOut */
         StockOut: {
             /** Lot Id */
@@ -1422,6 +1989,72 @@ export interface components {
             warehouse_name: string;
             /** Qty */
             qty: string;
+        };
+        /** SupplierRefOut */
+        SupplierRefOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Supplier */
+            supplier: string;
+            contact: components["schemas"]["ContactOut"];
+            /** Purchase Doc No */
+            purchase_doc_no: string | null;
+            /** Purchase Date */
+            purchase_date: string | null;
+            /** Qty */
+            qty: string;
+        };
+        /** TraceLinkOut */
+        TraceLinkOut: {
+            /** Parent Lot No */
+            parent_lot_no: string;
+            /** Child Lot No */
+            child_lot_no: string;
+            /** Qty */
+            qty: string;
+            process: components["schemas"]["LinkProcess"];
+            /** Doc No */
+            doc_no: string | null;
+        };
+        /** TraceOut */
+        TraceOut: {
+            source: components["schemas"]["TracedLotOut"];
+            /** Lots */
+            lots: components["schemas"]["TracedLotOut"][];
+            /** Links */
+            links: components["schemas"]["TraceLinkOut"][];
+            /** Stock */
+            stock: components["schemas"]["StockItemOut"][];
+            /** Recipients */
+            recipients: components["schemas"]["RecipientOut"][];
+            /** Suppliers */
+            suppliers: components["schemas"]["SupplierRefOut"][];
+            /** Processes */
+            processes: components["schemas"]["ProcessRefOut"][];
+        };
+        /** TracedLotOut */
+        TracedLotOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Product Code */
+            product_code: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            origin: components["schemas"]["LotOrigin"];
+            status: components["schemas"]["LotStatus"];
+            /** Depth */
+            depth: number;
+            /** Initial Qty */
+            initial_qty: string;
+            /** Remaining Qty */
+            remaining_qty: string;
+            /** Supplier Name */
+            supplier_name: string | null;
+            /** Produced At */
+            produced_at: string | null;
+            /** Expiry Date */
+            expiry_date: string | null;
         };
         /** TransferIn */
         TransferIn: {
@@ -2715,6 +3348,485 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_returns_api_v1_returns_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnOut"][];
+                };
+            };
+        };
+    };
+    create_api_v1_returns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_onward_api_v1_sale_lines__sale_line_id__onward_deliveries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sale_line_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnwardOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_onward_api_v1_sale_lines__sale_line_id__onward_deliveries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sale_line_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnwardIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnwardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_adjustments_api_v1_adjustments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdjustmentOut"][];
+                };
+            };
+        };
+    };
+    create_api_v1_adjustments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdjustmentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reverse_one_api_v1_movements__movement_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                movement_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReversalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    forward_api_v1_trace_forward__lot_no__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lot_no: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backward_api_v1_trace_backward__lot_no__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lot_no: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_recalls_api_v1_recalls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecallSummaryOut"][];
+                };
+            };
+        };
+    };
+    create_api_v1_recalls_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecallIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_recall_api_v1_recalls__recall_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recall_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_csv_api_v1_recalls__recall_id__export_csv_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recall_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_api_v1_recalls__recall_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recall_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecallCloseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_alerts_api_v1_alerts_get: {
+        parameters: {
+            query?: {
+                only_open?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_api_v1_alerts__alert_id__ack_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertOut"];
                 };
             };
             /** @description Validation Error */

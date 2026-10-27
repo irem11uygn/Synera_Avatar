@@ -1691,6 +1691,739 @@
         }
       }
     },
+    "/api/v1/returns": {
+      "get": {
+        "tags": [
+          "satış"
+        ],
+        "summary": "List Returns",
+        "operationId": "list_returns_api_v1_returns_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReturnOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Returns Api V1 Returns Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "satış"
+        ],
+        "summary": "Create",
+        "description": "Satılan lot aynı lot numarasıyla depoya geri girer; bloke lota da iade alınır (geri toplama).",
+        "operationId": "create_api_v1_returns_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sale-lines/{sale_line_id}/onward-deliveries": {
+      "get": {
+        "tags": [
+          "satış"
+        ],
+        "summary": "List Onward",
+        "operationId": "list_onward_api_v1_sale_lines__sale_line_id__onward_deliveries_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sale_line_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sale Line Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OnwardOut"
+                  },
+                  "title": "Response List Onward Api V1 Sale Lines  Sale Line Id  Onward Deliveries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "satış"
+        ],
+        "summary": "Create Onward",
+        "description": "Müşterinin bildirdiği ikinci kademe teslimat; izleme listesinde \"kesin\" olarak görünür.",
+        "operationId": "create_onward_api_v1_sale_lines__sale_line_id__onward_deliveries_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sale_line_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sale Line Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnwardIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnwardOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/adjustments": {
+      "get": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "List Adjustments",
+        "operationId": "list_adjustments_api_v1_adjustments_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdjustmentOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Adjustments Api V1 Adjustments Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_adjustments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/movements/{movement_id}/reverse": {
+      "post": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "Reverse One",
+        "description": "Hareketi silmeden düzeltir: aslının tam tersi yeni hareket(ler) yazılır (gerekçe zorunlu).",
+        "operationId": "reverse_one_api_v1_movements__movement_id__reverse_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "movement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Movement Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReversalOut"
+                  },
+                  "title": "Response Reverse One Api V1 Movements  Movement Id  Reverse Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trace/forward/{lot_no}": {
+      "get": {
+        "tags": [
+          "izleme"
+        ],
+        "summary": "Forward",
+        "description": "Türev lotlar, bizdeki stok, alıcılar (miktar, satış belgesi, iletişim, ikinci kademe).",
+        "operationId": "forward_api_v1_trace_forward__lot_no__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lot_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lot No"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trace/backward/{lot_no}": {
+      "get": {
+        "tags": [
+          "izleme"
+        ],
+        "summary": "Backward",
+        "description": "Lotu oluşturan bütün lotlar, tedarikçiler ve alış belgeleri, üretim emirleri ve parçalamalar.",
+        "operationId": "backward_api_v1_trace_backward__lot_no__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lot_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lot No"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recalls": {
+      "get": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "List Recalls",
+        "operationId": "list_recalls_api_v1_recalls_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecallSummaryOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Recalls Api V1 Recalls Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "Create",
+        "description": "Kaynak lot ve bütün türevleri tek işlemde bloke edilir; liste hemen döner.",
+        "operationId": "create_api_v1_recalls_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecallIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/recalls/{recall_id}": {
+      "get": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "Get Recall",
+        "operationId": "get_recall_api_v1_recalls__recall_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recall_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Recall Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recalls/{recall_id}/export.csv": {
+      "get": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "Export Csv",
+        "description": "İletişim listesi: müşteri × lot başına bir satır, ikinci kademe alıcılar ayrı satırlarda.",
+        "operationId": "export_csv_api_v1_recalls__recall_id__export_csv_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recall_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Recall Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recalls/{recall_id}/close": {
+      "post": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "Close",
+        "operationId": "close_api_v1_recalls__recall_id__close_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recall_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Recall Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecallCloseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts": {
+      "get": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "List Alerts",
+        "operationId": "list_alerts_api_v1_alerts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "only_open",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Only Open"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlertOut"
+                  },
+                  "title": "Response List Alerts Api V1 Alerts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts/{alert_id}/ack": {
+      "post": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "Acknowledge",
+        "operationId": "acknowledge_api_v1_alerts__alert_id__ack_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sync/pull": {
       "get": {
         "tags": [
@@ -1845,6 +2578,146 @@
         "type": "object",
         "title": "ActualsIn"
       },
+      "AdjustmentIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "warehouse_id",
+          "qty",
+          "reason"
+        ],
+        "title": "AdjustmentIn"
+      },
+      "AdjustmentOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "adj_no": {
+            "type": "string",
+            "title": "Adj No"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "adj_no",
+          "lot_no",
+          "warehouse_code",
+          "qty",
+          "reason",
+          "created_at"
+        ],
+        "title": "AdjustmentOut"
+      },
+      "AlertKind": {
+        "type": "string",
+        "enum": [
+          "GERI_CAGIRMA_IHLALI"
+        ],
+        "title": "AlertKind"
+      },
+      "AlertOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AlertKind"
+          },
+          "ref_type": {
+            "type": "string",
+            "title": "Ref Type"
+          },
+          "ref_id": {
+            "type": "integer",
+            "title": "Ref Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "acknowledged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acknowledged At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "ref_type",
+          "ref_id",
+          "message",
+          "created_at",
+          "acknowledged_at"
+        ],
+        "title": "AlertOut"
+      },
       "AllocationMethod": {
         "type": "string",
         "enum": [
@@ -1941,6 +2814,62 @@
           "inputs"
         ],
         "title": "CompleteIn"
+      },
+      "ContactOut": {
+        "properties": {
+          "person": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person",
+          "phone",
+          "email",
+          "address"
+        ],
+        "title": "ContactOut"
       },
       "CostOut": {
         "properties": {
@@ -2978,6 +3907,170 @@
         ],
         "title": "MovementType"
       },
+      "OnwardIn": {
+        "properties": {
+          "recipient_partner_id": {
+            "type": "integer",
+            "title": "Recipient Partner Id"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "delivered_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered At"
+          },
+          "source_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient_partner_id",
+          "qty"
+        ],
+        "title": "OnwardIn"
+      },
+      "OnwardItemOut": {
+        "properties": {
+          "recipient": {
+            "type": "string",
+            "title": "Recipient"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "delivered_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered At"
+          },
+          "source_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Note"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient",
+          "qty",
+          "delivered_at",
+          "source_note",
+          "contact"
+        ],
+        "title": "OnwardItemOut"
+      },
+      "OnwardOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "sale_line_id": {
+            "type": "integer",
+            "title": "Sale Line Id"
+          },
+          "recipient_partner_id": {
+            "type": "integer",
+            "title": "Recipient Partner Id"
+          },
+          "recipient_name": {
+            "type": "string",
+            "title": "Recipient Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "delivered_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered At"
+          },
+          "source_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sale_line_id",
+          "recipient_partner_id",
+          "recipient_name",
+          "qty",
+          "delivered_at",
+          "source_note"
+        ],
+        "title": "OnwardOut"
+      },
+      "OnwardStatus": {
+        "type": "string",
+        "enum": [
+          "KAYITLI",
+          "KISMEN",
+          "BILINMIYOR"
+        ],
+        "title": "OnwardStatus"
+      },
       "OrderIn": {
         "properties": {
           "subcontractor_id": {
@@ -3463,6 +4556,46 @@
           "qty"
         ],
         "title": "PlannedInputIn"
+      },
+      "ProcessRefOut": {
+        "properties": {
+          "process": {
+            "$ref": "#/components/schemas/LinkProcess"
+          },
+          "doc_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc No"
+          },
+          "input_lots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Input Lots"
+          },
+          "output_lots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Output Lots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "process",
+          "doc_no",
+          "input_lots",
+          "output_lots"
+        ],
+        "title": "ProcessRefOut"
       },
       "ProductIn": {
         "properties": {
@@ -4141,6 +5274,310 @@
         ],
         "title": "PushStatus"
       },
+      "RecallCloseIn": {
+        "properties": {
+          "resolution": {
+            "$ref": "#/components/schemas/RecallResolution"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resolution"
+        ],
+        "title": "RecallCloseIn"
+      },
+      "RecallIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Lot No"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "reason"
+        ],
+        "title": "RecallIn"
+      },
+      "RecallOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "recall_no": {
+            "type": "string",
+            "title": "Recall No"
+          },
+          "source_lot_no": {
+            "type": "string",
+            "title": "Source Lot No"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RecallStatus"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecallResolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "started_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started By Name"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "close_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Note"
+          },
+          "lot_count": {
+            "type": "integer",
+            "title": "Lot Count"
+          },
+          "customer_count": {
+            "type": "integer",
+            "title": "Customer Count"
+          },
+          "violation_count": {
+            "type": "integer",
+            "title": "Violation Count"
+          },
+          "held_by_customers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Held By Customers"
+          },
+          "lots": {
+            "items": {
+              "$ref": "#/components/schemas/TracedLotOut"
+            },
+            "type": "array",
+            "title": "Lots"
+          },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/StockItemOut"
+            },
+            "type": "array",
+            "title": "Stock"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/RecipientOut"
+            },
+            "type": "array",
+            "title": "Recipients"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recall_no",
+          "source_lot_no",
+          "reason",
+          "status",
+          "resolution",
+          "started_at",
+          "started_by_name",
+          "closed_at",
+          "close_note",
+          "lot_count",
+          "customer_count",
+          "violation_count",
+          "held_by_customers",
+          "lots",
+          "stock",
+          "recipients"
+        ],
+        "title": "RecallOut"
+      },
+      "RecallResolution": {
+        "type": "string",
+        "enum": [
+          "IMHA",
+          "SERBEST"
+        ],
+        "title": "RecallResolution"
+      },
+      "RecallStatus": {
+        "type": "string",
+        "enum": [
+          "ACIK",
+          "KAPANDI"
+        ],
+        "title": "RecallStatus"
+      },
+      "RecallSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "recall_no": {
+            "type": "string",
+            "title": "Recall No"
+          },
+          "source_lot_no": {
+            "type": "string",
+            "title": "Source Lot No"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RecallStatus"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecallResolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "started_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started By Name"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "close_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Note"
+          },
+          "lot_count": {
+            "type": "integer",
+            "title": "Lot Count"
+          },
+          "customer_count": {
+            "type": "integer",
+            "title": "Customer Count"
+          },
+          "violation_count": {
+            "type": "integer",
+            "title": "Violation Count"
+          },
+          "held_by_customers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Held By Customers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recall_no",
+          "source_lot_no",
+          "reason",
+          "status",
+          "resolution",
+          "started_at",
+          "started_by_name",
+          "closed_at",
+          "close_note",
+          "lot_count",
+          "customer_count",
+          "violation_count",
+          "held_by_customers"
+        ],
+        "title": "RecallSummaryOut"
+      },
       "RecipeIn": {
         "properties": {
           "code": {
@@ -4398,6 +5835,254 @@
         ],
         "title": "RecipeOut"
       },
+      "RecipientOut": {
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "title": "Customer Id"
+          },
+          "customer": {
+            "type": "string",
+            "title": "Customer"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "sold_qty": {
+            "type": "string",
+            "title": "Sold Qty"
+          },
+          "returned_qty": {
+            "type": "string",
+            "title": "Returned Qty"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "sales": {
+            "items": {
+              "$ref": "#/components/schemas/SaleRefOut"
+            },
+            "type": "array",
+            "title": "Sales"
+          },
+          "onward_status": {
+            "$ref": "#/components/schemas/OnwardStatus"
+          },
+          "onward_items": {
+            "items": {
+              "$ref": "#/components/schemas/OnwardItemOut"
+            },
+            "type": "array",
+            "title": "Onward Items"
+          },
+          "onward_unknown_qty": {
+            "type": "string",
+            "title": "Onward Unknown Qty"
+          },
+          "recall_violation": {
+            "type": "boolean",
+            "title": "Recall Violation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "customer",
+          "contact",
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "sold_qty",
+          "returned_qty",
+          "qty",
+          "sales",
+          "onward_status",
+          "onward_items",
+          "onward_unknown_qty",
+          "recall_violation"
+        ],
+        "title": "RecipientOut"
+      },
+      "ReturnIn": {
+        "properties": {
+          "sale_line_id": {
+            "type": "integer",
+            "title": "Sale Line Id"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sale_line_id",
+          "qty"
+        ],
+        "title": "ReturnIn"
+      },
+      "ReturnOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "return_no": {
+            "type": "string",
+            "title": "Return No"
+          },
+          "sale_no": {
+            "type": "string",
+            "title": "Sale No"
+          },
+          "customer_name": {
+            "type": "string",
+            "title": "Customer Name"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "return_no",
+          "sale_no",
+          "customer_name",
+          "lot_no",
+          "qty",
+          "warehouse_code",
+          "reason",
+          "created_at"
+        ],
+        "title": "ReturnOut"
+      },
+      "ReversalOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "reversal_of_id": {
+            "type": "integer",
+            "title": "Reversal Of Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MovementType"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reversal_of_id",
+          "type",
+          "lot_no",
+          "warehouse_code",
+          "qty",
+          "value"
+        ],
+        "title": "ReversalOut"
+      },
+      "ReverseIn": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "ReverseIn"
+      },
       "SaleChannel": {
         "type": "string",
         "enum": [
@@ -4542,6 +6227,54 @@
         ],
         "title": "SaleOut"
       },
+      "SaleRefOut": {
+        "properties": {
+          "sale_id": {
+            "type": "integer",
+            "title": "Sale Id"
+          },
+          "sale_no": {
+            "type": "string",
+            "title": "Sale No"
+          },
+          "sale_line_id": {
+            "type": "integer",
+            "title": "Sale Line Id"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/SaleChannel"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "returned_qty": {
+            "type": "string",
+            "title": "Returned Qty"
+          },
+          "recall_violation": {
+            "type": "boolean",
+            "title": "Recall Violation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sale_id",
+          "sale_no",
+          "sale_line_id",
+          "channel",
+          "sold_at",
+          "qty",
+          "returned_qty",
+          "recall_violation"
+        ],
+        "title": "SaleRefOut"
+      },
       "SalesOut": {
         "properties": {
           "vkp": {
@@ -4573,6 +6306,47 @@
           "KECI"
         ],
         "title": "Species"
+      },
+      "StockItemOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "warehouse_name": {
+            "type": "string",
+            "title": "Warehouse Name"
+          },
+          "warehouse_kind": {
+            "$ref": "#/components/schemas/WarehouseKind"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "warehouse_code",
+          "warehouse_name",
+          "warehouse_kind",
+          "qty"
+        ],
+        "title": "StockItemOut"
       },
       "StockOut": {
         "properties": {
@@ -4665,6 +6439,245 @@
           "qty"
         ],
         "title": "StockRowOut"
+      },
+      "SupplierRefOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "supplier": {
+            "type": "string",
+            "title": "Supplier"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          },
+          "purchase_doc_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchase Doc No"
+          },
+          "purchase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchase Date"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "supplier",
+          "contact",
+          "purchase_doc_no",
+          "purchase_date",
+          "qty"
+        ],
+        "title": "SupplierRefOut"
+      },
+      "TraceLinkOut": {
+        "properties": {
+          "parent_lot_no": {
+            "type": "string",
+            "title": "Parent Lot No"
+          },
+          "child_lot_no": {
+            "type": "string",
+            "title": "Child Lot No"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "process": {
+            "$ref": "#/components/schemas/LinkProcess"
+          },
+          "doc_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc No"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parent_lot_no",
+          "child_lot_no",
+          "qty",
+          "process",
+          "doc_no"
+        ],
+        "title": "TraceLinkOut"
+      },
+      "TraceOut": {
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/TracedLotOut"
+          },
+          "lots": {
+            "items": {
+              "$ref": "#/components/schemas/TracedLotOut"
+            },
+            "type": "array",
+            "title": "Lots"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/TraceLinkOut"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/StockItemOut"
+            },
+            "type": "array",
+            "title": "Stock"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/RecipientOut"
+            },
+            "type": "array",
+            "title": "Recipients"
+          },
+          "suppliers": {
+            "items": {
+              "$ref": "#/components/schemas/SupplierRefOut"
+            },
+            "type": "array",
+            "title": "Suppliers"
+          },
+          "processes": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessRefOut"
+            },
+            "type": "array",
+            "title": "Processes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "lots",
+          "links",
+          "stock",
+          "recipients",
+          "suppliers",
+          "processes"
+        ],
+        "title": "TraceOut"
+      },
+      "TracedLotOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_code": {
+            "type": "string",
+            "title": "Product Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LotOrigin"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LotStatus"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth"
+          },
+          "initial_qty": {
+            "type": "string",
+            "title": "Initial Qty"
+          },
+          "remaining_qty": {
+            "type": "string",
+            "title": "Remaining Qty"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          },
+          "produced_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Produced At"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_code",
+          "product_name",
+          "base_unit",
+          "origin",
+          "status",
+          "depth",
+          "initial_qty",
+          "remaining_qty",
+          "supplier_name",
+          "produced_at",
+          "expiry_date"
+        ],
+        "title": "TracedLotOut"
       },
       "TransferIn": {
         "properties": {

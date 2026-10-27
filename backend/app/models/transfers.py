@@ -46,4 +46,4 @@ class Adjustment(IdMixin, AuditMixin, Base):
     warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
     qty: Mapped[Decimal] = mapped_column(QTY)
     reason: Mapped[str] = mapped_column(String(255))
-    stock_movement_id: Mapped[int] = mapped_column(ForeignKey("stock_movements.id"), unique=True)
+    stock_movement_id: Mapped[int | None] = mapped_column(ForeignKey("stock_movements.id"), unique=True)

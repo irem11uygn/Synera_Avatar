@@ -5,7 +5,23 @@ import logging
 from fastapi import FastAPI
 
 from app import __version__
-from app.api import auth, cutting, health, lots, master, production, purchases, sales, stock, sync, transfers
+from app.api import (
+    adjustments,
+    auth,
+    cutting,
+    health,
+    lots,
+    master,
+    production,
+    purchases,
+    recalls,
+    returns,
+    sales,
+    stock,
+    sync,
+    trace,
+    transfers,
+)
 from app.api.errors import register_error_handlers
 from app.config import get_settings
 
@@ -34,6 +50,11 @@ def create_app() -> FastAPI:
         production.router,
         cutting.router,
         sales.router,
+        returns.router,
+        adjustments.router,
+        trace.router,
+        recalls.router,
+        recalls.alerts_router,
         sync.router,
     )
     for router in routers:

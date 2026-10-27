@@ -25,6 +25,6 @@ def get_settings() -> Settings:
     return Settings(
         database_url=database_url,
         log_level=os.environ.get("LOG_LEVEL", "INFO"),
-        seed_profile=os.environ.get("SEED_PROFILE", "base"),
+        seed_profile=os.environ.get("SEED_PROFILE", "demo"),
         seed_dir=Path(os.environ.get("SEED_DIR", _DEFAULT_SEED_DIR)),
     )

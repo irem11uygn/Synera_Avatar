@@ -2,27 +2,37 @@
 
 | | |
 |---|---|
-| Tarih | 27 Ekim 2026 |
+| Tarih | 27 Ekim 2026 (ikinci sürüm: kulvarlar teknik katmana göre yeniden bölündü) |
 | Son teslim | **1 Kasım 2026 23:59** (hedef: 1 Kasım öğleden sonra) |
 | Ekip | Kişi 1 — Caner · Kişi 2 — ekip arkadaşı (adı yazılacak) |
 | Dayanak | `requirements.md` (gereksinimler), `development_plan.md` (iş listesi T-xx), `api.md` (uç noktalar), `submission_checklist.md` |
+| Depo adı | `synera-avatar` (GitHub; teslime kadar gizli, teslimde herkese açık — CR-001) |
 
-Bu belge, kalan işleri iki kişiye **birbirinin dosyalarına en az dokunacak biçimde** böler. Her iş, karşıladığı gereksinim kimlikleriyle ve "bitti" ölçütüyle yazılmıştır. Bölüşüm bir öneridir; kulvarlar istenirse yer değiştirebilir, ama bir dosyanın bir sahibi olması kuralı kalır.
+Bu belge işleri şartnamenin teknik tablosuna göre iki kulvara böler:
+
+| Şartnamedeki satır | Kulvar |
+|---|---|
+| Sunucu: Go ya da modern bir teknoloji, REST API (biz Python/FastAPI seçtik) | **Kişi 1** |
+| Web: React ya da benzeri | **Kişi 1** |
+| Yapay zekâ: uygun bir ML yöntemi + API ile bağlanması | **Kişi 1** |
+| Mobil uygulama: Kotlin | **Kişi 2** |
+| Yerel veri: SQLite · Merkezi veri ile eşitleme (MySQL) | **Kişi 2** (MySQL şeması sunucu kodunun içinde olduğu için Kişi 1'de kalır) |
+| Teslim: kabul testleri, kurulum testi, teslim belgeleri, GitHub, video, e-posta | **Kişi 2** (video ve teslim birlikte) |
+
+Her iş, karşıladığı gereksinim kimlikleriyle ve "bitti" ölçütüyle yazılmıştır. Bir dosyanın tek sahibi olur; sahibi olmayan dosyaya dokunmadan önce diğerine haber verilir.
 
 ## 1. Bugünkü durum (27 Ekim)
 
 **Biten işler:** T-01, T-03…T-15 (T-02 açık sorularla sürüyor).
 
 **Çalışanlar:**
-- Görev 1 (dış üretim, EKP) ve Görev 2 (parçalama, maliyet dağıtımı) sunucuda ve web'de uçtan uca çalışıyor.
-- Android'de satış ve satışların sunucuya gönderimi çalışıyor; çevrimdışı da satış yapılabiliyor.
-- Hammadde alışı, stok, lotlar ve lot hareket geçmişi, transfer ekranları hazır.
+- Görev 1 (dış üretim, EKP 18,16 €) ve Görev 2 (parçalama, maliyet dağıtımı) sunucuda ve web'de uçtan uca çalışıyor.
+- Android'de lot bazlı satış ve satışların sunucuya gönderimi çalışıyor; çevrimdışı da satış yapılabiliyor.
+- Hammadde alışı, stok, lotlar, lot hareket geçmişi ve transfer ekranları hazır.
 
-**Testler:**
-- 134 sunucu, 16 web, 17 Android testi geçiyor.
-- Çalışan sistemde bütünlük denetimi 8/8 tutarlı.
+**Testler:** 134 sunucu, 16 web, 17 Android testi geçiyor; çalışan sistemde bütünlük denetimi 8/8 tutarlı.
 
-**Hiç başlanmamış iki büyük blok:** Görev 3 (izleme ve geri çağırma) ve iki yapay zekâ modeli.
+**Kalan büyük bloklar:** Görev 3 (izleme ve geri çağırma), iki yapay zekâ modeli, raporlar, derinlikli (3D) arayüz tasarımı, teslim paketi.
 
 ## 2. Gereksinim kapsamı
 
@@ -37,141 +47,142 @@ Durum: **Bitti** · **Kısmen** (ne eksik yazılı) · **Eksik** · İsteğe ba�
 | FR-104 stok kırılımı | Bitti | — | — |
 | FR-105…FR-108, FR-110, FR-111 dış üretim, EKP, kâr/marj | Bitti | — | — |
 | FR-109 miktar farkları | Kısmen | Farklar emirde görünüyor; **üretim raporunda** da görünmeli (FR-602) | Kişi 1 |
-| FR-112 geçmişe dönük inceleme | Bitti | Lot hareket geçmişi: kim, ne zaman, hangi belge | — |
+| FR-112 geçmişe dönük inceleme | Bitti | — | — |
 
 ### Görev 2
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
-| FR-201…FR-208 reçete, dağıtım anahtarı, tartım, denge, dağıtım, parça lotları | Bitti | AT-03 ve AT-04 API'de geçti | — |
-| CR-012 örnek görseldeki tutarsızlıklar | Kısmen | Analiz `project_analysis.md` §3.3'te; teslim belgesinde ayrı, açık bir bölüm olmalı (görsel PDF'te yok: S-01) | Kişi 1 |
+| FR-201…FR-208 reçete, dağıtım anahtarı, tartım, denge, dağıtım, parça lotları | Bitti | — | — |
+| CR-012 örnek görseldeki tutarsızlıklar | Kısmen | Analiz `project_analysis.md` §3.3'te; teslim belgesinde ayrı ve açık bir bölüm olmalı (görsel PDF'te yok: S-01) | Kişi 2 |
 
 ### Görev 3 (izlenebilirlik ve geri çağırma)
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
 | FR-302 miktarlı çoktan çoğa lot bağları | Bitti | — | — |
-| FR-303 hareket türleri | Kısmen | Var: alış, transfer, üretim, parçalama, satış. **Eksik:** müşteri iadesi, fire/imha, (zaman kalırsa) yeniden işleme | Kişi 1 |
+| FR-303 hareket türleri | Kısmen | Eksik: müşteri iadesi, fire/imha, ters kayıt ucu | Kişi 1 |
 | FR-304 ileri izleme, FR-305 geri izleme | Eksik | Lot ağı servisi hazır (`lot_graph.py`); API ve ekran yok | Kişi 1 |
-| FR-306 geri çağırma başlatma, FR-307 liste + dışa aktarma | Eksik | `recalls`, `recall_lots`, `alerts` tabloları hazır | Kişi 1 |
+| FR-306 geri çağırma, FR-307 liste + dışa aktarma | Eksik | `recalls`, `recall_lots`, `alerts` tabloları hazır | Kişi 1 |
 | FR-308 ikinci kademe dağıtım | Eksik | `onward_deliveries` tablosu hazır | Kişi 1 |
-| FR-309 zorunlu senaryo örnek kayıtlarla hazır gelir | Kısmen | Senaryo şu an elle kuruluyor. `docker compose up` sonrası ET-2026-001 → URT-2026-045 → SUC-2026-045 → Market A 30 / B 25 / C 30 hazır gelmeli (**demo profili**) | Kişi 1 |
-| FR-310 bloke lot hiçbir kanaldan satılamaz/transfer edilemez/üretimde kullanılamaz | Bitti | Defter, Android ve sunucu gönderimi engelliyor; çevrimdışı satış kurallı istisna (AT-12) | — |
+| FR-309 zorunlu senaryo örnek kayıtlarla hazır | Kısmen | **Demo profili:** kurulumdan sonra ET-2026-001 → URT-2026-045 → SUC-2026-045 → Market A 30 / B 25 / C 30 hazır gelmeli | Kişi 1 |
+| FR-310 bloke lot hiçbir kanaldan satılamaz | Bitti (sunucu) | Android'de bloke lotun görünümü ve açıklaması | Kişi 2 |
 
 ### Android satış ve senkronizasyon
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
-| FR-401…FR-405, TR-001, TR-002, TR-007 | Bitti | AT-11, AT-12 geçti; emülatörde uçak modu denendi | — |
-| NFR-005 Android kullanılabilirlik | Bitti | Videoda gösterilecek | Video |
-| FR-406 Android operasyon ekranları | İsteğe bağlı | Plandan çıkarıldı | — |
+| FR-401…FR-405, TR-001, TR-002 | Bitti | — | — |
+| TR-007 SQLite ↔ MySQL tutarlılığının açıklaması | Kısmen | `architecture.md` §5'te teknik anlatım var; değerlendiricinin okuyacağı kısa, şemalı bölüm (`docs/senkronizasyon.md`) | Kişi 2 |
+| NFR-005 Android kullanılabilirlik | Kısmen | Derinlikli (3D) tasarım, bloke lot rozeti, eşitleme durumu | Kişi 2 |
 
 ### Yapay zekâ
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
-| FR-505 örnek veri seti ve varsayımlar | Eksik | T-18 sentetik veri üreticisi | Kişi 2 |
-| FR-501 Model A, FR-503 Model B | Eksik | T-19, T-20 (Model B için referans "beklenen kg" ekranda zaten var) | Kişi 2 |
-| FR-506 referans yöntem ve hata ölçümü, FR-507 sınırlılıklar, CR-006 YZ raporu | Eksik | T-19, T-20 + `reports/ai_degerlendirme.md` | Kişi 2 |
-| FR-502, FR-504 tahmin–gerçek–sapma ekranda, TR-006 API entegrasyonu | Eksik | T-21 | Kişi 2 |
-| FR-551, FR-552 | İsteğe bağlı | Kapsam dışı (T-24 plandan çıkarıldı) | — |
+| FR-505 örnek veri seti ve varsayımlar | Eksik | T-18 sentetik veri üreticisi | Kişi 1 |
+| FR-501 Model A, FR-503 Model B | Eksik | T-19, T-20 | Kişi 1 |
+| FR-506 referans yöntem ve hata ölçümü, FR-507 sınırlılıklar, CR-006 YZ raporu | Eksik | T-19, T-20 + `reports/ai_degerlendirme.md` | Kişi 1 |
+| FR-502, FR-504 tahmin–gerçek–sapma ekranda, TR-006 API entegrasyonu | Eksik | T-21 | Kişi 1 |
+| FR-551, FR-552 | İsteğe bağlı | Kapsam dışı | — |
 
 ### Raporlar
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
-| FR-601 alış, FR-603 parçalama, FR-604 lot hareketleri, FR-605 satış | Kısmen | Listeler/ayrıntılar var; **rapor ekranları** (süzgeç + CSV) ve `/reports/*` uçları yok | Kişi 1 |
-| FR-602 üretim raporu | Kısmen | Rapor + YZ tahmin/sapma sütunu (sütunu Kişi 2'nin tahmin alanı doldurur) | Kişi 1 |
+| FR-601 alış, FR-603 parçalama, FR-604 lot hareketleri, FR-605 satış | Kısmen | Rapor uçları (`/reports/*`) ve ekranları (süzgeç + CSV) | Kişi 1 |
+| FR-602 üretim raporu | Kısmen | Rapor + YZ tahmin/sapma sütunu | Kişi 1 |
 | FR-606 geri çağırma raporu | Eksik | T-16'dan sonra | Kişi 1 |
-| FR-607 bütünlük raporu | Kısmen | Denetim servisi var (`integrity.py`); uç ve ekran yok | Kişi 1 |
+| FR-607 bütünlük raporu | Kısmen | Denetim servisi var; uç ve ekran yok | Kişi 1 |
 
 ### Kalite gereksinimleri
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
-| NFR-001 parasal doğruluk, NFR-003 işlem bütünlüğü, NFR-004 stok tutarlılığı | Bitti | — | — |
-| NFR-002 değişmez defter | Kısmen | Tetikleyiciler ve ters kayıt servisi var; ters kayıt **uç ve düğmesi** yok | Kişi 1 |
-| NFR-006 kurulabilirlik | Kısmen | Tek komut çalışıyor. Eksik: demo profili; **temiz bilgisayarda** kurulum testi (AT-14) | Kişi 1 (profil), Kişi 2 (test) |
-| NFR-007 güvenlik, NFR-008 denetlenebilirlik, NFR-010 sürdürülebilirlik | Bitti | — | — |
+| NFR-001, NFR-003, NFR-004 | Bitti | — | — |
+| NFR-002 değişmez defter | Kısmen | Ters kayıt ucu ve düğmesi | Kişi 1 |
+| NFR-005 kullanılabilirlik (web) | Kısmen | Derinlikli (3D) tasarım, Türkçe yardım metinleri | Kişi 1 |
+| NFR-006 kurulabilirlik | Kısmen | Demo profili (Kişi 1); **temiz bilgisayarda** kurulum testi AT-14 (Kişi 2) | İkisi |
+| NFR-007, NFR-008, NFR-010 | Bitti | — | — |
 | NFR-009 performans (izleme < 2 sn) | Ölçülmedi | T-23'te ölçülür | Kişi 2 |
 
 ### Teslim
 
 | Gereksinim | Durum | Kalan iş | Sahip |
 |---|---|---|---|
-| CR-007 veri modeli, CR-008 API açıklaması | Bitti | Son güncelleme T-25'te | Kişi 1 |
+| CR-007 veri modeli, CR-008 API açıklaması | Bitti | Son güncelleme | Kişi 1 |
 | CR-009 örnek kayıtlar | Kısmen | Demo profili | Kişi 1 |
 | CR-010 otomatik testler | Bitti | Kabul testleri T-23 | Kişi 2 |
-| CR-011 üç görev ve iki YZ entegre | Kısmen | Görev 3 + YZ | İkisi |
-| CR-001 herkese açık GitHub, CR-005 son commit | Bekliyor | 1 Kasım; GitHub'a gönderim ön izleme ve onayla | Kişi 1 |
+| CR-011 üç görev ve iki YZ entegre | Kısmen | Görev 3 + YZ | Kişi 1 |
+| CR-001 herkese açık GitHub, CR-005 son commit | Bekliyor | Depo `synera-avatar`; gönderim ön izleme ve onayla | Kişi 2 |
 | CR-002 video ≤ 15 dk, CR-003 etkilenen marketlerin gösterimi | Bekliyor | T-27 | İkisi |
 | CR-004 e-posta | Bekliyor | Kimin göndereceği açık (S-05) | Ekip kararı |
 
 ## 3. Kim neyin sahibi (dosya sahipliği)
 
-Aynı dosyada iki kişinin aynı anda çalışması birleştirmede çakışma demektir. Sahibi olmayan dosyaya dokunmadan önce diğerine haber verilir.
-
-| Kişi 1 — Caner: Görev 3, raporlar, entegrasyon | Kişi 2 — arkadaş: yapay zekâ, kabul testleri, kurulum testi |
+| Kişi 1 — Caner: sunucu, web, yapay zekâ | Kişi 2 — arkadaş: Android, eşitleme, teslim |
 |---|---|
-| `backend/app/services/` (yeni: `trace.py`, `recall.py`, `returns.py`, `adjustments.py`, `reports.py`) ve var olan servisler | `ml/` (bütünü), `data/synthetic/` |
-| `backend/app/api/` (yeni: `trace.py`, `recalls.py`, `alerts.py`, `returns.py`, `adjustments.py`, `reports.py`) | `backend/app/services/ai.py`, `backend/app/api/ai.py`, `backend/tests/test_ai*.py` |
-| `backend/app/seed.py`, `data/seed/` (demo profili) | `tests/` (kök: uçtan uca kabul testleri) |
-| `web/src/pages/` (Görev 3, rapor, uyarı ekranları), `web/src/App.tsx` (menü) | `web/src/components/ForecastCard.tsx` |
-| `android/` (gerekirse küçük düzeltmeler), APK üretimi | `reports/ai_degerlendirme.md`, `reports/kabul_testleri.md` |
-| `docs/api.md`, `docs/data_model.md`, `docs/architecture.md`, `README.md` | `docs/` içinde YZ bölümleri (Kişi 1'e haber vererek) |
+| `backend/` (bütünü: servisler, uçlar, göçler, örnek kayıtlar, testler) | `android/` (bütünü), APK |
+| `web/` (bütünü) | `tests/` (kök: uçtan uca kabul testleri) |
+| `ml/`, `data/synthetic/`, `data/seed/` | `docs/senkronizasyon.md`, `docs/submission_checklist.md` |
+| `docs/api.md`, `docs/data_model.md`, `docs/architecture.md` | `README.md` (teslim öncesi son hâli), `reports/kabul_testleri.md` |
+| `reports/ai_degerlendirme.md` | `reports/gorev2_tutarsizliklar.md` (CR-012), video senaryosu |
 
 **Ortak ve dikkat isteyen dosyalar** (çakışırsa iki tarafın satırları da tutulur):
-- `backend/app/main.py`: yeni yönlendiriciler eklenir.
-- `backend/Dockerfile`: Kişi 2, `ml` paketini ve scikit-learn'ü ekler.
 - `CHANGELOG.md`, `reports/test_results.md`, `docs/development_plan.md` durum günlüğü: herkes kendi bölümünü sona ekler.
-- Üretilen dosyalar (`docs/openapi.json`, `web/src/api/schema.d.ts`) elle birleştirilmez. Birleştirmeden sonra API çalışırken yeniden üretilir (§5).
+- Üretilen dosyalar (`docs/openapi.json`, `web/src/api/schema.d.ts`) elle birleştirilmez; birleştirmeden sonra API çalışırken yeniden üretilir (§5).
 
 ## 4. İşler
 
 Süreler kaba tahmindir (kişi-saat). "Bitti" ölçütü sağlanmadan iş bitmiş sayılmaz (§7).
 
-### Kişi 1 — Caner
+### Kişi 1 — Caner (sunucu, web, yapay zekâ)
 
 | Sıra | İş | Gereksinim | Bitti ölçütü | Süre |
 |---|---|---|---|---|
-| 1 | **T-16a** İleri/geri izleme API: `GET /trace/forward/{lot}`, `/trace/backward/{lot}` (`api.md` §4.3 biçimi: türev lotlar, stok, satış belgeleri, alıcılar, iletişim) | FR-304, FR-305 | ET-2026-001 ileri izlemesi SUC-2026-045 ve Market A 30 / B 25 / C 30'u verir; SUC-2026-045 geri izlemesi üç hammadde lotunu, tedarikçileri, URT-2026-045'i verir (AT-06, AT-07 sunucu testi) | 3 |
-| 2 | **Demo profili** (`SEED_PROFILE=demo`, varsayılan): `base` + URT-2026-045 kabul + araca yükleme + Android kanalından 30/25/30 satış + örnek parçalama; aynı servislerle (defter kuralları geçerli) | FR-309, CR-009, NFR-006 | `docker compose down -v && docker compose up --build` sonrası senaryo hazır; bütünlük 8/8 | 2 |
-| 3 | **T-16b** Geri çağırma: `POST /recalls` (kaynak + bütün türevler bloke), liste, CSV dışa aktarma, kapatma; uyarılar (`/alerts`); çevrimdışı ihlal yapan müşteri listeye eklenir | FR-306, FR-307, FR-310 | AT-08: liste A/B/C'yi miktar + iletişimle verir, CSV iner; bloke sonrası web/API/Android satışı reddeder | 3 |
-| 4 | **T-16c** İkinci kademe: `GET/POST /sale-lines/{id}/onward-deliveries`; listede "kesin" ve "bilinen son alıcı, sonrası bilinmiyor" | FR-308 | AT-09 sunucu testi | 1,5 |
-| 5 | **T-17** Web: izleme ekranı (tek ekranda zincir + alıcılar), geri çağırma başlat/liste/CSV/kapat, uyarılar | FR-304…FR-308 | ET-2026-001 senaryosu arayüzden yürür | 4 |
-| 6 | **Eksik hareketler:** müşteri iadesi (`/returns`), fire/imha (`/adjustments`), ters kayıt (`/movements/{id}/reverse`) + web düğmeleri; zaman kalırsa yeniden işleme | FR-303, NFR-002 | Her biri defter testleriyle; bütünlük 8/8 | 4 |
-| 7 | **T-22** Raporlar: `/reports/*` + web rapor ekranları (süzgeç, CSV); FR-607 bütünlük ekranı | FR-601…FR-607, FR-109 | Her rapor demo verisiyle dolu; üretim raporunda tahmin/sapma sütunu (Kişi 2'nin alanı) | 5 |
-| 8 | **T-25 (payı)** README son hâli, `api.md`, `data_model.md`, `architecture.md`; CR-012 tutarsızlık bölümü | CR-007, CR-008, CR-012, TR-007 | Belgeler kodla tutarlı | 3 |
-| 9 | APK üretimi (`assembleRelease` ya da debug APK) ve depoda yayın | CR-001 | APK telefona/emülatöre kurulup giriş yapılır | 0,5 |
-| | **Toplam** | | | ≈ 26 |
+| 1 | **T-16a** İleri/geri izleme API: `GET /trace/forward/{lot}`, `/trace/backward/{lot}` (`api.md` §4.3) | FR-304, FR-305 | ET-2026-001 ileri izlemesi SUC-2026-045 ve Market A 30 / B 25 / C 30'u verir; SUC-2026-045 geri izlemesi üç hammadde lotunu, tedarikçileri, URT-2026-045'i verir | 3 |
+| 2 | **T-16b** Geri çağırma: başlat (kaynak + bütün türevler bloke), liste, CSV, kapatma; uyarılar | FR-306, FR-307, FR-310 | Liste A/B/C'yi miktar + iletişimle verir, CSV iner; bloke sonrası satış reddedilir | 3 |
+| 3 | **T-16c** İkinci kademe dağıtım; "kesin" ve "bilinen son alıcı, sonrası bilinmiyor" ayrımı | FR-308 | Kayıtlı ve kayıtsız iki örnek doğru ayrılır | 1,5 |
+| 4 | **Eksik hareketler:** müşteri iadesi, fire/imha, ters kayıt | FR-303, NFR-002 | Her biri defter testleriyle; bütünlük 8/8 | 3 |
+| 5 | **Demo profili** (`SEED_PROFILE=demo`, varsayılan): zorunlu senaryo + örnek parçalama + geçmiş kayıtlar; aynı servislerle | FR-309, CR-009 | Sıfırdan kurulumda senaryo hazır; bütünlük 8/8 | 2 |
+| 6 | **T-17** Web: izleme, geri çağırma, uyarı, iade/fire ekranları | FR-304…FR-308 | ET-2026-001 senaryosu arayüzden yürür | 4 |
+| 7 | **T-22** Raporlar: `/reports/*` + web rapor ekranları (süzgeç, CSV), bütünlük ekranı | FR-601…FR-607 | Her rapor demo verisiyle dolu | 4 |
+| 8 | **Web derinlikli (3D) tasarım:** katmanlı kartlar, derinlikli menü, 3D lot akış şeması | NFR-005 | Masaüstü ve telefon genişliğinde okunaklı; testler yeşil | 3 |
+| 9 | **T-18** Sentetik veri üreticisi (sabit tohum, varsayımlar belgede) | FR-505 | Aynı tohumla aynı veri | 2 |
+| 10 | **T-19, T-20** Model A ve B + referans yöntem + hata ölçümü | FR-501, FR-503, FR-506 | Ayrılmış test verisinde hata tablosu | 5 |
+| 11 | **T-21** YZ entegrasyonu: emir ve parçalamada tahmin kaydı, `/ai/*` uçları, ekranda tahmin–gerçek–sapma | FR-502, FR-504, TR-006 | Yeni emirde tahmin görünür; kabulden sonra sapma görünür; model yoksa iş akışı durmaz | 4 |
+| 12 | **YZ raporu** `reports/ai_degerlendirme.md` | CR-006, FR-507 | Yöntem, veri, örnek tahminler, karşılaştırma, sınırlılıklar tek belgede | 2 |
+| 13 | `api.md`, `data_model.md`, `architecture.md` son hâli | CR-007, CR-008 | Belgeler kodla tutarlı | 2 |
+| | **Toplam** | | | ≈ 38 |
 
-### Kişi 2 — ekip arkadaşı
+### Kişi 2 — ekip arkadaşı (Android, eşitleme, teslim)
 
 | Sıra | İş | Gereksinim | Bitti ölçütü | Süre |
 |---|---|---|---|---|
-| 0 | **Kurulum:** paketten depoyu aç, `docker compose up --build`, testleri çalıştır, web'e gir (`BASLA_BURADAN.md`) | — | 134 sunucu + 16 web testi kendi bilgisayarında geçer | 1–2 |
-| 1 | **T-18** Sentetik veri üreticisi (`ml/avatar_ml/data_gen.py`): geçmiş dış üretim emirleri (girdi kg'ları, mamul, verim, EKP) ve parçalamalar (tür, giriş kg, parça kg'ları); sabit tohum; varsayımlar `data/synthetic/README.md`'de | FR-505, CON-004 | Aynı tohumla aynı veri; dağılım özeti belgede | 3 |
-| 2 | **T-19** Model A (et bazlı verim → beklenen paket ve EKP); referans: ürün bazında geçmiş ortalama verim; kronolojik %80/%20; MAE, MAPE (ADR-005) | FR-501, FR-506 | Test verisinde hata tablosu; model referansla karşılaştırılmış (sonuç ne çıkarsa dürüstçe yazılır) | 4 |
-| 3 | **T-20** Model B (parça payları, toplam 1'e ölçeklenir); referans: reçete oranı × giriş ağırlığı | FR-503, FR-506 | Parça bazlı hata tablosu | 4 |
-| 4 | **T-21** Entegrasyon (§6'daki sözleşme): `services/ai.py`, `/ai/production-forecast`, `/ai/cutting-forecast`, `/ai/evaluation`; emir/parçalama açılırken tahmin kaydı; web'de "YZ tahmini" kartı (emir ve parçalama ayrıntısında tahmin–gerçek–sapma) | FR-502, FR-504, TR-006, CR-011 | Yeni emirde tahmin görünür; kabulden sonra sapma görünür; model dosyası yoksa iş akışı durmaz | 5 |
-| 5 | **YZ raporu** `reports/ai_degerlendirme.md`: yöntem, veri, örnek tahminler, referansla karşılaştırma, hata ölçümü, sınırlılıklar | CR-006, FR-507 | Değerlendirici tek belgede okuyabilir | 2 |
-| 6 | **T-23** Kabul testleri: AT-01…AT-12, AT-15 çalışan sisteme karşı otomatik (`tests/`); izleme süresini ölç | CR-010, NFR-009 | `reports/kabul_testleri.md`'de hepsi yeşil; izleme < 2 sn | 6 |
-| 7 | **T-26** Temiz kurulum testi **kendi bilgisayarında**: yalnız README adımlarıyla sıfırdan kur | NFR-006, AT-14 | Sorunsuz kuruluyor ya da sorunlar düzeltilmek üzere Kişi 1'e bildirildi | 2 |
-| 8 | **T-27 (payı)** Video senaryosu metni ve süre provası (≤ 15 dk) | CR-002, CR-003 | Senaryo ana başlıklarla, dakika dakika | 2 |
-| | **Toplam** | | | ≈ 29 |
+| 0 | **Kurulum:** paketten depoyu aç, `docker compose up --build`, testleri çalıştır; Android Studio ile uygulamayı emülatörde aç (`BASLA_BURADAN.md`) | — | Sunucu ve web testleri yeşil; emülatörde giriş + eşitleme | 2 |
+| 1 | **Android derinlikli (3D) tasarım:** katmanlı kartlar, derinlik gölgeleri, dokunuşta hafif eğilme; ana ekran, stok, satış | NFR-005 | Emülatörde okunaklı; birim testleri yeşil | 3 |
+| 2 | **Android geri çağırma görünümü:** bloke lot kırmızı rozetle görünür, satışta neden seçilemediği yazar; son eşitleme zamanı ve bekleyen satış sayısı | FR-403, FR-310 | Geri çağırmadan sonra eşitleme → lot bloke görünür, satılamaz | 2 |
+| 3 | **Eşitleme açıklaması** `docs/senkronizasyon.md`: SQLite ↔ MySQL nasıl tutarlı kalır (çekme, gönderme, tekrar güvenliği, çevrimdışı ihlal) | TR-007 | Değerlendirici tek sayfada anlar; şemalı | 2 |
+| 4 | **APK** üretimi ve kurulum notu | CR-001 | APK emülatöre/telefona kurulup giriş yapılır | 0,5 |
+| 5 | **T-23** Kabul testleri: AT-01…AT-12, AT-15 çalışan sisteme karşı otomatik (`tests/`); izleme süresini ölç | CR-010, NFR-009 | `reports/kabul_testleri.md`'de hepsi yeşil; izleme < 2 sn | 6 |
+| 6 | **CR-012** Görev 2 görselindeki tutarsızlıklar: `reports/gorev2_tutarsizliklar.md` (287,50 ≠ 351,00; parçalar 22 kg) | CR-012 | Hesaplar ve bizim çözümümüz açık | 1 |
+| 7 | **T-26** Temiz kurulum testi kendi bilgisayarında: yalnız README adımlarıyla | NFR-006, AT-14 | Sorunsuz kuruluyor ya da sorunlar bildirildi | 2 |
+| 8 | **GitHub:** `synera-avatar` deposu (gizli), Kişi 1 ortak çalışan; README son hâli, `submission_checklist.md` | CR-001, CR-005 | Gönderim ön izleme ve onayla; teslimde herkese açık | 1 |
+| 9 | **T-27 (payı)** Video senaryosu, süre provası (≤ 15 dk), yükleme (YouTube liste dışı ya da Drive) | CR-002, CR-003 | Bağlantı oturum kapalı tarayıcıda açılıyor | 3 |
+| | **Toplam** | | | ≈ 22,5 |
 
 ### Birlikte
 
 | İş | Ne zaman |
 |---|---|
 | Günlük birleştirme (§5) ve kısa kontrol: testler + bütünlük + ana senaryo | Her akşam |
-| T-27 video çekimi (Kişi 1'in bilgisayarında emülatör ve web hazır) | 31 Ekim |
-| T-28 teslim: `submission_checklist.md`; GitHub'a gönderim (ön izleme + onay), depo herkese açık, e-posta | 1 Kasım |
-| T-02 açık sorular: S-01 (Görev 2 görseli organizatöre soruldu mu?), S-05 (GitHub hesabı, e-postayı kim gönderir), kişi adları | Bugün |
+| T-27 video çekimi (emülatör ve web hazır) | 31 Ekim |
+| T-28 teslim: `submission_checklist.md`; depo herkese açık; e-posta (ext.s.a.bakir@delta-ac.de, konu "Synera", adres elle yazılır) | 1 Kasım |
+| T-02 açık sorular: S-01 (Görev 2 görseli), S-05 (e-postayı kim gönderir), kişi adları | Bugün |
 
 ## 5. Birlikte çalışma
 
-**Ortak depo:** Proje bitene kadar GitHub kullanılmıyor (ekip kararı). Kod, **git paketi** (`.bundle` dosyası) ile taşınır. Bu dosya WhatsApp, Drive ya da USB ile gönderilebilir. Kişi 1 birleştirmeden sorumludur; `main` dalı onda tutulur.
+**Ortak depo:** GitHub'a kod, ekip kararıyla son gün ve ön izlemeyle yüklenir. O zamana kadar kod **git paketi** (`.bundle` dosyası) ile taşınır (WhatsApp, Drive ya da USB). Kişi 1 birleştirmeden sorumludur; `main` dalı onda tutulur.
 
 Kişi 2 başlangıçta (bir kez):
 
@@ -209,29 +220,19 @@ git switch main && git pull ../main_28ekim.bundle main && git switch kisi2 && gi
 
 **Kurallar:**
 - Commit'ler küçük ve anlamlı, mesajlar Türkçe. Her commit'ten önce o kısmın testleri geçmeli.
-- Birleştirmeden sonra, API çalışırken üretilen dosyalar tek komutla yenilenir: `sh scripts/api_tipleri_yenile.sh` (`docs/openapi.json` + `web/src/api/schema.d.ts`).
+- Birleştirmeden sonra, API çalışırken üretilen dosyalar tek komutla yenilenir: `sh scripts/api_tipleri_yenile.sh`.
 - `.env`, parola, `_kaynak/` ve yarışma belgeleri depoya girmez (CON-006).
 - Port çakışması varsa `.env` ile değiştirilir: `API_PORT=18000`, `WEB_PORT=18080`.
-- Bu bilgisayarda (Kişi 1) Windows Uygulama Denetimi scikit-learn'ü Windows'ta engelliyor. Model eğitimi ve testleri Docker içinde (Linux) çalıştırılır.
+- Model eğitimi ve sunucu testleri Docker içinde (Linux) çalıştırılır.
 
-## 6. İki kulvar arasındaki sözleşme (YZ entegrasyonu)
+## 6. İki kulvar arasındaki sözleşme (eşitleme API'si)
 
-Kişi 2'nin sunucu tarafında dokunacağı yerler sınırlıdır. Bu sayede Görev 3 çalışmasıyla çakışmaz.
+Android kulvarı sunucuya yalnız iki uçla bağlanır; bu uçların biçimi değişmeden önce iki kişi anlaşır.
 
-- **Model dosyaları:**
-  - `ml/models/model_a.joblib`, `ml/models/model_b.joblib`.
-  - `ml/models/metadata.json`: sürüm, eğitim tarihi, hata ölçümleri.
-  - Eğitilmiş küçük dosyalar depoya girer (değerlendirici eğitmek zorunda kalmasın).
-- **Sunucuda tahmin:** `app/services/ai.py`.
-  - `forecast_production(session, order) -> AiForecast | None`: `production.create_order` sonunda **tek satırla** çağrılır.
-  - `forecast_cutting(session, cutting) -> AiForecast | None`: `cutting.create_cutting` sonunda çağrılır; `cutting_outputs.predicted_qty`'yi doldurur.
-  - İkisi de hata durumunda `None` döner ve günlüğe yazar; iş akışını **asla durdurmaz** (`architecture.md` §6).
-- **API çıktısı:**
-  - `OrderOut`'a `forecast` alanı eklenir: `{expected_qty, yield_main_pct, ekp, model_version}` ya da `null`. Kabulden sonra gerçek değerle sapma hesaplanır.
-  - `CuttingOut` satırlarındaki `predicted_kg` zaten var; Model B onu doldurur.
-- **Uçlar:** `POST /ai/production-forecast`, `POST /ai/cutting-forecast`, `GET /ai/evaluation` (`api.md` "Yapay zekâ" bölümü).
-- **Kayıt:** `ai_forecasts` tablosu hazır (`model`, `model_version`, `target_type`, `target_id`, `features`, `prediction`). Tahmin sonradan değişmez (sızıntı yok).
-- **Web:** `ForecastCard` bileşeni, emir ve parçalama ayrıntı sayfalarına birer satırla eklenir. Bu iki sayfa Kişi 1'in sahipliğindedir; eklemeden önce haber verilir.
+- **`GET /sync/pull?since=N`** (`api.md` §4.4): N'den sonra değişen ürünler, müşteriler, araç deposundaki lotlar (durumları dahil: `AKTIF` / `BLOKE`) ve araç stoku. `dataset_id` değişmişse ya da `next_since < since` ise cihaz yerel kopyayı silip baştan çeker.
+- **`POST /sync/push`**: bekleyen satışlar; her satış cihazda üretilen `client_uuid` ile gelir. Yanıt satış başına `ACCEPTED`, `ACCEPTED_WITH_WARNING` (çevrimdışıyken bloke lot satıldı), `DUPLICATE` ya da `REJECTED`.
+- **Geri çağırma:** Sunucu bir lotu bloke edince lotun değişiklik numarası artar; bir sonraki çekmede cihaz lotu `BLOKE` görür ve satışa kapatır.
+- **Para ve miktar** metin ondalık olarak taşınır (ADR-006); Android'de kuruş ve gram olarak tam sayıyla tutulur.
 
 ## 7. "Bitti" tanımı
 
@@ -247,11 +248,11 @@ Bir iş ancak şunların hepsi olunca biter:
 
 | Gün | Kişi 1 — Caner | Kişi 2 — arkadaş | Akşam kontrolü |
 |---|---|---|---|
-| 27 Ekim Sal | T-16a izleme API, demo profili | Kurulum, testleri çalıştırma, T-18 başlangıç | Paket teslim edildi; arkadaşta testler yeşil |
-| 28 Ekim Çar | T-16b geri çağırma, T-16c ikinci kademe | T-18 bitir, T-19 Model A | **Birleştirme 1** |
-| 29 Ekim Per (tatil) | T-17 web ekranları, eksik hareketler | T-20 Model B, T-21 entegrasyon başlangıç | **Birleştirme 2** — M3: üç görev çalışıyor |
-| 30 Ekim Cum | T-22 raporlar, FR-607 | T-21 bitir, YZ raporu, T-23 kabul testleri | **Birleştirme 3** — M4: kabul testleri yeşil |
-| 31 Ekim Cmt | Belgeler (T-25), APK, hata düzeltme | T-26 temiz kurulum (kendi PC), video senaryosu | **Kod dondurma 20:00**, video çekimi — M5 |
-| 1 Kasım Paz | GitHub'a gönderim (ön izleme + onay), depo herkese açık | Videoyu oturum kapalı tarayıcıda deneme | Kontrol listesi tam; **e-posta öğleden sonra** — M6 |
+| 27 Ekim Sal | T-16 izleme + geri çağırma API, demo profili | Kurulum, Android Studio, GitHub deposu (gizli) | Arkadaşta testler yeşil |
+| 28 Ekim Çar | Eksik hareketler, T-17 web ekranları | Android derinlikli tasarım, bloke lot görünümü | **Birleştirme 1** |
+| 29 Ekim Per (tatil) | T-18…T-21 yapay zekâ, YZ raporu | Eşitleme açıklaması, CR-012, APK | **Birleştirme 2** — M3: üç görev + YZ çalışıyor |
+| 30 Ekim Cum | T-22 raporlar, web derinlikli tasarım | T-23 kabul testleri | **Birleştirme 3** — M4: kabul testleri yeşil |
+| 31 Ekim Cmt | Belgeler, hata düzeltme | T-26 temiz kurulum, video senaryosu | **Kod dondurma 20:00**, video çekimi — M5 |
+| 1 Kasım Paz | GitHub'a gönderim (ön izleme + onay) | Depo herkese açık, video bağlantısı denemesi | Kontrol listesi tam; **e-posta öğleden sonra** — M6 |
 
-**Geride kalınırsa önce bunlar bırakılır** (`development_plan.md` §5): yeniden işleme hareketi, rapor süzgeçleri, web'de görsel cila. ★K gereksinimlerden (Görev 3, iki YZ modeli, demo senaryosu, video) hiçbiri kısılmaz.
+**Geride kalınırsa önce bunlar bırakılır** (`development_plan.md` §5): yeniden işleme hareketi, rapor süzgeçleri, görsel cila. ★K gereksinimlerden (Görev 3, iki YZ modeli, demo senaryosu, video) hiçbiri kısılmaz.

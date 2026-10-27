@@ -55,7 +55,7 @@ class CustomerReturn(IdMixin, AuditMixin, Base):
     qty: Mapped[Decimal] = mapped_column(QTY)
     warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
     reason: Mapped[str | None] = mapped_column(String(255))
-    stock_movement_id: Mapped[int] = mapped_column(ForeignKey("stock_movements.id"), unique=True)
+    stock_movement_id: Mapped[int | None] = mapped_column(ForeignKey("stock_movements.id"), unique=True)
 
 
 class OnwardDelivery(IdMixin, AuditMixin, Base):

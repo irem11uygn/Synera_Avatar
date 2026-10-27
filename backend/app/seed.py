@@ -1,4 +1,7 @@
-"""Boş veritabanına örnek kayıtları yükler (SEED_PROFILE: none | base).
+"""Boş veritabanına örnek kayıtları yükler (SEED_PROFILE: none | base | demo).
+
+- base: ana veriler + hammadde alışları.
+- demo (varsayılan): base + şartnamenin zorunlu senaryosu ve örnek parçalama (app/demo.py, FR-309).
 
 Çalıştırma: python -m app.seed  (API konteyneri açılışta kendisi çalıştırır).
 """
@@ -15,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_sessionmaker
+from app.demo import build_demo_scenario
 from app.models import CuttingRecipe, CuttingRecipeLine, NumberSequence, Partner, Product, User, Warehouse
 from app.models.enums import (
     AllocationMethod,
@@ -31,7 +35,7 @@ from app.services.purchasing import ExtraCost, PurchaseLineInput, create_purchas
 
 logger = logging.getLogger(__name__)
 
-PROFILES = ("none", "base")
+PROFILES = ("none", "base", "demo")
 
 
 def load_profile(session: Session, seed_dir: Path, profile: str) -> bool:
@@ -44,7 +48,7 @@ def load_profile(session: Session, seed_dir: Path, profile: str) -> bool:
         logger.info("Veritabanı boş değil; örnek kayıtlar yüklenmedi.")
         return False
 
-    data = json.loads((seed_dir / f"{profile}.json").read_text(encoding="utf-8"))
+    data = json.loads((seed_dir / "base.json").read_text(encoding="utf-8"))
     partners = _load_partners(session, data["partners"])
     warehouses = _load_warehouses(session, data["warehouses"], partners)
     products = _load_products(session, data["products"])
@@ -54,6 +58,8 @@ def load_profile(session: Session, seed_dir: Path, profile: str) -> bool:
         session.add(NumberSequence(prefix=row["prefix"], year=row["year"], last_no=row["last_no"]))
     session.flush()
     _load_purchases(session, data["purchases"], partners, warehouses, products)
+    if profile == "demo":
+        build_demo_scenario(session)
     logger.info(
         "'%s' profili yüklendi: %d ürün, %d cari, %d alış.",
         profile,
