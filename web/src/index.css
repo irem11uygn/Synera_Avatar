@@ -1,3 +1,347 @@
+/*
+ * Derinlikli (3D) görünüm: katmanlı gölgeler, hafif perspektif, üzerine gelince öne çıkan kartlar.
+ * Yeni paket yok; düz CSS. Hareket azaltma tercihi olan kullanıcıda eğilme ve kayma kapanır,
+ * gölgeler kalır. Dönüşen öğelere başlangıçta etkisiz dönüşüm verilir: üzerine gelindiğinde
+ * yeni katman bağlamı oluşup üst üste binme sırası değişmesin.
+ */
+
+:root {
+  --depth-ink: 15 23 42;
+  --depth-1: 0 1px 2px rgb(var(--depth-ink) / 6%), 0 4px 14px rgb(var(--depth-ink) / 7%);
+  --depth-2: 0 2px 4px rgb(var(--depth-ink) / 8%), 0 14px 32px rgb(var(--depth-ink) / 13%);
+  --depth-3: 0 6px 10px rgb(var(--depth-ink) / 10%), 0 26px 56px rgb(var(--depth-ink) / 20%);
+  --depth-edge: inset 0 1px 0 rgb(255 255 255 / 70%);
+  --depth-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --surface-page: #eef2f8;
+  --accent: #2563eb;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+}
+
 body {
   margin: 0;
+  background:
+    radial-gradient(1200px 600px at 0% -10%, #f9fbff 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, #e6edfb 0%, transparent 55%),
+    var(--surface-page);
+  background-attachment: fixed;
+}
+
+/* --- Kartlar: bütün ekranlarda katmanlı yüzey --- */
+
+.ant-card {
+  box-shadow: var(--depth-1), var(--depth-edge);
+  border-color: rgb(var(--depth-ink) / 7%) !important;
+  translate: 0;
+  transition:
+    box-shadow 0.25s var(--depth-ease),
+    translate 0.25s var(--depth-ease);
+}
+
+.ant-card:hover {
+  box-shadow: var(--depth-2), var(--depth-edge);
+}
+
+.ant-card-hoverable:hover,
+.depth-lift:hover {
+  translate: 0 -3px;
+  box-shadow: var(--depth-3), var(--depth-edge);
+}
+
+/* --- Üst çubuk ve menü --- */
+
+.app-header {
+  background: linear-gradient(120deg, #0b1d3a 0%, #13305f 55%, #1d4ed8 140%) !important;
+  box-shadow: 0 6px 18px rgb(var(--depth-ink) / 25%);
+  position: sticky;
+  top: 0;
+  z-index: 110;
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  min-width: 0;
+  line-height: 1.2; /* üst çubuğun 64 px satır yüksekliği logo kutusunu taşırmasın */
+}
+
+.app-brand-mark {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #60a5fa, #1d4ed8);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 45%),
+    0 3px 0 #0f2a66,
+    0 8px 14px rgb(0 0 0 / 35%);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+
+.app-sider {
+  box-shadow: 4px 0 18px rgb(var(--depth-ink) / 6%);
+}
+
+/* --- Eğilen kart (Tilt bileşeni) --- */
+
+.tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform 0.35s var(--depth-ease);
+  will-change: transform;
+}
+
+.tilt.is-tilting {
+  transition-duration: 0.08s;
+}
+
+/* --- Gösterge kutuları (ana sayfa, geri çağırma, YZ) --- */
+
+.stat-tile {
+  position: relative;
+  border-radius: 16px;
+  padding: 16px 18px;
+  background: linear-gradient(160deg, #ffffff 0%, #f3f6fc 100%);
+  border: 1px solid rgb(var(--depth-ink) / 7%);
+  box-shadow: var(--depth-2), var(--depth-edge);
+  overflow: hidden;
+  min-height: 104px;
+}
+
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--tile-color, var(--accent));
+}
+
+.stat-tile-label {
+  color: rgb(var(--depth-ink) / 62%);
+  font-size: 13px;
+}
+
+.stat-tile-value {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 4px;
+  color: rgb(var(--depth-ink) / 92%);
+  transform: translateZ(24px);
+}
+
+.stat-tile-hint {
+  font-size: 12px;
+  margin-top: 4px;
+  color: rgb(var(--depth-ink) / 55%);
+}
+
+.stat-button {
+  all: unset;
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.stat-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* --- 3D lot akış şeması (izleme ve geri çağırma) --- */
+
+.trace-stage {
+  perspective: 1600px;
+  overflow-x: auto;
+  padding: 8px 4px 20px;
+}
+
+.trace-plane {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-width: min-content;
+  transform: rotateX(7deg);
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+}
+
+.trace-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-width: 190px;
+  max-width: 240px;
+}
+
+.trace-column-title {
+  font-size: 12px;
+  color: rgb(var(--depth-ink) / 55%);
+  text-align: center;
+}
+
+.trace-arrows {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 112px;
+  padding: 0 8px;
+  font-size: 11px;
+  color: rgb(var(--depth-ink) / 60%);
+  text-align: center;
+}
+
+.trace-arrow {
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.trace-arrow::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 10px;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgb(var(--depth-ink) / 15%), var(--accent));
+}
+
+.trace-arrow::before {
+  content: '';
+  position: absolute;
+  right: 2px;
+  bottom: -4px;
+  border: 5px solid transparent;
+  border-left: 9px solid var(--accent);
+}
+
+/* Lot bloğu: alt ve sağ kenarı katmanlı gölgeyle "kalınlık" kazanır. */
+.lot-block {
+  --block-face: #ffffff;
+  --block-edge: #c7d2e5;
+  --block-ink: 30 58 138;
+  position: relative;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(160deg, var(--block-face), #eef3fb);
+  border: 1px solid rgb(var(--block-ink) / 18%);
+  box-shadow:
+    1px 1px 0 var(--block-edge),
+    2px 2px 0 var(--block-edge),
+    3px 3px 0 var(--block-edge),
+    4px 4px 0 var(--block-edge),
+    5px 5px 0 var(--block-edge),
+    10px 14px 22px rgb(var(--depth-ink) / 18%);
+  translate: 0;
+  transition:
+    translate 0.25s var(--depth-ease),
+    box-shadow 0.25s var(--depth-ease);
+  color: rgb(var(--depth-ink) / 90%);
+  font-size: 13px;
+}
+
+.lot-block:hover {
+  translate: -2px -3px;
+}
+
+.lot-block-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.lot-block-sub {
+  color: rgb(var(--depth-ink) / 60%);
+  font-size: 12px;
+}
+
+.lot-block.is-blocked {
+  --block-face: #fff5f5;
+  --block-edge: #f3b4b4;
+  --block-ink: 185 28 28;
+}
+
+.lot-block.is-source {
+  --block-face: #f5f9ff;
+  --block-edge: #93b4f5;
+}
+
+.lot-block.is-customer {
+  --block-face: #f4fbf6;
+  --block-edge: #a7dcb8;
+  --block-ink: 21 128 61;
+}
+
+.lot-block.is-violation {
+  --block-face: #fff7ed;
+  --block-edge: #f5c48b;
+  --block-ink: 194 65 12;
+}
+
+/* --- Model karşılaştırma çubukları (YZ ekranı) --- */
+
+.bar-track {
+  height: 10px;
+  border-radius: 6px;
+  background: rgb(var(--depth-ink) / 8%);
+  box-shadow: inset 0 1px 2px rgb(var(--depth-ink) / 12%);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #93c5fd, var(--accent));
+  box-shadow: 0 1px 0 rgb(255 255 255 / 50%) inset;
+}
+
+.bar-fill.is-baseline {
+  background: linear-gradient(90deg, #cbd5e1, #94a3b8);
+}
+
+/* Telefon genişliğinde şema yatay kayar; düzlem eğimi okunurluk için kalkar. */
+@media (max-width: 767.98px) {
+  .app-brand-long {
+    display: none;
+  }
+  .trace-plane {
+    transform: none;
+  }
+  .stat-tile-value {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 479.98px) {
+  .app-user {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt,
+  .trace-plane {
+    transform: none !important;
+  }
+  .ant-card,
+  .lot-block,
+  .tilt {
+    transition: none;
+  }
+  .ant-card-hoverable:hover,
+  .depth-lift:hover,
+  .lot-block:hover {
+    translate: 0;
+  }
 }

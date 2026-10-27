@@ -2130,6 +2130,8 @@ export interface components {
         SaleChannel: "ANDROID" | "WEB";
         /** SaleLineOut */
         SaleLineOut: {
+            /** Id */
+            id: number;
             /** Line No */
             line_no: number;
             /** Lot No */

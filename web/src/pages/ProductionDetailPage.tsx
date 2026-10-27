@@ -24,6 +24,7 @@ import { useState } from 'react'
 import { api, errorMessage } from '../api/client'
 import { refreshBusinessData, useProducts } from '../api/queries'
 import type { CompleteInput, Order } from '../api/types'
+import { ForecastCard } from '../components/ForecastCard'
 import { Link } from '../components/Link'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
@@ -169,6 +170,8 @@ export default function ProductionDetailPage({ id }: { id: number }) {
           ]}
         />
       </Card>
+
+      <ForecastCard order={data} />
 
       <Card size="small" title="Hammadde girdileri" style={{ marginBottom: 16 }}>
         <Table<InputRow>

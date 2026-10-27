@@ -6934,6 +6934,10 @@
       },
       "SaleLineOut": {
         "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
           "line_no": {
             "type": "integer",
             "title": "Line No"
@@ -6968,6 +6972,7 @@
         },
         "type": "object",
         "required": [
+          "id",
           "line_no",
           "lot_no",
           "product_name",

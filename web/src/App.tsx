@@ -1,8 +1,13 @@
-import { Button, Flex, Layout, Menu, Result, Typography, type MenuProps } from 'antd'
+import { useQuery } from '@tanstack/react-query'
+import { Badge, Button, Flex, Layout, Menu, Result, Typography, type MenuProps } from 'antd'
 import { useState, type ReactNode } from 'react'
+import { api } from './api/client'
+import type { AlertRow, ReportCode } from './api/types'
 import { useSession } from './auth/context'
 import { Link } from './components/Link'
 import { matchPath, navigate, usePath } from './lib/router'
+import AiPage from './pages/AiPage'
+import AlertsPage from './pages/AlertsPage'
 import CuttingDetailPage from './pages/CuttingDetailPage'
 import CuttingListPage from './pages/CuttingListPage'
 import CuttingNewPage from './pages/CuttingNewPage'
@@ -16,8 +21,13 @@ import ProductionNewPage from './pages/ProductionNewPage'
 import ProductsPage from './pages/ProductsPage'
 import PurchaseNewPage from './pages/PurchaseNewPage'
 import PurchasesPage from './pages/PurchasesPage'
+import RecallDetailPage from './pages/RecallDetailPage'
+import RecallsPage from './pages/RecallsPage'
 import RecipesPage from './pages/RecipesPage'
+import ReportsPage from './pages/ReportsPage'
+import SalesPage from './pages/SalesPage'
 import StockPage from './pages/StockPage'
+import TracePage from './pages/TracePage'
 import TransfersPage from './pages/TransfersPage'
 
 const { Header, Sider, Content } = Layout
@@ -42,32 +52,87 @@ const ROUTES: Route[] = [
   { pattern: '/parcalama/yeni', render: () => <CuttingNewPage /> },
   { pattern: '/parcalama/:id', render: ({ id }) => <CuttingDetailPage id={Number(id)} /> },
   { pattern: '/receteler', render: () => <RecipesPage /> },
+  { pattern: '/satislar', render: () => <SalesPage /> },
+  { pattern: '/izleme', render: () => <TracePage /> },
+  { pattern: '/izleme/:lotNo', render: ({ lotNo }) => <TracePage key={lotNo} lotNo={lotNo} /> },
+  {
+    pattern: '/izleme/:lotNo/geri',
+    render: ({ lotNo }) => <TracePage key={`${lotNo}-geri`} lotNo={lotNo} direction="backward" />,
+  },
+  { pattern: '/geri-cagirma', render: () => <RecallsPage /> },
+  { pattern: '/geri-cagirma/:id', render: ({ id }) => <RecallDetailPage id={Number(id)} /> },
+  { pattern: '/uyarilar', render: () => <AlertsPage /> },
+  { pattern: '/raporlar', render: () => <ReportsPage /> },
+  { pattern: '/raporlar/:code', render: ({ code }) => <ReportsPage code={code as ReportCode} /> },
+  { pattern: '/yapay-zeka', render: () => <AiPage /> },
 ]
 
 const link = (to: string, label: string) => ({ key: to, label: <Link to={to}>{label}</Link> })
 
-const MENU: MenuProps['items'] = [
-  link('/', 'Ana sayfa'),
-  { type: 'group', label: 'Ana veriler', children: [link('/urunler', 'Ürünler'), link('/cariler', 'Cariler')] },
-  {
-    type: 'group',
-    label: 'Stok ve lotlar',
-    children: [
-      link('/alislar', 'Hammadde alışları'),
-      link('/stok', 'Stok durumu'),
-      link('/lotlar', 'Lotlar'),
-      link('/transferler', 'Transferler'),
-    ],
-  },
-  { type: 'group', label: 'Görev 1', children: [link('/uretim', 'Dış üretim emirleri')] },
-  {
-    type: 'group',
-    label: 'Görev 2',
-    children: [link('/parcalama', 'Parçalama'), link('/receteler', 'Parçalama reçeteleri')],
-  },
-]
+function menuItems(openAlerts: number): MenuProps['items'] {
+  return [
+    link('/', 'Ana sayfa'),
+    { type: 'group', label: 'Ana veriler', children: [link('/urunler', 'Ürünler'), link('/cariler', 'Cariler')] },
+    {
+      type: 'group',
+      label: 'Stok ve lotlar',
+      children: [
+        link('/alislar', 'Hammadde alışları'),
+        link('/stok', 'Stok durumu'),
+        link('/lotlar', 'Lotlar'),
+        link('/transferler', 'Transferler'),
+      ],
+    },
+    { type: 'group', label: 'Görev 1 — dış üretim', children: [link('/uretim', 'Dış üretim emirleri')] },
+    {
+      type: 'group',
+      label: 'Görev 2 — parçalama ve satış',
+      children: [link('/parcalama', 'Parçalama'), link('/receteler', 'Parçalama reçeteleri'), link('/satislar', 'Satışlar ve iadeler')],
+    },
+    {
+      type: 'group',
+      label: 'Görev 3 — izlenebilirlik',
+      children: [
+        link('/izleme', 'Lot izleme'),
+        link('/geri-cagirma', 'Geri çağırma'),
+        {
+          key: '/uyarilar',
+          label: (
+            <Link to="/uyarilar">
+              <Flex justify="space-between" align="center" gap="small">
+                Uyarılar
+                <Badge count={openAlerts} size="small" aria-label={`${openAlerts} okunmamış uyarı`} />
+              </Flex>
+            </Link>
+          ),
+        },
+      ],
+    },
+    {
+      type: 'group',
+      label: 'Analiz',
+      children: [link('/raporlar', 'Raporlar'), link('/yapay-zeka', 'Yapay zekâ')],
+    },
+  ]
+}
 
-const MENU_KEYS = ['/urunler', '/cariler', '/alislar', '/stok', '/lotlar', '/transferler', '/uretim', '/parcalama', '/receteler']
+const MENU_KEYS = [
+  '/urunler',
+  '/cariler',
+  '/alislar',
+  '/stok',
+  '/lotlar',
+  '/transferler',
+  '/uretim',
+  '/parcalama',
+  '/receteler',
+  '/satislar',
+  '/izleme',
+  '/geri-cagirma',
+  '/uyarilar',
+  '/raporlar',
+  '/yapay-zeka',
+]
 
 function selectedKey(path: string): string {
   return MENU_KEYS.find((key) => path === key || path.startsWith(`${key}/`)) ?? '/'
@@ -103,10 +168,16 @@ export default function App() {
   // Başlangıç değeri ekran genişliğinden: menü açık başlayıp kapanırsa o arada tıklama menüye gider.
   const [narrow, setNarrow] = useState(isNarrowScreen)
   const [menuClosed, setMenuClosed] = useState(isNarrowScreen)
+  // Okunmamış uyarı sayısı menüde görünür (ör. geri çağrılmış lotun çevrimdışı satışı).
+  const alerts = useQuery({
+    queryKey: ['alerts', true],
+    queryFn: () => api<AlertRow[]>('/alerts', { query: { only_open: true } }),
+    refetchInterval: 60_000,
+  })
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ paddingInline: 16 }}>
+      <Header className="app-header" style={{ paddingInline: 16 }}>
         <Flex justify="space-between" align="center" gap="small" style={{ height: '100%' }}>
           <Flex align="center" gap="small" style={{ minWidth: 0 }}>
             {narrow && (
@@ -119,12 +190,21 @@ export default function App() {
                 Menü
               </Button>
             )}
-            <Typography.Text strong style={{ color: '#fff', fontSize: 16 }} ellipsis>
-              AVATAR · Üretim, Maliyet ve Lot İzlenebilirliği
-            </Typography.Text>
+            <Link to="/">
+              <span className="app-brand">
+                <span className="app-brand-mark" aria-hidden="true">
+                  A
+                </span>
+                <Typography.Text strong style={{ color: '#fff', fontSize: 16 }} ellipsis>
+                  AVATAR · Synera<span className="app-brand-long"> — Üretim, Maliyet ve Lot İzlenebilirliği</span>
+                </Typography.Text>
+              </span>
+            </Link>
           </Flex>
           <Flex align="center" gap="small" style={{ flexShrink: 0 }}>
-            <Typography.Text style={{ color: 'rgba(255,255,255,0.85)' }}>{user.full_name}</Typography.Text>
+            <Typography.Text className="app-user" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              {user.full_name}
+            </Typography.Text>
             <Button size="small" onClick={logout}>
               Çıkış
             </Button>
@@ -137,6 +217,7 @@ export default function App() {
           collapsedWidth={0}
           width={220}
           theme="light"
+          className="app-sider"
           trigger={null}
           collapsed={menuClosed}
           // Dar ekranda menü içeriği itmez, üzerine açılır.
@@ -149,7 +230,7 @@ export default function App() {
           <nav id="ana-menu" aria-label="Ana menü">
             <Menu
               mode="inline"
-              items={MENU}
+              items={menuItems(alerts.data?.length ?? 0)}
               selectedKeys={[selectedKey(path)]}
               onClick={() => narrow && setMenuClosed(true)}
               style={{ borderInlineEnd: 0 }}

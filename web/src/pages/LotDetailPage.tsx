@@ -2,10 +2,28 @@
 // bütün hareketler — kim, ne zaman, hangi belgeyle, ne kadar, hangi tutar. Hareketlerin toplamı
 // lotun kalan miktar ve değerine eşit olmalıdır (NFR-004); ekranda bu denetim de gösterilir.
 
-import { useQuery } from '@tanstack/react-query'
-import { Card, Col, Descriptions, Empty, Row, Spin, Table, Tag, Typography, type TableColumnsType } from 'antd'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Empty,
+  Form,
+  Input,
+  Row,
+  Select,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+  type TableColumnsType,
+} from 'antd'
+import { useState } from 'react'
 import { api } from '../api/client'
+import { refreshBusinessData, useWarehouses } from '../api/queries'
 import type { BaseUnit, LotDetail, Movement, MovementType } from '../api/types'
+import { FormModal } from '../components/FormModal'
 import { Link } from '../components/Link'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
@@ -13,6 +31,9 @@ import { LotStatusTag } from '../components/StatusTags'
 import { compare, sum } from '../lib/decimal'
 import { formatDate, formatDateTime, formatMoney, formatQty, formatUnitCost } from '../lib/format'
 import { LINK_PROCESS, LOT_ORIGIN, MOVEMENT_TYPE } from '../lib/labels'
+import { tracePath } from '../lib/paths'
+import { navigate } from '../lib/router'
+import { decimalRule, toApiDecimal } from '../lib/rules'
 
 type LinkRow = LotDetail['parents'][number]
 
@@ -25,7 +46,14 @@ function documentCell(movement: Movement) {
   return page ? <Link to={`${page}/${movement.doc_id}`}>{number}</Link> : number
 }
 
-function movementColumns(unit: BaseUnit): TableColumnsType<Movement> {
+// Ters kayıtla düzeltilebilen hareketler (sunucuda aynı kural): fire, iade, elle transfer.
+const REVERSIBLE = new Set<MovementType>(['FIRE', 'IADE_GIRIS', 'TRANSFER_CIKIS', 'TRANSFER_GIRIS'])
+
+function movementColumns(
+  unit: BaseUnit,
+  reversed: Set<number>,
+  onReverse: (movement: Movement) => void,
+): TableColumnsType<Movement> {
   return [
     { title: 'Zaman', dataIndex: 'posted_at', render: formatDateTime },
     {
@@ -44,7 +72,93 @@ function movementColumns(unit: BaseUnit): TableColumnsType<Movement> {
     { title: 'Belge', key: 'doc', render: (_, row) => documentCell(row) },
     { title: 'Kullanıcı', dataIndex: 'user_name', render: (v: string | null) => v ?? 'Örnek kayıt' },
     { title: 'Not', dataIndex: 'note', render: (v: string | null) => v ?? '—' },
+    {
+      title: 'Düzeltme',
+      key: 'reverse',
+      render: (_, row) =>
+        reversed.has(row.id) ? (
+          <Tag>Ters kayıtla düzeltildi</Tag>
+        ) : REVERSIBLE.has(row.type) && !row.reversal_of_id ? (
+          <Button size="small" onClick={() => onReverse(row)}>
+            Ters kayıt
+          </Button>
+        ) : null,
+    },
   ]
+}
+
+type WasteValues = { warehouse_id: number; qty: string; reason: string }
+
+function WasteModal({ lot, open, onClose }: { lot: LotDetail; open: boolean; onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const warehouses = useWarehouses()
+  const codes = new Set(lot.balances.map((b) => b.warehouse_code))
+  const mutation = useMutation({
+    mutationFn: (values: WasteValues) =>
+      api('/adjustments', {
+        method: 'POST',
+        body: { ...values, lot_no: lot.lot_no, qty: toApiDecimal(values.qty, 3) },
+      }),
+    onSuccess: () => refreshBusinessData(queryClient),
+  })
+  return (
+    <FormModal<WasteValues>
+      title={`${lot.lot_no} — fire / imha`}
+      open={open}
+      onClose={onClose}
+      onSubmit={(values) => mutation.mutateAsync(values)}
+      okText="Fireyi kaydet"
+    >
+      <Form.Item name="warehouse_id" label="Depo" rules={[{ required: true, message: 'Depoyu seçin.' }]}>
+        <Select
+          options={(warehouses.data ?? [])
+            .filter((w) => codes.has(w.code))
+            .map((w) => ({
+              value: w.id,
+              label: `${w.name} — ${formatQty(lot.balances.find((b) => b.warehouse_code === w.code)?.qty, lot.base_unit)}`,
+            }))}
+        />
+      </Form.Item>
+      <Form.Item
+        name="qty"
+        label="Miktar"
+        rules={[decimalRule('Miktar', { maxFraction: 3, integer: lot.base_unit === 'ADET' })]}
+      >
+        <Input inputMode="decimal" autoComplete="off" />
+      </Form.Item>
+      <Form.Item name="reason" label="Gerekçe" rules={[{ required: true, message: 'Gerekçeyi yazın.' }]}>
+        <Input maxLength={255} placeholder="Soğuk zincir kırıldı" />
+      </Form.Item>
+      <Typography.Text type="secondary">Lot değeri ortalama birim maliyetle düşer; bloke lotta da yapılabilir.</Typography.Text>
+    </FormModal>
+  )
+}
+
+function ReverseModal({ movement, lotNo, onClose }: { movement: Movement | null; lotNo: string; onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (values: { reason: string }) =>
+      api(`/movements/${movement!.id}/reverse`, { method: 'POST', body: values }),
+    onSuccess: () => refreshBusinessData(queryClient),
+  })
+  if (!movement) return null
+  return (
+    <FormModal<{ reason: string }>
+      title={`Ters kayıt: ${MOVEMENT_TYPE[movement.type]} (${lotNo})`}
+      open
+      onClose={onClose}
+      onSubmit={(values) => mutation.mutateAsync(values)}
+      okText="Ters kaydı yaz"
+    >
+      <Typography.Paragraph>
+        Defterde hiçbir hareket silinmez ya da değiştirilmez. Bu hareketin tam tersi yeni bir hareket olarak yazılır
+        {movement.type.startsWith('TRANSFER') ? ' (transferin iki hareketi birlikte)' : ''}.
+      </Typography.Paragraph>
+      <Form.Item name="reason" label="Gerekçe" rules={[{ required: true, message: 'Gerekçeyi yazın.' }]}>
+        <Input maxLength={255} placeholder="Yanlış lot seçilmiş" />
+      </Form.Item>
+    </FormModal>
+  )
 }
 
 const LINK_COLUMNS: TableColumnsType<LinkRow> = [
@@ -69,6 +183,8 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
     queryKey: ['movements', lotNo],
     queryFn: () => api<Movement[]>(`/lots/${encodeURIComponent(lotNo)}/movements`),
   })
+  const [wasting, setWasting] = useState(false)
+  const [reversing, setReversing] = useState<Movement | null>(null)
 
   if (lot.isError) {
     return (
@@ -82,6 +198,7 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
   const data = lot.data
   const totalQty = movements.data ? sum(movements.data.map((m) => m.qty), 3) : null
   const totalValue = movements.data ? sum(movements.data.map((m) => m.value), 2) : null
+  const reversed = new Set((movements.data ?? []).flatMap((m) => (m.reversal_of_id ? [m.reversal_of_id] : [])))
   const consistent =
     totalQty !== null &&
     totalValue !== null &&
@@ -89,7 +206,16 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
     compare(totalValue, data.remaining_value) === 0
 
   return (
-    <Page title={`Lot ${data.lot_no}`}>
+    <Page
+      title={`Lot ${data.lot_no}`}
+      extra={
+        <>
+          <Button onClick={() => navigate(tracePath(data.lot_no))}>İleri izle</Button>
+          <Button onClick={() => navigate(tracePath(data.lot_no, 'backward'))}>Geri izle</Button>
+          {data.balances.length > 0 && <Button onClick={() => setWasting(true)}>Fire / imha</Button>}
+        </>
+      }
+    >
       <Card size="small" style={{ marginBottom: 16 }}>
         <Descriptions
           size="small"
@@ -166,7 +292,7 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
           rowKey="id"
           size="small"
           loading={movements.isPending}
-          columns={movementColumns(data.base_unit)}
+          columns={movementColumns(data.base_unit, reversed, setReversing)}
           dataSource={movements.data}
           pagination={false}
           scroll={{ x: 'max-content' }}
@@ -182,7 +308,7 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
                 <Table.Summary.Cell index={4} align="right">
                   <Typography.Text strong>{formatMoney(totalValue)}</Typography.Text>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={5} colSpan={3}>
+                <Table.Summary.Cell index={5} colSpan={4}>
                   {consistent ? (
                     <Tag color="green">Kalan miktar ve değerle tutarlı</Tag>
                   ) : (
@@ -194,6 +320,8 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
           }
         />
       </Card>
+      <WasteModal lot={data} open={wasting} onClose={() => setWasting(false)} />
+      <ReverseModal movement={reversing} lotNo={data.lot_no} onClose={() => setReversing(null)} />
     </Page>
   )
 }

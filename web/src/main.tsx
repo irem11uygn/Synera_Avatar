@@ -16,7 +16,19 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ConfigProvider locale={trTR}>
+    <ConfigProvider
+      locale={trTR}
+      theme={{
+        // Derinlikli görünüm: yuvarlak köşeler, mavi vurgu, açık zemin; gölgeler index.css'te.
+        token: { colorPrimary: '#2563eb', borderRadius: 10, colorBgLayout: 'transparent', fontSize: 14 },
+        components: {
+          Layout: { headerBg: '#0b1d3a', siderBg: '#ffffff', bodyBg: 'transparent' },
+          Card: { borderRadiusLG: 16 },
+          Menu: { itemBorderRadius: 10, itemMarginInline: 8 },
+          Table: { headerBg: '#f3f6fc', borderRadius: 12 },
+        },
+      }}
+    >
       <AntApp>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>

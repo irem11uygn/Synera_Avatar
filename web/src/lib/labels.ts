@@ -8,10 +8,14 @@ import type {
   LotOrigin,
   LotStatus,
   MovementType,
+  OnwardStatus,
   OrderStatus,
   ProductKind,
   PurchaseCostKind,
+  RecallResolution,
+  RecallStatus,
   RecipeLineType,
+  SaleChannel,
   Species,
   TransferReason,
   WarehouseKind,
@@ -94,6 +98,21 @@ export const RECIPE_LINE_TYPE: Record<RecipeLineType, string> = {
 }
 
 export const SPECIES: Record<Species, string> = { KUZU: 'Kuzu', KOYUN: 'Koyun', KECI: 'Keçi' }
+
+export const ONWARD_STATUS: Record<OnwardStatus, string> = {
+  KAYITLI: 'Kesin: alıcıları kayıtlı',
+  KISMEN: 'Kısmen kayıtlı, kalanı bilinmiyor',
+  BILINMIYOR: 'Bilinen son alıcı; sonrası bilinmiyor',
+}
+
+export const RECALL_STATUS: Record<RecallStatus, string> = { ACIK: 'Açık', KAPANDI: 'Kapandı' }
+
+export const RECALL_RESOLUTION: Record<RecallResolution, string> = {
+  IMHA: 'İmha (bizdeki stok düşülür, lotlar bloke kalır)',
+  SERBEST: 'Serbest bırak (lotlar yeniden satılabilir)',
+}
+
+export const SALE_CHANNEL: Record<SaleChannel, string> = { ANDROID: 'Android', WEB: 'Web' }
 
 /** Select bileşeni için { value, label } listesi. */
 export function options<K extends string>(labels: Record<K, string>): { value: K; label: string }[] {

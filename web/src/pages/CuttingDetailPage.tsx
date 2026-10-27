@@ -211,7 +211,13 @@ function Weighing({ cutting }: { cutting: Cutting }) {
       ),
     },
     { title: 'Standart oran', dataIndex: 'standard_ratio', align: 'right', render: percent },
-    { title: 'Beklenen', dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+    { title: 'Standart (referans)', dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+    {
+      title: 'YZ tahmini (Model B)',
+      dataIndex: 'predicted_kg',
+      align: 'right',
+      render: (v: string | null) => formatQty(v, 'KG'),
+    },
     {
       title: 'Fiili ağırlık',
       key: 'actual',
@@ -282,13 +288,18 @@ function Weighing({ cutting }: { cutting: Cutting }) {
               {formatQty(sum(cutting.lines.map((l) => l.standard_kg), 3), 'KG')}
             </Table.Summary.Cell>
             <Table.Summary.Cell index={3} align="right">
+              {cutting.lines.some((l) => l.predicted_kg)
+                ? formatQty(sum(cutting.lines.map((l) => l.predicted_kg ?? '0'), 3), 'KG')
+                : '—'}
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={4} align="right">
               <Typography.Text strong>{formatQty(shown.balance.outputs_kg, 'KG')}</Typography.Text>
             </Table.Summary.Cell>
-            {method === 'DEGER' && <Table.Summary.Cell index={4} />}
-            <Table.Summary.Cell index={method === 'DEGER' ? 5 : 4} align="right">
+            {method === 'DEGER' && <Table.Summary.Cell index={5} />}
+            <Table.Summary.Cell index={method === 'DEGER' ? 6 : 5} align="right">
               <Typography.Text strong>{formatMoney(shown.allocated_total)}</Typography.Text>
             </Table.Summary.Cell>
-            <Table.Summary.Cell index={method === 'DEGER' ? 6 : 5} />
+            <Table.Summary.Cell index={method === 'DEGER' ? 7 : 6} />
           </Table.Summary.Row>
         )}
       />
@@ -299,7 +310,7 @@ function Weighing({ cutting }: { cutting: Cutting }) {
       )}
       <Typography.Paragraph type="secondary" style={{ marginTop: 12 }}>
         Fire maliyet almaz; toplam maliyet ({formatMoney(shown.total_cost)}) parçalara ve yan ürünlere dağıtılır, kuruş
-        farkı en büyük kalan yöntemiyle kapatılır. "Beklenen" sütunu reçetenin standart oranıdır.
+        farkı en büyük kalan yöntemiyle kapatılır. "Standart (referans)" sütunu reçetenin standart oranıdır; "YZ tahmini" Model B'nin parçalama açılırken kaydettiği beklentidir.
       </Typography.Paragraph>
       <Flex gap="small" wrap>
         <Popconfirm
@@ -362,7 +373,13 @@ function Result({ cutting }: { cutting: Cutting }) {
         </>
       ),
     },
-    { title: 'Beklenen', dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+    { title: 'Standart (referans)', dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+    {
+      title: 'YZ tahmini (Model B)',
+      dataIndex: 'predicted_kg',
+      align: 'right',
+      render: (v: string | null) => formatQty(v, 'KG'),
+    },
     { title: 'Fiili', dataIndex: 'actual_kg', align: 'right', render: (v: string | null) => formatQty(v, 'KG') },
     { title: 'Maliyet payı', dataIndex: 'allocated_cost', align: 'right', render: formatMoney },
     {
@@ -414,16 +431,16 @@ function Result({ cutting }: { cutting: Cutting }) {
           scroll={{ x: 'max-content' }}
           summary={() => (
             <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={2}>
+              <Table.Summary.Cell index={0} colSpan={3}>
                 <Typography.Text strong>Toplam</Typography.Text>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={2} align="right">
+              <Table.Summary.Cell index={3} align="right">
                 <Typography.Text strong>{formatQty(cutting.balance.outputs_kg, 'KG')}</Typography.Text>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={3} align="right">
+              <Table.Summary.Cell index={4} align="right">
                 <Typography.Text strong>{formatMoney(cutting.allocated_total)}</Typography.Text>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={4} colSpan={2} />
+              <Table.Summary.Cell index={5} colSpan={2} />
             </Table.Summary.Row>
           )}
         />

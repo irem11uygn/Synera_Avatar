@@ -17,6 +17,7 @@ router = APIRouter(prefix="/sales", tags=["satış"])
 
 
 class SaleLineOut(BaseModel):
+    id: int  # iade ve ikinci kademe kaydı bu kimlikle yapılır
     line_no: int
     lot_no: str
     product_name: str

@@ -199,6 +199,7 @@ def _warnings(session: Session, sale: Sale) -> list[str]:
 
 @dataclass(frozen=True)
 class SaleLineView:
+    id: int
     line_no: int
     lot_no: str
     product_name: str
@@ -229,6 +230,7 @@ def sale_view(session: Session, sale: Sale) -> SaleView:
     ).all()
     lines = [
         SaleLineView(
+            id=line.id,
             line_no=line.line_no,
             lot_no=lot_no,
             product_name=name,
