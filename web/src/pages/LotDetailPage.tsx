@@ -42,7 +42,9 @@ const DOC_PAGE: Partial<Record<Movement['doc_type'], string>> = { URETIM: '/uret
 
 function documentCell(movement: Movement) {
   const number = movement.doc_no ?? `#${movement.doc_id}`
-  const page = DOC_PAGE[movement.doc_type]
+  // Yeniden işleme de üretim belgesidir (URETIM) ama kendi ekranı vardır (YIS-… numaralı).
+  const page = number.startsWith('YIS-') ? '/yeniden-isleme' : DOC_PAGE[movement.doc_type]
+  if (page === '/yeniden-isleme') return <Link to={page}>{number}</Link>
   return page ? <Link to={`${page}/${movement.doc_id}`}>{number}</Link> : number
 }
 

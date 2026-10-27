@@ -33,7 +33,7 @@ from app.models import (
     User,
     Warehouse,
 )
-from app.models.enums import BaseUnit, ForecastTarget, RecipeLineType
+from app.models.enums import BaseUnit, ForecastTarget, ProductionKind, RecipeLineType
 from app.services.ai import first_forecast
 from app.services.cutting import cutting_summary
 from app.services.integrity import check_invariants
@@ -230,7 +230,11 @@ def _dec(value: Any) -> Decimal | None:
 
 
 def _production(session: Session, f: ReportFilter) -> Report:
-    query = select(ProductionOrder).order_by(ProductionOrder.ordered_at, ProductionOrder.id)
+    query = (
+        select(ProductionOrder)
+        .where(ProductionOrder.kind == ProductionKind.DIS_URETIM)  # yeniden işleme lot hareketlerinde
+        .order_by(ProductionOrder.ordered_at, ProductionOrder.id)
+    )
     query = query.where(*_day_range(ProductionOrder.ordered_at, f))
     if f.product_id:
         query = query.where(ProductionOrder.output_product_id == f.product_id)

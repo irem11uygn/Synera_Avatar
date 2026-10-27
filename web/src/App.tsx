@@ -25,6 +25,7 @@ import RecallDetailPage from './pages/RecallDetailPage'
 import RecallsPage from './pages/RecallsPage'
 import RecipesPage from './pages/RecipesPage'
 import ReportsPage from './pages/ReportsPage'
+import ReprocessingPage from './pages/ReprocessingPage'
 import SalesPage from './pages/SalesPage'
 import StockPage from './pages/StockPage'
 import TracePage from './pages/TracePage'
@@ -53,6 +54,7 @@ const ROUTES: Route[] = [
   { pattern: '/parcalama/:id', render: ({ id }) => <CuttingDetailPage id={Number(id)} /> },
   { pattern: '/receteler', render: () => <RecipesPage /> },
   { pattern: '/satislar', render: () => <SalesPage /> },
+  { pattern: '/yeniden-isleme', render: () => <ReprocessingPage /> },
   { pattern: '/izleme', render: () => <TracePage /> },
   { pattern: '/izleme/:lotNo', render: ({ lotNo }) => <TracePage key={lotNo} lotNo={lotNo} /> },
   {
@@ -83,7 +85,11 @@ function menuItems(openAlerts: number): MenuProps['items'] {
         link('/transferler', 'Transferler'),
       ],
     },
-    { type: 'group', label: 'Görev 1 — dış üretim', children: [link('/uretim', 'Dış üretim emirleri')] },
+    {
+      type: 'group',
+      label: 'Görev 1 — üretim',
+      children: [link('/uretim', 'Dış üretim emirleri'), link('/yeniden-isleme', 'Yeniden işleme')],
+    },
     {
       type: 'group',
       label: 'Görev 2 — parçalama ve satış',
@@ -127,6 +133,7 @@ const MENU_KEYS = [
   '/parcalama',
   '/receteler',
   '/satislar',
+  '/yeniden-isleme',
   '/izleme',
   '/geri-cagirma',
   '/uyarilar',

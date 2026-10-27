@@ -1211,6 +1211,80 @@
         }
       }
     },
+    "/api/v1/reprocessing": {
+      "get": {
+        "tags": [
+          "yeniden işleme"
+        ],
+        "summary": "List Reprocessing",
+        "operationId": "list_reprocessing_api_v1_reprocessing_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReprocessOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Reprocessing Api V1 Reprocessing Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "yeniden işleme"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_reprocessing_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReprocessIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReprocessOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/cutting-recipes": {
       "get": {
         "tags": [
@@ -6756,6 +6830,264 @@
           "notes"
         ],
         "title": "ReportOut"
+      },
+      "ReprocessIn": {
+        "properties": {
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/ReprocessInputIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Inputs"
+          },
+          "output_product_id": {
+            "type": "integer",
+            "title": "Output Product Id"
+          },
+          "output_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Output Qty"
+          },
+          "extra_cost": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Extra Cost",
+            "default": "0.00"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "output_lot_no": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Lot No"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inputs",
+          "output_product_id",
+          "output_qty"
+        ],
+        "title": "ReprocessIn"
+      },
+      "ReprocessInputIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty"
+        ],
+        "title": "ReprocessInputIn"
+      },
+      "ReprocessInputOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "qty",
+          "value"
+        ],
+        "title": "ReprocessInputOut"
+      },
+      "ReprocessOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "order_no": {
+            "type": "string",
+            "title": "Order No"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "output_lot_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Lot No"
+          },
+          "output_product_name": {
+            "type": "string",
+            "title": "Output Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "output_qty": {
+            "type": "string",
+            "title": "Output Qty"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/ReprocessInputOut"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "consumed_value": {
+            "type": "string",
+            "title": "Consumed Value"
+          },
+          "extra_cost": {
+            "type": "string",
+            "title": "Extra Cost"
+          },
+          "total_value": {
+            "type": "string",
+            "title": "Total Value"
+          },
+          "unit_cost": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Cost"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_no",
+          "completed_at",
+          "output_lot_no",
+          "output_product_name",
+          "base_unit",
+          "output_qty",
+          "inputs",
+          "consumed_value",
+          "extra_cost",
+          "total_value",
+          "unit_cost",
+          "expiry_date",
+          "note"
+        ],
+        "title": "ReprocessOut"
       },
       "ReturnIn": {
         "properties": {

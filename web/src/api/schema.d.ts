@@ -366,6 +366,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reprocessing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Reprocessing */
+        get: operations["list_reprocessing_api_v1_reprocessing_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_reprocessing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cutting-recipes": {
         parameters: {
             query?: never;
@@ -2067,6 +2085,75 @@ export interface components {
             /** Notes */
             notes: string[];
         };
+        /** ReprocessIn */
+        ReprocessIn: {
+            /** Inputs */
+            inputs: components["schemas"]["ReprocessInputIn"][];
+            /** Output Product Id */
+            output_product_id: number;
+            /** Output Qty */
+            output_qty: number | string;
+            /**
+             * Extra Cost
+             * @default 0.00
+             */
+            extra_cost: number | string;
+            /** Note */
+            note?: string | null;
+            /** Output Lot No */
+            output_lot_no?: string | null;
+            /** Warehouse Id */
+            warehouse_id?: number | null;
+        };
+        /** ReprocessInputIn */
+        ReprocessInputIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Qty */
+            qty: number | string;
+        };
+        /** ReprocessInputOut */
+        ReprocessInputOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Qty */
+            qty: string;
+            /** Value */
+            value: string;
+        };
+        /** ReprocessOut */
+        ReprocessOut: {
+            /** Id */
+            id: number;
+            /** Order No */
+            order_no: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Output Lot No */
+            output_lot_no: string | null;
+            /** Output Product Name */
+            output_product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Output Qty */
+            output_qty: string;
+            /** Inputs */
+            inputs: components["schemas"]["ReprocessInputOut"][];
+            /** Consumed Value */
+            consumed_value: string;
+            /** Extra Cost */
+            extra_cost: string;
+            /** Total Value */
+            total_value: string;
+            /** Unit Cost */
+            unit_cost: string | null;
+            /** Expiry Date */
+            expiry_date: string | null;
+            /** Note */
+            note: string | null;
+        };
         /** ReturnIn */
         ReturnIn: {
             /** Sale Line Id */
@@ -3304,6 +3391,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reprocessing_api_v1_reprocessing_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReprocessOut"][];
+                };
+            };
+        };
+    };
+    create_api_v1_reprocessing_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReprocessIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReprocessOut"];
                 };
             };
             /** @description Validation Error */

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.models import NumberSequence
 
 # Şartnamedeki biçimler: URT-2026-045 (3 hane); satış belgeleri 4 hane (SAT-2026-0101).
-_WIDTH = {"URT": 3, "PRC": 3, "GC": 3}
+_WIDTH = {"URT": 3, "PRC": 3, "GC": 3, "YIS": 3}
 _DEFAULT_WIDTH = 4
 
 

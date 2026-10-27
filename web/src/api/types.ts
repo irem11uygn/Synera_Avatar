@@ -78,6 +78,7 @@ export type ReportColumn = S['ColumnOut']
 export type ColumnKind = S['ColumnKind']
 
 export type Forecast = S['ForecastOut']
+export type Reprocess = S['ReprocessOut']
 export type ProductionForecast = S['ProductionForecastOut']
 export type AiEvaluation = S['EvaluationOut']
 export type RealComparison = S['RealComparisonOut']

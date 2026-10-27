@@ -10,8 +10,9 @@ from sqlalchemy import select
 from app.api.deps import AdminUser, Db
 from app.api.fields import UtcDateTime
 from app.domain.money import round_money
+from app.errors import NotFound
 from app.models import ProductionOrder
-from app.models.enums import BaseUnit, ForecastTarget, ProductionStatus
+from app.models.enums import BaseUnit, ForecastTarget, ProductionKind, ProductionStatus
 from app.services import production
 from app.services.ai import first_forecast
 from app.services.lookups import get_or_404, lot_by_no
@@ -195,13 +196,20 @@ def create(body: OrderIn, db: Db, user: AdminUser) -> OrderOut:
 
 @router.get("", response_model=list[OrderOut], response_model_by_alias=True)
 def list_orders(db: Db, _: AdminUser) -> list[OrderOut]:
-    orders = db.scalars(select(ProductionOrder).order_by(ProductionOrder.id.desc()))
+    orders = db.scalars(
+        select(ProductionOrder)
+        .where(ProductionOrder.kind == ProductionKind.DIS_URETIM)
+        .order_by(ProductionOrder.id.desc())
+    )
     return [_order_out(db, order) for order in orders]
 
 
 @router.get("/{order_id}", response_model=OrderOut, response_model_by_alias=True)
 def get_order(order_id: int, db: Db, _: AdminUser) -> OrderOut:
-    return _order_out(db, get_or_404(db, ProductionOrder, order_id, "Üretim emri"))
+    order = get_or_404(db, ProductionOrder, order_id, "Üretim emri")
+    if order.kind != ProductionKind.DIS_URETIM:
+        raise NotFound("Dış üretim emri bulunamadı (bu kayıt bir yeniden işleme).", id=order_id)
+    return _order_out(db, order)
 
 
 @router.post("/{order_id}/ship", response_model=OrderOut, response_model_by_alias=True)
