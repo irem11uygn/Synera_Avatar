@@ -36,6 +36,21 @@ Her iş, karşıladığı gereksinim kimlikleriyle ve "bitti" ölçütüyle yaz�
 
 ## 2. Gereksinim kapsamı
 
+> **Güncelleme (27 Ekim akşam):** Aşağıda "Eksik" ya da "Kısmen" yazan yazılım ve belge maddelerinin hepsi bitti ve sınandı.
+>
+> - Görev 3, iade, fire, ters kayıt, yeniden işleme.
+> - Demo profili, raporlar, iki yapay zekâ modeli ve raporu, 3D web ve Android.
+> - Senkronizasyon açıklaması, CR-012 belgesi.
+> - Kabul testleri: 23/23 (`reports/kabul_testleri.md`).
+>
+> Tablolar planlamanın ilk hâli olarak bırakıldı. **Kalanlar:**
+>
+> - Kişi 2'nin kendi bilgisayarında temiz kurulum (T-26) ve Android'i elle deneme.
+> - Video (T-27).
+> - GitHub'a yükleme ve e-posta (T-28).
+>
+> Teslim yardımcıları depo dışında: `AVATAR_Paylasim/Teslim/` (video senaryosu, e-posta taslağı, GitHub adımları, APK).
+
 Durum: **Bitti** · **Kısmen** (ne eksik yazılı) · **Eksik** · İsteğe bağlı işler kapsam dışında. "Sahip" sütunu kalan işin sorumlusudur.
 
 ### Görev 1 ve ana veriler
