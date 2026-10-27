@@ -218,7 +218,7 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
         <>
           <Button onClick={() => navigate(tracePath(data.lot_no))}>{t('İleri izle')}</Button>
           <Button onClick={() => navigate(tracePath(data.lot_no, 'backward'))}>{t('Geri izle')}</Button>
-          {data.balances.length > 0 && <Button onClick={() => setWasting(true)}>Fire / imha</Button>}
+          {data.balances.length > 0 && <Button onClick={() => setWasting(true)}>{t('Fire / imha')}</Button>}
         </>
       }
     >

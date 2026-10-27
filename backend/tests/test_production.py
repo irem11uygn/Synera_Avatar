@@ -5,9 +5,9 @@ from decimal import Decimal as D
 
 import pytest
 
+from app.domain.clock import business_today
 from app.models import Lot, Partner, Product
 from app.models.enums import LotStatus
-from app.models.types import utcnow
 from app.services.integrity import check_invariants
 from app.services.lot_graph import descendants
 from tests.helpers import auth_header, by_code, lot_by_no
@@ -116,7 +116,7 @@ def test_at01_output_lot_is_linked_valued_and_traceable(client, admin, session):
         ("BAH-2026-014", D("2")),
         ("BAG-2026-007", D("5")),
     ]
-    assert lot["expiry_date"] == (utcnow().date() + timedelta(days=60)).isoformat()
+    assert lot["expiry_date"] == (business_today() + timedelta(days=60)).isoformat()  # işletmenin yerel günü
     sucuk = lot_by_no(session, "SUC-2026-045")
     assert sucuk.id in descendants(session, lot_by_no(session, "ET-2026-001").id)
     assert [(r.code, r.violations) for r in check_invariants(session) if not r.ok] == []

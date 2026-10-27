@@ -24,7 +24,9 @@
 
 ## 2. Uç noktalar
 
-Rol: **Y** = yönetici, **S** = satış.
+Rol: **Y** = yönetici, **D** = depo, **Ü** = üretim, **K** = kalite, **M** = mağaza, **S** = satış (telefon).
+Okuma uçlarının çoğu bütün web rollerine (Y, D, Ü, K, M) açıktır; yazma uçları işi yapan role ve yöneticiye.
+Yönetici şifreyi sıfırladıysa kullanıcı yeni şifresini belirleyene kadar iş uçları `403 PASSWORD_CHANGE_REQUIRED` döner.
 
 ### Kimlik ve sistem
 
@@ -33,6 +35,12 @@ Rol: **Y** = yönetici, **S** = satış.
 | POST | `/auth/login` | — | Kullanıcı adı + parola → belirteç, rol, araç deposu |
 | GET | `/auth/me` | Y, S | Oturumdaki kullanıcı |
 | POST | `/auth/logout` | Y, S | Oturumu sunucuda kapatır (204); belirteç bundan sonra geçersiz |
+| POST | `/auth/change-password` | hepsi | `{current_password, new_password}`; en az 8 karakter, harf + rakam. Diğer oturumlar kapanır |
+| GET, POST | `/users` | Y | Kullanıcı listesi / yeni kullanıcı (geçici şifreyle; satış rolü araç ister) |
+| PUT | `/users/{id}` | Y | Ad, rol, aktiflik, araç. Kendini pasifleştiremez; son aktif yönetici kaldırılamaz |
+| POST | `/users/{id}/reset-password` | Y | Geçici şifre üretir (`{temporary_password}`), oturumları kapatır |
+
+Hatalı giriş: aynı kullanıcı adı ya da adres için 5 dakikada 10 deneme; sonra `429 TOO_MANY_ATTEMPTS`.
 | GET | `/health` | — | Servis ve veritabanı durumu |
 
 ### Ana veriler (FR-101, FR-201, FR-202, FR-301)
@@ -91,8 +99,8 @@ Rol: **Y** = yönetici, **S** = satış.
 
 | Yöntem | Yol | Rol | Açıklama |
 |---|---|---|---|
-| POST | `/sales` | Y | Web kanalından satış (bloke lot → `LOT_BLOCKED`) |
-| GET | `/sales`, `/sales/{id}` | Y | — |
+| POST | `/sales` | Y, M | Mağaza satışı (ana depodan): `{customer_id, warehouse_id, payment_method, lines: [{lot_no, qty, unit_price?}]}`. Fiyat boşsa ürünün liste fiyatı. Geri çağrılmış lot → `LOT_BLOCKED`, son kullanma tarihi geçmiş lot → `VALIDATION_ERROR` |
+| GET | `/sales?day=`, `/sales/{id}` | web | Satış; `seller_name`, `payment_method` (NAKIT, KART, HAVALE, VERESIYE) |
 | POST | `/returns` | Y | Müşteri iadesi |
 | GET, POST | `/sale-lines/{id}/onward-deliveries` | Y | Müşterinin bildirdiği ikinci kademe teslimatlar |
 
@@ -135,10 +143,22 @@ Hepsi `?date_from=&date_to=&product_id=&lot_no=&format=csv` süzgeçlerini kabul
 
 | Yöntem | Yol | Rol | Açıklama |
 |---|---|---|---|
-| POST | `/sync/push` | S | Bekleyen satışları gönder (§4.4) |
+| POST | `/sync/push` | S | Bekleyen satışları gönder (§4.4); satışta isteğe bağlı `payment_method`. Çevrimdışı satılan geri çağrılmış ya da son kullanma tarihi geçmiş lot kaydedilir, uyarı düşer |
 | GET | `/sync/pull?since=N` | S | N'den sonra değişen ürün, müşteri, lot, araç stoku (§4.4) |
+| GET | `/sync/day-end?day=` | S | Satış elemanının kendi gün sonu (aşağıdaki biçimde) |
+
+### Günlük işler (gerçek kullanım)
+
+| Yöntem | Yol | Rol | Açıklama |
+|---|---|---|---|
+| GET | `/dashboard` | web | Ana sayfa: 3 gün içinde dolan / süresi geçmiş lotlar, kritik stok altındaki ürünler, açık geri çağırmalar, okunmamış uyarı, bekleyen emir ve parçalama, bugünkü satış, stok değeri |
+| GET | `/day-end?day=&user_id=&warehouse_id=` | Y, M | Gün sonu: satış, iade (geri ödenecek tutar), net; ödeme türüne ve satıcıya göre toplamlar; tek depo istenirse kalan mal. Gün işletmenin yerel günüdür (`BUSINESS_UTC_OFFSET_HOURS`, varsayılan 3) |
+| POST | `/stock-counts` | Y, D, S | Sayım: `{warehouse_id, note?, lines: [{lot_no, counted_qty}]}`. Eksik çıkan "Sayım farkı" firesiyle düşülür; fazlası stoka eklenmez, raporlanır. Satış elemanı yalnız kendi aracını sayar |
+| GET | `/stock-counts`, `/stock-counts/{id}` | web | Sayım belgeleri, satır farkları ve eksik maliyeti |
 
 ## 3. Hata biçimi ve kodları
+
+Ek kodlar (28 Ekim): `CONFLICT` (409, aynı anda değişen kayıt / benzersizlik), `TOO_MANY_ATTEMPTS` (429), `PASSWORD_CHANGE_REQUIRED` (403), `INTERNAL_ERROR` (500, ayrıntı istemciye verilmez).
 
 ```json
 {

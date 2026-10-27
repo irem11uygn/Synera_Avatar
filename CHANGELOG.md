@@ -111,3 +111,13 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Kabul testleri AT-01…AT-15 çalışan sisteme karşı: `tests/`, `scripts/kabul_testleri.sh` (ayrı kopyada sıfırdan kurulum). Sonuç 23/23, izleme 0,043 sn (`reports/kabul_testleri.md`).
 - Paketten temiz kurulum provası: sunucu 170, yapay zekâ 4, kabul 23, web 16, Android 17 — hepsi geçti; APK üretildi.
 - README: test komutları, bilinen sınırlamalar, APK; `docs/data_model.md` v0.3; teslim kontrol listesi güncellendi.
+
+### 28 Ekim 2026 — denetim düzeltmeleri, gerçek kullanım, yeni arayüz, dil seçeneği
+- Denetim (27 Ekim) düzeltmeleri: aynı tedarikçi faturası iki kez girilemez; var olmayan depo 404; iade müşterinin dağıttığı miktarı aşamaz (satır kilitli); geri çağırma başlatırken lot kilitlenir; lotu olan ürünün birimi değişmez; şube döngüsü engellenir; tarihler işletmenin yerel gününe göre (UTC+3); veritabanı çakışması 409, beklenmeyen hata 500 (ayrıntı sızmaz); CSV'de formül hücresi düz metin; sevk edilmiş fason emri iptal edilince hammadde ana depoya döner; web'de Türkçe büyük harf hatası (sirt → SİRT) giderildi; geçersiz sayfa kimliği "bulunamadı"; sayfalar ayrı yüklenir; nginx güvenlik başlıkları ve sıkıştırma; Android'de çıkışta sunucu oturumu kapanır, sıfırlanmış sunucuya eski satış gönderilmez, uygulama verisi yedeğe alınmaz.
+- Roller: yönetici, depo, üretim, kalite, mağaza, satış; her uç işi yapan role açık. Kullanıcı yönetimi, şifre değiştirme, ilk girişte şifre belirleme, hatalı giriş sınırı.
+- Gerçek kullanım: mağaza satışı (ödeme türü, liste fiyatı, ilk dolan ilk çıkar), son kullanma kuralı (mağazada satılamaz; telefonda çevrimdışı satılırsa uyarı), gün sonu, depo/araç sayımı, ana sayfa özeti, kritik stok, "Perakende müşteri". Göç `b2d9f1c4e7a3` (33 tablo).
+- Web baştan tasarlandı: sade görünüm, işe göre menü, rol bazlı ana sayfa ("bugün yapılacaklar"), sade terimler (fason üretim, birim maliyet, satışa kapalı, geri al), yeni ekranlar (mağaza satışı, gün sonu, son kullanma, sayım, kullanıcılar, şifre, geri çağırma tatbikatı), yazdırılabilir belgeler (Code 128 barkodlu lot etiketi, fiş/irsaliye, geri çağırma bildirimi, gün sonu, sayım tutanağı, tatbikat raporu).
+- Android baştan tasarlandı: alt menü (Satış, Stok, Geçmiş, Gün sonu), dört adımlı satış, otomatik lot seçimi, ödeme türü (Room v4), gün sonu ve araç sayımı.
+- Dil seçeneği: web ve telefon Türkçe / English; sayı ve tarih biçimi dile göre; testler her metnin çevirisini denetler.
+- Testler: 215 sunucu, 4 yapay zekâ, 23 kabul (sıfırdan kurulum), 26 web, 22 Android — hepsi geçti (`reports/test_results.md`).
+

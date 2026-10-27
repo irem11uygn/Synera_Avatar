@@ -409,3 +409,32 @@ Ayrı Compose projesi (`-p avatar-temiz`), API 18100. Geliştirme veritabanına 
 | Android (`local.properties` yok, `ANDROID_HOME` ile) | Derleme başarılı, 17 test geçti, APK üretildi |
 
 Not: Bu prova T-26'nın yerini tutmaz. Asıl temiz kurulum testi ekip arkadaşının bilgisayarında yapılacak.
+
+## 28 Ekim 2026 — denetim düzeltmeleri, gerçek kullanım özellikleri, yeni arayüz, dil seçeneği
+
+### Otomatik testler
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **215 geçti** (yeni 45: kullanıcı/rol 21, günlük işler 12, denetim düzeltmeleri 11, fason emri iptali 1) |
+| Biçim | `ruff check` + `ruff format --check` | Temiz |
+| Yapay zekâ | `cd /ml && pytest -q` | 4 geçti |
+| Kabul (sıfırdan kurulum) | `sh scripts/kabul_testleri.sh` | **23/23**; ET-2026-001 ileri izleme 0,041 sn |
+| Web | `npm test`, `tsc -b`, `oxlint` | **26 geçti** (FEFO 3, Code 128 3, çeviri eksiksizliği 4 dahil); derleme ve lint temiz |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | **22 geçti** (FEFO, son kullanma kuralı, çeviri dahil); APK üretildi |
+
+Çalışırken bulunan iki test sorunu: gece yarısından sonra (yerel 00:0x) bir test UTC gününü bekliyordu, kod ise doğru olarak işletmenin yerel gününü kullanıyordu — test düzeltildi. "Perakende müşteri" eklenince iki liste testi güncellendi.
+
+### Tarayıcıda deneme (sıfırdan kurulan kopya, nginx dahil)
+- Güvenlik başlıkları (CSP, X-Frame-Options, nosniff) geliyor; uygulama CSP altında konsol hatası vermeden çalışıyor.
+- `magaza1` ile giriş: menüde yalnız satış, stok okuma, izleme ve firma ekranları; üretim, geri çağırma yönetimi ve kullanıcılar görünmüyor.
+- Yöneticinin açtığı hesapla ilk giriş "Yeni şifrenizi belirleyin" ekranına düşüyor; şifre değişince ana sayfa açılıyor.
+- Mağaza satışı: ürün eklenince lot son kullanma tarihine göre seçildi (SIRT-PRC-2026-012), kartla 39,00 € kaydedildi; fiş/irsaliye ve barkodlu lot etiketi yazdırma sayfaları açıldı.
+- Gün sonu, son kullanma takibi, sayım ve kullanıcılar ekranları; İngilizceye geçiş (sayı 1,543.50 biçimi); 278 px genişlikte yatay taşma yok.
+
+### Emülatörde deneme (Android, Medium_Phone, API 18000)
+- Giriş → yeni ana ekran (bugünkü satış, geri çağrılan lot uyarısı) → Stok (satışa kapalı lot etiketli).
+- Satış: Market B → Narin Sucuk 3 adet (lot SUC-2026-045 kendiliğinden; geri çağrılan SUC-2026-046 listede yok) → Nakit → kaydet → sunucuya gönderildi (SAT-2026-0105).
+- Gün sonu: 74,70 € nakit, araçta kalan mal; araç sayımı 26 adet → SAY-2026-0001, 1 lot eksik, stok 26'ya indi.
+- Menüden English: ekran anında İngilizce, sayılar 74.70, tarih 23/12/2026; uygulama yeniden açılınca seçim korunuyor.
+

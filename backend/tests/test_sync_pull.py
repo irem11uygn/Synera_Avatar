@@ -28,7 +28,7 @@ def load_van(session, lot_no: str, qty: str) -> None:
 def test_first_pull_returns_master_data_and_empty_van(client):
     body = pull(client, auth_header(client, "satis1", "satis123"))
     assert len(body["products"]) == 10
-    assert [c["name"] for c in body["customers"]] == ["Market A", "Market B", "Market C"]
+    assert [c["name"] for c in body["customers"]] == ["Market A", "Market B", "Market C", "Perakende müşteri"]
     assert (body["lots"], body["stock"]) == ([], [])
     sucuk = next(p for p in body["products"] if p["code"] == "NARIN-SUCUK")
     assert (sucuk["sale_price"], sucuk["unit_weight_kg"], sucuk["base_unit"]) == ("24.90", "1.000", "ADET")

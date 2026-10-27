@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| Sürüm | v0.1 |
-| Tarih | 24 Ekim 2026 |
-| Durum | Taslak — ekip incelemesi bekliyor; kod henüz yok |
+| Sürüm | v0.2 |
+| Tarih | 24 Ekim 2026; 28 Ekim'de güncellendi (§ Gerçek kullanım eklemeleri) |
+| Durum | Uygulandı — sunucu, web, Android ve yapay zekâ bu tasarımla çalışıyor |
 | Dayanak | ADR-001…007 (kabul edildi), ADR-008 (bu tasarımla önerildi) — `docs/decisions/`; `requirements.md` v0.1 |
 | Eşlik eden belgeler | `data_model.md` (tablolar, ER diyagramı, değişmezler), `api.md` (uç noktalar) |
 
@@ -364,3 +364,14 @@ Ekip aksini söylemedikçe bu varsayılanlar geçerlidir:
 | Geri çağırma kapanışı | "İmha" ve "serbest bırak" seçenekleri |
 | Lot numaraları | Alış: kullanıcı girer. Dış üretim: `<ürün öneki>-<yıl>-<emir sırası>` (ör. SUC-2026-045), değiştirilebilir. Parçalama: `<parça kodu>-<parçalama no>` (ör. BUT-PRC-2026-012) |
 | Belge numaraları | `URT-`, `PRC-`, `SAT-`, `TRF-`, `IAD-`, `GC-` + yıl + sıra |
+
+## Gerçek kullanım eklemeleri (28 Ekim 2026)
+
+- **Roller.** Yönetici, depo, üretim, kalite, mağaza (web) ve satış (telefon). Okuma çoğunlukla bütün web rollerine açık; yazma işi yapan role ve yöneticiye (`backend/app/api/deps.py`). Web menüsü ve düğmeler aynı kurallarla gizlenir (`web/src/lib/roles.ts`), ama asıl denetim sunucudadır.
+- **Hesap güvenliği.** Hatalı girişe sınır (5 dakikada 10, kullanıcı adı ve adres başına; nginx gerçek adresi `X-Real-IP` ile iletir); şifre en az 8 karakter, harf + rakam; yönetici açtığı ya da sıfırladığı hesapta kullanıcı ilk girişte şifre belirler (o zamana kadar iş uçları `PASSWORD_CHANGE_REQUIRED`).
+- **İşletme günü.** Veritabanı UTC tutar; üretim/son kullanma tarihi ve gün sonu işletmenin yerel günüyle hesaplanır (`app/domain/clock.py`, varsayılan UTC+3).
+- **Son kullanma kuralı.** Mağazada (anlık) süresi geçmiş lot satılamaz. Telefonda da cihaz bu lotu önermez; yine de eski veriyle çevrimdışı satılırsa sunucu kaydı alır, `SKT_IHLALI` uyarısı düşer (geri çağırma ihlaliyle aynı ilke: mal müşteriye gitmiştir, kaydı reddetmek izini kaybettirir).
+- **İlk dolan ilk çıkar.** Mağaza ve telefon satışında kullanıcı lot seçmez; miktar, son kullanma tarihi en yakın satılabilir lottan başlayarak lotlara bölünür. Bir satış satırı yine tek lottur.
+- **Sayım.** Eksik çıkan miktar "Sayım farkı" firesiyle defterden düşülür; fazla çıkan miktar stoka eklenmez (kaynağı belirsiz mal deftere girmez), sayım belgesinde raporlanır.
+- **Dil.** Web ve telefonda metinler Türkçe yazılır ve `t()` ile çevrilir; sözlükte eksik metin testte yakalanır. Sunucunun iş kuralı mesajları Türkçedir.
+

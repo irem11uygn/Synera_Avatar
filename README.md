@@ -2,14 +2,16 @@
 
 Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok hareketlerini, gerçek maliyeti ve lot izlenebilirliğini yöneten sistem: merkezi sunucu ve MySQL, web yönetim/raporlama arayüzü, Kotlin Android satış uygulaması (yerelde SQLite) ve iki yapay zekâ modeli (üretim verimi/EKP tahmini, parçalama verimi tahmini).
 
-> **Durum (27 Ekim 2026, akşam):** Bütün şartname maddeleri uygulandı ve sınandı. Sunucu, web ve Android'de çalışan parçalar:
+> **Durum (28 Ekim 2026):** Bütün şartname maddeleri uygulandı ve sınandı; sistem gerçek bir işletmede kullanılacak biçimde genişletildi. Sunucu, web ve Android'de çalışan parçalar:
 >
-> - **Görev 1:** dış üretim, EKP 18,16 €.
+> - **Görev 1:** fason (dış) üretim, birim maliyet (EKP) 18,16 €.
 > - **Görev 2:** parçalama, kuruşu kuruşuna maliyet dağıtımı, Kotlin ile lot bazlı satış.
-> - **Görev 3:** ileri/geri izleme, geri çağırma, market listesi ve CSV, ikinci kademe dağıtım, iade, fire, yeniden işleme.
-> - **İki yapay zekâ modeli**, yedi rapor, derinlikli (3D) arayüz.
+> - **Görev 3:** ileri/geri izleme, geri çağırma, market listesi ve CSV, müşterinin dağıttığı yerler, iade, fire, yeniden işleme.
+> - **İki yapay zekâ modeli**, yedi rapor.
+> - **Gerçek kullanım:** rollere göre ekranlar (yönetici, depo, üretim, kalite, mağaza, satış), kullanıcı ve şifre yönetimi, mağaza satışı (ödeme türüyle), gün sonu, depo/araç sayımı, son kullanma takibi ve kuralı (ilk dolan ilk çıkar), kritik stok uyarısı, geri çağırma tatbikatı, yazdırılabilir belgeler (barkodlu lot etiketi, fiş/irsaliye, geri çağırma bildirimi, gün sonu, sayım tutanağı).
+> - **Sade, iki dilli arayüz:** web ve telefon Türkçe / English; terimler sadeleştirildi.
 >
-> Testler: 170 sunucu, 4 yapay zekâ, 16 web, 17 Android ve **23 kabul testi** (AT-01…AT-15). Kalan teslim adımları: video, GitHub'a yükleme, e-posta ([docs/submission_checklist.md](docs/submission_checklist.md)).
+> Testler: 215 sunucu, 4 yapay zekâ, 26 web, 22 Android ve **23 kabul testi** (AT-01…AT-15). Kalan teslim adımları: video, GitHub'a yükleme, e-posta ([docs/submission_checklist.md](docs/submission_checklist.md)).
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
@@ -41,9 +43,10 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 | 13 | Android satış ve gönderim (T-14, T-15) | Tamamlandı — çevrimdışı satış, tekrar güvenli gönderim |
 | 14 | Görev 3 API ve web (T-16, T-17), iade, fire, ters kayıt, demo profili | Tamamlandı — ET-2026-001 → Market A 30 / B 25 / C 30 kurulumdan sonra hazır |
 | 15 | Yapay zekâ (T-18…T-21) ve değerlendirme raporu | Tamamlandı — iki model de referans yöntemden iyi |
-| 16 | Raporlar (T-22) ve derinlikli (3D) web/Android arayüzü | Tamamlandı |
+| 16 | Raporlar (T-22) ve web/Android arayüzü | Tamamlandı — 28 Ekim'de sade tasarımla yeniden yapıldı |
 | 17 | Kabul testleri (T-23), yeniden işleme, temiz kurulum provası | Tamamlandı — 23/23 kabul testi |
-| 18 | Video, GitHub, e-posta (T-27, T-28) | 31 Ekim – 1 Kasım |
+| 18 | Denetim düzeltmeleri, gerçek kullanım özellikleri, yeni arayüz, dil seçeneği | Tamamlandı — 28 Ekim |
+| 19 | Video, GitHub, e-posta (T-27, T-28) | 31 Ekim – 1 Kasım |
 
 Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/development_plan.md).
 
@@ -110,22 +113,30 @@ Parolaların varsayılan değerleri yalnız yerel kullanım içindir. Değiştir
 
 Yalnız ana verileri istiyorsanız `.env` içinde `SEED_PROFILE=base` yapın. Bütün firma ve kişi adları uydurmadır.
 
-| Demo kullanıcısı | Parola | Rol |
-|---|---|---|
-| `yonetici` | `yonetici123` | Yönetici (web) |
-| `satis1` | `satis123` | Satış elemanı (Android, araç deposu ARAC-01) |
+| Demo kullanıcısı | Şifre | Rol | Ne görür |
+|---|---|---|---|
+| `yonetici` | `yonetici123` | Yönetici | Bütün ekranlar, kullanıcılar, ürün ve fiyatlar |
+| `depo1` | `depo1234` | Depo sorumlusu | Mal kabul, stok, son kullanma, sayım, araca yükleme |
+| `uretim1` | `uretim123` | Üretim sorumlusu | Fason üretim, parçalama, yeniden işleme, yapay zekâ |
+| `kalite1` | `kalite123` | Kalite sorumlusu | Lot izleme, geri çağırma, tatbikat, uyarılar |
+| `magaza1` | `magaza123` | Mağaza / kasa | Mağaza satışı, iade, gün sonu |
+| `satis1` | `satis123` | Satış elemanı | Yalnız telefon uygulaması (araç ARAC-01) |
 
-Bu parolalar yalnız yerel demo içindir.
+Bu şifreler yalnız yerel demo içindir. Yönetici **Kullanıcılar** ekranından yeni hesap açar; yeni hesap ve sıfırlanan şifre geçicidir, kullanıcı ilk girişte kendi şifresini belirler. Hatalı girişler sınırlıdır (5 dakikada 10 deneme).
+
+**Dil:** Web'de üst çubuktaki **TR / EN** seçimi, telefonda sağ üstteki menü. Seçim hatırlanır.
 
 ### Şartname senaryosunu 5 dakikada denemek
 
-1. Web'e `yonetici` ile girin. Ana sayfadaki **"ET-2026-001 nereye gitti?"** düğmesi ileri izlemeyi açar. Zincir ve etkilenen marketler (A 30 / B 25 / C 30), iletişim bilgileri ve ikinci kademe görünür.
-2. **"Geri çağırma başlat"** → neden yazın. ET-2026-001 ve SUC-2026-045 tek işlemde bloke olur, liste hemen çıkar. **"İletişim listesi (CSV)"** ile indirin.
-3. **"SUC-2026-045 neden yapıldı?"** geri izlemeyi açar: üç hammadde lotu, tedarikçiler, URT-2026-045.
-4. **Dış üretim emirleri → URT-2026-045:** EKP dökümü (1.543,50 € / 85 = 18,16 €), kâr, marj ve yapay zekâ kartında tahmin–gerçek–sapma.
-5. **Parçalama → PRC-2026-012:** ağırlık dengesi (25 = 22 + 3 fire) ve 351,00 €'nun kuruşu kuruşuna dağıtımı.
-6. **Raporlar** (yedi rapor, CSV) ve **Yapay zekâ** ekranı (referansla karşılaştırma).
-7. Android'de `satis1` ile girip eşitleyin. Geri çağrılan lotlar kırmızı görünür ve satılamaz.
+1. Web'e `yonetici` ile girin. Ana sayfa o günün işlerini gösterir (dolmak üzere lotlar, uyarılar, bekleyen belgeler).
+2. **Kalite → Lot izleme → "ET-2026-001 · İleri izle":** zincir ve etkilenen marketler (A 30 / B 25 / C 30), iletişim bilgileri ve müşterinin dağıttığı yerler.
+3. **"Geri çağırma başlat"** → neden yazın. ET-2026-001 ve SUC-2026-045 tek işlemde satışa kapanır, liste hemen çıkar. **"İletişim listesi (CSV)"** ve **"Yazdır"** (müşteri başına geri çağırma bildirimi).
+4. **"SUC-2026-045 · Geri izle":** üç hammadde lotu, tedarikçiler, URT-2026-045.
+5. **Üretim → Fason üretim → URT-2026-045:** birim maliyet (EKP) dökümü (1.543,50 € / 85 = 18,16 €), kâr, marj ve yapay zekâ kartında tahmin–gerçek–sapma.
+6. **Üretim → Parçalama → PRC-2026-012:** ağırlık dengesi (25 = 22 + 3 fire) ve 351,00 €'nun kuruşu kuruşuna dağıtımı.
+7. **Satış → Mağaza satışı** (`magaza1` ile de olur): ürün ekleyin, lot kendiliğinden seçilir; ödeme türünü seçip kaydedin, fişi yazdırın. **Gün sonu** ödeme türüne göre toplamları verir.
+8. **Raporlar** (yedi rapor, CSV) ve **Yapay zekâ tahminleri** (referansla karşılaştırma).
+9. Android'de `satis1` ile girip eşitleyin. Satış dört adımdır (müşteri → ürün → ödeme → özet); geri çağrılan ve süresi geçen lot satılamaz. **Gün sonu** sekmesinde günün özeti ve araç sayımı.
 
 Durdurmak için `docker compose down`; veritabanını da silmek için `docker compose down -v`.
 
@@ -155,7 +166,7 @@ sh scripts/kabul_testleri.sh
 
 Son çalıştırma sonuçları:
 - [reports/test_results.md](reports/test_results.md)
-- [reports/kabul_testleri.md](reports/kabul_testleri.md): 23/23; ET-2026-001 izlemesi 0,043 sn.
+- [reports/kabul_testleri.md](reports/kabul_testleri.md): 23/23; ET-2026-001 izlemesi 0,041 sn (28 Ekim).
 
 ### Web arayüzünü geliştirme modunda çalıştırma
 
@@ -183,10 +194,12 @@ Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). De
 
 - **Yapay zekâ verisi sentetiktir.** Modellerin referansa göre başarısı, gerçek işletmede aynı başarının kanıtı değildir. Model B'de omuz payında model referanstan biraz kötüdür ([reports/ai_degerlendirme.md](reports/ai_degerlendirme.md) §7).
 - **Görev 2'nin "örnek görseli" şartname PDF'inde yoktur.** Tutarsızlıklar metindeki rakamlarla açıklandı ([reports/gorev2_tutarsizliklar.md](reports/gorev2_tutarsizliklar.md)).
-- **Web'den satış yoktur.** Satışlar Kotlin uygulamasından yapılır (şartname Görev 2). Web, satışları, iadeleri ve ikinci kademe teslimatları yönetir.
+- **Fiş/irsaliye mali belge değildir.** e-Fatura/e-Arşiv ve yazar kasa entegrasyonu yoktur; belgelerdeki işletme adı `web/src/pages/PrintPage.tsx` içinde sabittir.
+- **Sunucunun hata ayrıntıları Türkçedir.** İngilizce ekranda önce hatanın türü İngilizce, ardından sunucunun Türkçe açıklaması görünür.
+- **Sayımda fazla çıkan mal stoka eklenmez;** kaynağı araştırılıp ilgili belge düzeltilmelidir (eksik çıkan mal fire olarak düşülür).
 - **İsteğe bağlı yapay zekâ özellikleri** (fatura okuma, anomali uyarıları) kapsam dışıdır. Geri çağırma ihlali uyarısı kural tabanlıdır.
 - **Tek ana depo** varsayılır. Dış üretici ve araç depoları ayrıca tanımlanır.
-- **Parolalar yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli ve HTTPS arkasında çalıştırılmalıdır.
+- **Şifreler yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli ve HTTPS arkasında çalıştırılmalıdır. Hatalı giriş sınırı sunucu belleğinde tutulur (tek sunucu süreci için).
 
 ### Sorun giderme
 

@@ -267,8 +267,8 @@ export default function TracePage({ lotNo, direction = 'forward' }: { lotNo?: st
         <Card size="small">
           <Empty description={t('Bir lot numarası yazın ya da örnek senaryoyla başlayın.')}>
             <Space wrap>
-              <Button onClick={() => go('ET-2026-001', 'forward')}>ET-2026-001 ileri izle</Button>
-              <Button onClick={() => go('SUC-2026-045', 'backward')}>SUC-2026-045 geri izle</Button>
+              <Button onClick={() => go('ET-2026-001', 'forward')}>ET-2026-001 · {t('İleri izle')}</Button>
+              <Button onClick={() => go('SUC-2026-045', 'backward')}>SUC-2026-045 · {t('Geri izle')}</Button>
             </Space>
           </Empty>
         </Card>
