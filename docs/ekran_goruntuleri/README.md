@@ -1,239 +1,275 @@
 # Ekran Görüntüleri
 
-Uygulamanın bütün ekranları, demo verisiyle (şartname senaryosu). Sistemi kurmadan uygulamayı görmek için.
-Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülatörden (1080 × 2400).
-27 Ekim 2026'da çalışan sistemden çekildi.
+Uygulamanın bütün ekranları, demo verisiyle (şartname senaryosu ve örnek günlük işler). Sistemi kurmadan uygulamayı görmek için.
+Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülatörden (yarı boyut).
+28 Ekim 2026'da, sıfırdan kurulan sistemden yeni arayüzle çekildi.
 
-İçindekiler: [Web — giriş ve ana sayfa](#1) · [Web — ana veriler, alış, stok ve lotlar](#2) · [Web — Görev 1: dış üretim ve gerçek maliyet (EKP)](#3) · [Web — Görev 2: kuzu parçalama ve satış](#4) · [Web — Görev 3: izleme ve geri çağırma](#5) · [Web — raporlar ve yapay zekâ](#6) · [Web — telefon genişliği](#7) · [Android (Kotlin) — lot bazlı satış ve geri çağırma](#8)
+İçindekiler: [Web — giriş ve rollere göre ana sayfa](#1) · [Web — satış, gün sonu](#2) · [Web — depo: mal kabul, stok, son kullanma, sayım](#3) · [Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)](#4) · [Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)](#5) · [Web — raporlar, yapay zekâ, yönetim](#6) · [Web — yazdırılabilir belgeler](#7) · [Web — İngilizce ve telefon genişliği](#8) · [Android (Kotlin) — araçtan satış](#9)
 
 <a id="1"></a>
 
-## Web — giriş ve ana sayfa
+## Web — giriş ve rollere göre ana sayfa
 
-**Yönetici girişi (`yonetici` / `yonetici123`, yalnız yerel demo parolası).**
+**Giriş. Sağ üstte dil seçimi (TR / EN). Demo kullanıcıları README'de; şifreler yalnız yerel demo içindir.**
 
-<img src="web/01_giris.jpg" alt="Yönetici girişi (`yonetici` / `yonetici123`, yalnız yerel demo parolası).">
+<img src="web/01_giris.jpg" alt="Giriş. Sağ üstte dil seçimi (TR / EN). Demo kullanıcıları README&#x27;de; şifreler yalnız yerel demo içindir.">
 
-**Ana sayfa: 3D gösterge kutuları (son EKP 18,16 €, açık geri çağırma, uyarı, defter bütünlüğü 8/8), şartname senaryosu kısayolları.**
+**Mağaza çalışanının ana sayfası (`magaza1`): bugün yapılacaklar, hızlı işlemler (mağaza satışı, iade al, gün sonu), bugünkü satış. Menüde yalnız kendi işinin ekranları.**
 
-<img src="web/02_ana_sayfa.jpg" alt="Ana sayfa: 3D gösterge kutuları (son EKP 18,16 €, açık geri çağırma, uyarı, defter bütünlüğü 8/8), şartname senaryosu kısayolları.">
+<img src="web/02_ana_sayfa_magaza.jpg" alt="Mağaza çalışanının ana sayfası (`magaza1`): bugün yapılacaklar, hızlı işlemler (mağaza satışı, iade al, gün sonu), bugünkü satış. Menüde yalnız kendi işinin ekranları.">
+
+**Depo sorumlusunun ana sayfası (`depo1`): dolmak üzere lotlar, azalan stok; mal kabul, araca yükleme, sayım.**
+
+<img src="web/03_ana_sayfa_depo.jpg" alt="Depo sorumlusunun ana sayfası (`depo1`): dolmak üzere lotlar, azalan stok; mal kabul, araca yükleme, sayım.">
+
+**Yöneticinin ana sayfası: bütün işler ve özet (bugünkü satış, stok değeri, dolmak üzere lotlar, açık geri çağırma).**
+
+<img src="web/04_ana_sayfa_yonetici.jpg" alt="Yöneticinin ana sayfası: bütün işler ve özet (bugünkü satış, stok değeri, dolmak üzere lotlar, açık geri çağırma).">
 
 <a id="2"></a>
 
-## Web — ana veriler, alış, stok ve lotlar
+## Web — satış, gün sonu
 
-**Ürün kartları: hammadde, mamul, parça; birim, lot öneki, satış fiyatı, raf ömrü.**
+**Mağaza satışı üç adım: müşteri, ürünler, ödeme türü. Lot elle seçilmez; son kullanma tarihi en yakın satılabilir lot kendiliğinden seçilir.**
 
-<img src="web/03_urunler.jpg" alt="Ürün kartları: hammadde, mamul, parça; birim, lot öneki, satış fiyatı, raf ömrü.">
+<img src="web/05_magaza_satisi.jpg" alt="Mağaza satışı üç adım: müşteri, ürünler, ödeme türü. Lot elle seçilmez; son kullanma tarihi en yakın satılabilir lot kendiliğinden seçilir.">
 
-**Cariler: tedarikçiler, dış üretici, marketler ve şubeleri, iletişim bilgileriyle.**
+**Satışlar ve iadeler: güne göre süzme, mağaza ve araç satışları, ödeme türü, fiş yazdırma; satır açılınca iade alma.**
 
-<img src="web/04_cariler.jpg" alt="Cariler: tedarikçiler, dış üretici, marketler ve şubeleri, iletişim bilgileriyle.">
+<img src="web/06_satislar_ve_iadeler.jpg" alt="Satışlar ve iadeler: güne göre süzme, mağaza ve araç satışları, ödeme türü, fiş yazdırma; satır açılınca iade alma.">
 
-**Hammadde alışları: ET-2026-001, BAH-2026-014, BAG-2026-007, KUZU-2026-012.**
+**Gün sonu: satış, iade, net; ödeme türüne ve satıcıya göre toplamlar, kasadaki nakit; yöneticiye brüt kâr.**
 
-<img src="web/05_hammadde_alislari.jpg" alt="Hammadde alışları: ET-2026-001, BAH-2026-014, BAG-2026-007, KUZU-2026-012.">
-
-**Yeni alış formu: lot, miktar, fiyat, fatura tutarı, ek maliyet kalemleri.**
-
-<img src="web/06_yeni_hammadde_alisi.jpg" alt="Yeni alış formu: lot, miktar, fiyat, fatura tutarı, ek maliyet kalemleri.">
-
-**Stok durumu: depo × lot bakiyeleri.**
-
-<img src="web/07_stok_durumu.jpg" alt="Stok durumu: depo × lot bakiyeleri.">
-
-**Lotlar: köken, durum (aktif/bloke), kalan miktar ve değer.**
-
-<img src="web/08_lotlar.jpg" alt="Lotlar: köken, durum (aktif/bloke), kalan miktar ve değer.">
-
-**Lot ayrıntısı: kaynak lotlar, hareket geçmişi (kim, ne zaman, hangi belge), bakiye = hareketlerin toplamı; fire/imha ve ters kayıt düğmeleri.**
-
-<img src="web/09_lot_ayrintisi_SUC-2026-045.jpg" alt="Lot ayrıntısı: kaynak lotlar, hareket geçmişi (kim, ne zaman, hangi belge), bakiye = hareketlerin toplamı; fire/imha ve ters kayıt düğmeleri.">
-
-**Depolar arası transfer (ör. araca yükleme).**
-
-<img src="web/10_transferler.jpg" alt="Depolar arası transfer (ör. araca yükleme).">
+<img src="web/07_gun_sonu.jpg" alt="Gün sonu: satış, iade, net; ödeme türüne ve satıcıya göre toplamlar, kasadaki nakit; yöneticiye brüt kâr.">
 
 <a id="3"></a>
 
-## Web — Görev 1: dış üretim ve gerçek maliyet (EKP)
+## Web — depo: mal kabul, stok, son kullanma, sayım
 
-**Dış üretim emirleri.**
+**Mal kabul: tedarikçiden gelen her teslimat bir lot numarası alır; ek masraflar maliyete eklenir.**
 
-<img src="web/11_dis_uretim_emirleri.jpg" alt="Dış üretim emirleri.">
+<img src="web/08_mal_kabul.jpg" alt="Mal kabul: tedarikçiden gelen her teslimat bir lot numarası alır; ek masraflar maliyete eklenir.">
 
-**URT-2026-045: taslak → sevk → teslim; girdiler; EKP dökümü 1.543,50 € / 85 = 18,16 €; kâr ve marj; yapay zekâ kartı (tahmin 84, gerçek 85, sapma +1).**
+**Yeni mal kabul formu: lot, miktar, fiyat, fatura tutarı, ek maliyet.**
 
-<img src="web/12_dis_uretim_emri_URT-2026-045.jpg" alt="URT-2026-045: taslak → sevk → teslim; girdiler; EKP dökümü 1.543,50 € / 85 = 18,16 €; kâr ve marj; yapay zekâ kartı (tahmin 84, gerçek 85, sapma +1).">
+<img src="web/09_yeni_mal_kabul.jpg" alt="Yeni mal kabul formu: lot, miktar, fiyat, fatura tutarı, ek maliyet.">
 
-**Yeni dış üretim emri formu.**
+**Stok durumu: depo, lot, son kullanma, durum; lot ya da ürün bazında.**
 
-<img src="web/13_yeni_dis_uretim_emri.jpg" alt="Yeni dış üretim emri formu.">
+<img src="web/10_stok_durumu.jpg" alt="Stok durumu: depo, lot, son kullanma, durum; lot ya da ürün bazında.">
 
-**Yeniden işleme: işletme içinde lotlardan yeni lot (ör. iade gelen ürünün yeniden paketlenmesi).**
+**Son kullanma takibi: süresi geçen ve yaklaşan mal; tek tıkla imha kaydı ve etiket yazdırma.**
 
-<img src="web/14_yeniden_isleme.jpg" alt="Yeniden işleme: işletme içinde lotlardan yeni lot (ör. iade gelen ürünün yeniden paketlenmesi).">
+<img src="web/11_son_kullanma_takibi.jpg" alt="Son kullanma takibi: süresi geçen ve yaklaşan mal; tek tıkla imha kaydı ve etiket yazdırma.">
+
+**Sayım: rafta sayılan miktar yazılır (isteğe bağlı kör sayım); eksik fire olarak düşülür, fazla raporlanır. Önceki sayımlar ve tutanak.**
+
+<img src="web/12_sayim.jpg" alt="Sayım: rafta sayılan miktar yazılır (isteğe bağlı kör sayım); eksik fire olarak düşülür, fazla raporlanır. Önceki sayımlar ve tutanak.">
+
+**Araca yükleme ve depolar arası aktarma.**
+
+<img src="web/13_araca_yukleme.jpg" alt="Araca yükleme ve depolar arası aktarma.">
+
+**Lotlar (partiler): köken, durum, kalan miktar ve değer.**
+
+<img src="web/14_lotlar.jpg" alt="Lotlar (partiler): köken, durum, kalan miktar ve değer.">
+
+**Lot kartı SUC-2026-045: kaynak lotlar, depo bakiyeleri, bütün hareketler; ileri/geri izleme, fire/imha, geri alma.**
+
+<img src="web/15_lot_karti_SUC-2026-045.jpg" alt="Lot kartı SUC-2026-045: kaynak lotlar, depo bakiyeleri, bütün hareketler; ileri/geri izleme, fire/imha, geri alma.">
 
 <a id="4"></a>
 
-## Web — Görev 2: kuzu parçalama ve satış
+## Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)
+
+**Fason üretim emirleri: emir aç → hammaddeyi sevk et → ürünü teslim al.**
+
+<img src="web/16_fason_uretim.jpg" alt="Fason üretim emirleri: emir aç → hammaddeyi sevk et → ürünü teslim al.">
+
+**URT-2026-045: girdiler, birim maliyet (EKP) dökümü 1.543,50 € / 85 = 18,16 €, kâr ve marj, yapay zekâ tahmini ile gerçek.**
+
+<img src="web/17_fason_uretim_emri_URT-2026-045.jpg" alt="URT-2026-045: girdiler, birim maliyet (EKP) dökümü 1.543,50 € / 85 = 18,16 €, kâr ve marj, yapay zekâ tahmini ile gerçek.">
 
 **Parçalamalar.**
 
-<img src="web/15_parcalama_listesi.jpg" alt="Parçalamalar.">
+<img src="web/18_parcalama.jpg" alt="Parçalamalar.">
 
-**PRC-2026-012: alış maliyet kalemleri (287,50 € + 63,50 € = 351,00 €), ağırlık dengesi 25 = 22 + 3 fire, değer ağırlıklı dağıtım kuruşu kuruşuna 351,00 €; standart oran, yapay zekâ tahmini ve gerçek kg.**
+**PRC-2026-012: alış maliyeti 351,00 €, ağırlık dengesi 25 = 22 + 3 fire, piyasa değerine göre kuruşu kuruşuna dağıtım; standart oran, YZ tahmini ve gerçek kg.**
 
-<img src="web/16_parcalama_PRC-2026-012.jpg" alt="PRC-2026-012: alış maliyet kalemleri (287,50 € + 63,50 € = 351,00 €), ağırlık dengesi 25 = 22 + 3 fire, değer ağırlıklı dağıtım kuruşu kuruşuna 351,00 €; standart oran, yapay zekâ tahmini ve gerçek kg.">
+<img src="web/19_parcalama_PRC-2026-012.jpg" alt="PRC-2026-012: alış maliyeti 351,00 €, ağırlık dengesi 25 = 22 + 3 fire, piyasa değerine göre kuruşu kuruşuna dağıtım; standart oran, YZ tahmini ve gerçek kg.">
 
-**Yeni parçalama: reçete, giriş lotu, ağırlık.**
+**Parçalama reçetesi: parçalar, standart oranlar, değer katsayıları.**
 
-<img src="web/17_yeni_parcalama.jpg" alt="Yeni parçalama: reçete, giriş lotu, ağırlık.">
+<img src="web/20_parcalama_receteleri.jpg" alt="Parçalama reçetesi: parçalar, standart oranlar, değer katsayıları.">
 
-**Parçalama reçetesi: parçalar, standart oranlar, değer katsayıları, fire.**
+**Yeniden işleme: elimizdeki lotlardan yeni ürün; yeni lot kullanılanlara bağlanır.**
 
-<img src="web/18_parcalama_receteleri.jpg" alt="Parçalama reçetesi: parçalar, standart oranlar, değer katsayıları, fire.">
-
-**Satışlar (Android'den gelen) ve müşteri iadeleri.**
-
-<img src="web/19_satislar_ve_iadeler.jpg" alt="Satışlar (Android&#x27;den gelen) ve müşteri iadeleri.">
+<img src="web/21_yeniden_isleme.jpg" alt="Yeniden işleme: elimizdeki lotlardan yeni ürün; yeni lot kullanılanlara bağlanır.">
 
 <a id="5"></a>
 
-## Web — Görev 3: izleme ve geri çağırma
+## Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)
 
-**İleri izleme ET-2026-001: 3D lot zinciri → SUC-2026-045 → Market A 30 / B 25 / C 30; bizdeki stok 0; iletişim, satış belgeleri, ikinci kademe (B'nin şubeleri kesin, A ve C sonrası bilinmiyor).**
+**İleri izleme ET-2026-001 → SUC-2026-045 → Market A 30 / B 25 / C 30; iletişim bilgileri, müşterinin dağıttığı yerler.**
 
-<img src="web/20_izleme_ileri_ET-2026-001.jpg" alt="İleri izleme ET-2026-001: 3D lot zinciri → SUC-2026-045 → Market A 30 / B 25 / C 30; bizdeki stok 0; iletişim, satış belgeleri, ikinci kademe (B&#x27;nin şubeleri kesin, A ve C sonrası bilinmiyor).">
+<img src="web/22_izleme_ileri_ET-2026-001.jpg" alt="İleri izleme ET-2026-001 → SUC-2026-045 → Market A 30 / B 25 / C 30; iletişim bilgileri, müşterinin dağıttığı yerler.">
 
-**Geri izleme SUC-2026-045: üç hammadde lotu, tedarikçileri ve alış belgeleri, URT-2026-045.**
+**Geri izleme SUC-2026-045: hammadde lotları, tedarikçiler, URT-2026-045.**
 
-<img src="web/21_izleme_geri_SUC-2026-045.jpg" alt="Geri izleme SUC-2026-045: üç hammadde lotu, tedarikçileri ve alış belgeleri, URT-2026-045.">
+<img src="web/23_izleme_geri_SUC-2026-045.jpg" alt="Geri izleme SUC-2026-045: hammadde lotları, tedarikçiler, URT-2026-045.">
 
-**Geri çağırma başlatma: neden yazılır; kaynak ve türevler tek işlemde bloke olur.**
+**Geri çağırma tatbikatı (denetimlerde istenir): tedarikçiler, elimizdeki stok, aranacak müşteriler ve bulma süresi; hiçbir lot kapatılmaz.**
 
-<img src="web/24_geri_cagirma_baslatma_penceresi.jpg" alt="Geri çağırma başlatma: neden yazılır; kaynak ve türevler tek işlemde bloke olur.">
+<img src="web/24_geri_cagirma_tatbikati.jpg" alt="Geri çağırma tatbikatı (denetimlerde istenir): tedarikçiler, elimizdeki stok, aranacak müşteriler ve bulma süresi; hiçbir lot kapatılmaz.">
 
-**Geri çağırma GC-2026-001: etkilenen zincir (kırmızı = bloke), market listesi, iletişim, CSV iletişim listesi, iade al, ikinci kademe ekle, kapat (imha/serbest).**
+**Kalite sorumlusunun ana sayfası, geri çağırma başlatıldıktan sonra.**
 
-<img src="web/27_geri_cagirma_GC-2026-001.jpg" alt="Geri çağırma GC-2026-001: etkilenen zincir (kırmızı = bloke), market listesi, iletişim, CSV iletişim listesi, iade al, ikinci kademe ekle, kapat (imha/serbest).">
+<img src="web/32_ana_sayfa_kalite_geri_cagirma_sonrasi.jpg" alt="Kalite sorumlusunun ana sayfası, geri çağırma başlatıldıktan sonra.">
 
 **Geri çağırmalar listesi.**
 
-<img src="web/28_geri_cagirma_listesi.jpg" alt="Geri çağırmalar listesi.">
+<img src="web/33_geri_cagirmalar.jpg" alt="Geri çağırmalar listesi.">
 
-**Uyarı: geri çağrılmış lotun çevrimdışı satışı (Android) yöneticiye bildirildi; menüde okunmamış sayısı.**
+**Geri çağırma: lot ve ondan yapılan bütün lotlar satışa kapalı; etkilenen zincir, aranacak müşteriler, iletişim listesi (CSV), bildirim yazdırma, iade alma, kapatma.**
 
-<img src="web/29_uyarilar.jpg" alt="Uyarı: geri çağrılmış lotun çevrimdışı satışı (Android) yöneticiye bildirildi; menüde okunmamış sayısı.">
+<img src="web/34_geri_cagirma_ayrintisi.jpg" alt="Geri çağırma: lot ve ondan yapılan bütün lotlar satışa kapalı; etkilenen zincir, aranacak müşteriler, iletişim listesi (CSV), bildirim yazdırma, iade alma, kapatma.">
 
-**Geri çağırmadan sonra izleme: lotlar bloke.**
+**Uyarılar: telefondan çevrimdışı yapılan sorunlu satışlar burada görünür.**
 
-<img src="web/30_izleme_geri_cagirma_sonrasi.jpg" alt="Geri çağırmadan sonra izleme: lotlar bloke.">
-
-**Geri çağırmadan sonra ana sayfa: açık geri çağırma ve uyarı sayıları.**
-
-<img src="web/38_ana_sayfa_geri_cagirma_sonrasi.jpg" alt="Geri çağırmadan sonra ana sayfa: açık geri çağırma ve uyarı sayıları.">
+<img src="web/35_uyarilar.jpg" alt="Uyarılar: telefondan çevrimdışı yapılan sorunlu satışlar burada görünür.">
 
 <a id="6"></a>
 
-## Web — raporlar ve yapay zekâ
+## Web — raporlar, yapay zekâ, yönetim
 
-**Yedi rapor (her biri süzgeçli, CSV indirilebilir).**
+**Raporlar: alış, üretim, parçalama, stok hareketi, satış, geri çağırma, bütünlük; CSV.**
 
-<img src="web/23_raporlar.jpg" alt="Yedi rapor (her biri süzgeçli, CSV indirilebilir).">
+<img src="web/25_raporlar.jpg" alt="Raporlar: alış, üretim, parçalama, stok hareketi, satış, geri çağırma, bütünlük; CSV.">
 
-**Alış raporu: fatura, ek maliyet, lot değeri.**
+**Üretim raporu.**
 
-<img src="web/31_rapor_alis.jpg" alt="Alış raporu: fatura, ek maliyet, lot değeri.">
+<img src="web/26_rapor_uretim.jpg" alt="Üretim raporu.">
 
-**Üretim raporu: miktar farkları, EKP, kâr/marj, yapay zekâ tahmini ve sapma.**
+**Yapay zekâ tahminleri: iki model, referans yönteme göre hata, sistemdeki gerçek kayıtlar.**
 
-<img src="web/32_rapor_uretim.jpg" alt="Üretim raporu: miktar farkları, EKP, kâr/marj, yapay zekâ tahmini ve sapma.">
+<img src="web/27_yapay_zeka.jpg" alt="Yapay zekâ tahminleri: iki model, referans yönteme göre hata, sistemdeki gerçek kayıtlar.">
 
-**Parçalama raporu: standart, yapay zekâ tahmini, gerçek kg ve fark; dağıtılan maliyet.**
+**Kullanıcılar (yalnız yönetici): rol ve araç ataması, pasifleştirme, geçici şifre.**
 
-<img src="web/33_rapor_parcalama.jpg" alt="Parçalama raporu: standart, yapay zekâ tahmini, gerçek kg ve fark; dağıtılan maliyet.">
+<img src="web/28_kullanicilar.jpg" alt="Kullanıcılar (yalnız yönetici): rol ve araç ataması, pasifleştirme, geçici şifre.">
 
-**Lot hareketleri raporu: yürüyen bakiye (bakiye = hareketlerin toplamı).**
+**Ürünler ve fiyatlar: satış fiyatı, raf ömrü, kritik stok.**
 
-<img src="web/34_rapor_lot_hareketleri.jpg" alt="Lot hareketleri raporu: yürüyen bakiye (bakiye = hareketlerin toplamı).">
+<img src="web/29_urunler_ve_fiyatlar.jpg" alt="Ürünler ve fiyatlar: satış fiyatı, raf ömrü, kritik stok.">
 
-**Satış raporu: müşteri, lot, tutar, maliyet, brüt kâr, kanal, iade, ihlal.**
+**Müşteri ve tedarikçiler: iletişim bilgileri, şubeler, fasoncu.**
 
-<img src="web/35_rapor_satis.jpg" alt="Satış raporu: müşteri, lot, tutar, maliyet, brüt kâr, kanal, iade, ihlal.">
+<img src="web/30_musteri_ve_tedarikciler.jpg" alt="Müşteri ve tedarikçiler: iletişim bilgileri, şubeler, fasoncu.">
 
-**Geri çağırma raporu: etkilenen lotlar, alıcılar, müşteride kalan miktarlar.**
+**Şifremi değiştir (ilk girişte zorunlu ekranın aynısı).**
 
-<img src="web/36_rapor_geri_cagirma.jpg" alt="Geri çağırma raporu: etkilenen lotlar, alıcılar, müşteride kalan miktarlar.">
-
-**Bütünlük raporu: defter–özet kuralları I-1…I-8, hepsi tutarlı.**
-
-<img src="web/37_rapor_butunluk.jpg" alt="Bütünlük raporu: defter–özet kuralları I-1…I-8, hepsi tutarlı.">
-
-**Yapay zekâ: Model A ve B, referans yöntemle karşılaştırma (hata çubukları), örnek tahminler, sistemdeki gerçek kayıtlar, sınırlılıklar.**
-
-<img src="web/22_yapay_zeka.jpg" alt="Yapay zekâ: Model A ve B, referans yöntemle karşılaştırma (hata çubukları), örnek tahminler, sistemdeki gerçek kayıtlar, sınırlılıklar.">
+<img src="web/31_sifre_degistir.jpg" alt="Şifremi değiştir (ilk girişte zorunlu ekranın aynısı).">
 
 <a id="7"></a>
 
-## Web — telefon genişliği
+## Web — yazdırılabilir belgeler
 
-**Ana sayfa, 390 px genişlikte.**
+**Lot etiketi: ürün, üretim ve son tüketim tarihi, Code 128 barkod (el terminaliyle okunur).**
 
-<img src="web/25_telefon_ana_sayfa.jpg" alt="Ana sayfa, 390 px genişlikte." width="320">
+<img src="web/40_yazdir_lot_etiketi.jpg" alt="Lot etiketi: ürün, üretim ve son tüketim tarihi, Code 128 barkod (el terminaliyle okunur).">
 
-**İzleme ekranı, 390 px genişlikte (şema yatay kayar).**
+**Satış fişi / sevk irsaliyesi: ürün, lot, miktar, fiyat, ödeme; imza alanları.**
 
-<img src="web/26_telefon_izleme.jpg" alt="İzleme ekranı, 390 px genişlikte (şema yatay kayar)." width="320">
+<img src="web/41_yazdir_fis_irsaliye.jpg" alt="Satış fişi / sevk irsaliyesi: ürün, lot, miktar, fiyat, ödeme; imza alanları.">
+
+**Gün sonu raporu: ödeme türüne göre toplamlar ve sayılan kasa alanı.**
+
+<img src="web/42_yazdir_gun_sonu.jpg" alt="Gün sonu raporu: ödeme türüne göre toplamlar ve sayılan kasa alanı.">
+
+**Sayım tutanağı: sistemde, sayılan, fark, eksik maliyeti.**
+
+<img src="web/43_yazdir_sayim_tutanagi.jpg" alt="Sayım tutanağı: sistemde, sayılan, fark, eksik maliyeti.">
+
+**Müşteri başına geri çağırma bildirimi: ürün, lot, teslim belgesi, müşteride olması gereken miktar.**
+
+<img src="web/44_yazdir_geri_cagirma_bildirimi.jpg" alt="Müşteri başına geri çağırma bildirimi: ürün, lot, teslim belgesi, müşteride olması gereken miktar.">
 
 <a id="8"></a>
 
-## Android (Kotlin) — lot bazlı satış ve geri çağırma
+## Web — İngilizce ve telefon genişliği
 
-**Giriş: sunucu adresi, satış kullanıcısı (`satis1` / `satis123`).**
+**English: aynı ekranlar İngilizce; sayı ve tarih biçimi de dile göre.**
 
-<img src="android/A01_giris.png" alt="Giriş: sunucu adresi, satış kullanıcısı (`satis1` / `satis123`)." width="320">
+<img src="web/36_ingilizce_ana_sayfa.jpg" alt="English: aynı ekranlar İngilizce; sayı ve tarih biçimi de dile göre.">
 
-**Ana sayfa: üst bant, gösterge kutuları (araçta lot, bloke lot, bekleyen satış), eşitleme.**
+**English: mağaza satışı (shop sale).**
 
-<img src="android/A02_ana_sayfa.png" alt="Ana sayfa: üst bant, gösterge kutuları (araçta lot, bloke lot, bekleyen satış), eşitleme." width="320">
+<img src="web/37_ingilizce_magaza_satisi.jpg" alt="English: mağaza satışı (shop sale).">
 
-**Araç deposu stoku (lot ve son kullanma tarihi).**
+**Telefon genişliğinde ana sayfa: menü sol üstten açılır.**
 
-<img src="android/A03_ana_sayfa_stok_ve_satislar.png" alt="Araç deposu stoku (lot ve son kullanma tarihi)." width="320">
+<img src="web/38_telefon_ana_sayfa.jpg" alt="Telefon genişliğinde ana sayfa: menü sol üstten açılır." width="320">
 
-**Yeni satış: müşteri ve lot seçimi (ilk biten önce önerilir).**
+**Telefon genişliğinde mağaza satışı.**
 
-<img src="android/A04_yeni_satis.png" alt="Yeni satış: müşteri ve lot seçimi (ilk biten önce önerilir)." width="320">
+<img src="web/39_telefon_magaza_satisi.jpg" alt="Telefon genişliğinde mağaza satışı." width="320">
 
-**Satır: 1,5 kg × 26,00 € = 39,00 €.**
+<a id="9"></a>
 
-<img src="android/A05_satis_satiri_eklendi.png" alt="Satır: 1,5 kg × 26,00 € = 39,00 €." width="320">
+## Android (Kotlin) — araçtan satış
 
-**Satış kaydedildi ve gönderildi.**
+**Giriş; dil seçimi (English / Türkçe).**
 
-<img src="android/A06_satis_sonrasi_ana_sayfa.png" alt="Satış kaydedildi ve gönderildi." width="320">
+<img src="android/A01_giris.png" alt="Giriş; dil seçimi (English / Türkçe)." width="320">
 
-**Son satışlar: "Gönderildi · SAT-2026-0104".**
+**Ana ekran: eşitleme durumu, büyük "Yeni satış" düğmesi, bugünkü satış ve nakit. Alt menü: Satış, Stok, Geçmiş, Gün sonu.**
 
-<img src="android/A07_satis_gonderildi.png" alt="Son satışlar: &quot;Gönderildi · SAT-2026-0104&quot;." width="320">
+<img src="android/A02_ana_sayfa.png" alt="Ana ekran: eşitleme durumu, büyük &quot;Yeni satış&quot; düğmesi, bugünkü satış ve nakit. Alt menü: Satış, Stok, Geçmiş, Gün sonu." width="320">
 
-**Uçak modunda satış: telefona kaydedildi, "gönderilmeyi bekliyor"; kullanılabilir miktar bekleyen satış kadar düşük.**
+**Araç stoku: son kullanma tarihi en yakın üstte; satışa kapalı ve süresi yaklaşan lotlar etiketli.**
 
-<img src="android/A08_cevrimdisi_satis_bekliyor.png" alt="Uçak modunda satış: telefona kaydedildi, &quot;gönderilmeyi bekliyor&quot;; kullanılabilir miktar bekleyen satış kadar düşük." width="320">
+<img src="android/A03_stok.png" alt="Araç stoku: son kullanma tarihi en yakın üstte; satışa kapalı ve süresi yaklaşan lotlar etiketli." width="320">
 
-**Bağlantı gelince eşitleme: geri çağrılan lotlar "Bloke lot 2".**
+**Satış 1/4: müşteri ara ve seç.**
 
-<img src="android/A09_eslestirme_sonrasi_bloke_lotlar.png" alt="Bağlantı gelince eşitleme: geri çağrılan lotlar &quot;Bloke lot 2&quot;." width="320">
+<img src="android/A04_satis_1_musteri.png" alt="Satış 1/4: müşteri ara ve seç." width="320">
 
-**Bloke lotlar kırmızı: "BLOKE — satılamaz", ne yapılacağı yazılı.**
+**Satış 2/4: araçtaki satılabilir ürünler (geri çağrılan ve süresi geçen lot listede yok).**
 
-<img src="android/A10_bloke_lotlar_ve_uyari.png" alt="Bloke lotlar kırmızı: &quot;BLOKE — satılamaz&quot;, ne yapılacağı yazılı." width="320">
+<img src="android/A05_satis_2_urunler.png" alt="Satış 2/4: araçtaki satılabilir ürünler (geri çağrılan ve süresi geçen lot listede yok)." width="320">
 
-**Çevrimdışı yapılan satış sunucuda kaydedildi, uyarı döndü: geri çağrılmış lot satıldı, ihlal yöneticiye bildirildi.**
+**Sepet: 1,5 kg; lot kendiliğinden seçildi (SIRT-PRC-2026-012).**
 
-<img src="android/A11_cevrimdisi_satis_uyarisi.png" alt="Çevrimdışı yapılan satış sunucuda kaydedildi, uyarı döndü: geri çağrılmış lot satıldı, ihlal yöneticiye bildirildi." width="320">
+<img src="android/A06_satis_sepet.png" alt="Sepet: 1,5 kg; lot kendiliğinden seçildi (SIRT-PRC-2026-012)." width="320">
 
-**Satış ekranında bloke lot seçilemez: "Geri çağrıldı: bu lot hiçbir kanaldan satılamaz".**
+**Satış 3/4: ödeme türü (nakit, kredi kartı, havale, veresiye).**
 
-<img src="android/A12_satis_ekraninda_bloke_lot.png" alt="Satış ekranında bloke lot seçilemez: &quot;Geri çağrıldı: bu lot hiçbir kanaldan satılamaz&quot;." width="320">
+<img src="android/A07_satis_odeme.png" alt="Satış 3/4: ödeme türü (nakit, kredi kartı, havale, veresiye)." width="320">
+
+**Satış 4/4: özet; satış önce telefona kaydedilir, bağlantı gelince gönderilir.**
+
+<img src="android/A08_satis_ozet.png" alt="Satış 4/4: özet; satış önce telefona kaydedilir, bağlantı gelince gönderilir." width="320">
+
+**Satıştan sonra ana ekran: bugünkü satış.**
+
+<img src="android/A09_satis_sonrasi_ana_sayfa.png" alt="Satıştan sonra ana ekran: bugünkü satış." width="320">
+
+**Geçmiş: satış sunucuya gönderildi (SAT numarası), ödeme türü.**
+
+<img src="android/A10_gecmis.png" alt="Geçmiş: satış sunucuya gönderildi (SAT numarası), ödeme türü." width="320">
+
+**Gün sonu (sunucudan): satış, iade, net; ödeme türüne göre; araçta kalan mal.**
+
+<img src="android/A11_gun_sonu.png" alt="Gün sonu (sunucudan): satış, iade, net; ödeme türüne göre; araçta kalan mal." width="320">
+
+**Araç sayımı: sayılan miktar yazılır, eksik fire olarak düşülür.**
+
+<img src="android/A12_arac_sayimi.png" alt="Araç sayımı: sayılan miktar yazılır, eksik fire olarak düşülür." width="320">
+
+**English: ana ekran.**
+
+<img src="android/A13_ingilizce_ana_sayfa.png" alt="English: ana ekran." width="320">
+
+**English: gün sonu (sayı 83.00, tarih 01/11/2026).**
+
+<img src="android/A14_ingilizce_gun_sonu.png" alt="English: gün sonu (sayı 83.00, tarih 01/11/2026)." width="320">

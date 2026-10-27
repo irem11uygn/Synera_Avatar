@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 data class DayEndUiState(
     val loading: Boolean = false,
@@ -43,7 +42,7 @@ class DayEndViewModel(private val repository: AvatarRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 runCatching { repository.sync() } // önce bekleyen satışlar gönderilsin ki rapora girsin
-                val report = repository.dayEnd(LocalDate.now())
+                val report = repository.dayEnd()
                 _ui.update { it.copy(loading = false, report = report) }
             } catch (e: ApiException) {
                 _ui.update { it.copy(loading = false, error = e.message) }

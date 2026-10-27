@@ -199,10 +199,11 @@ class AvatarRepository(
         }
     }
 
-    /** Satış elemanının bir günlük özeti (sunucudan): ödeme türüne göre toplamlar, iadeler, araçta kalan. */
-    suspend fun dayEnd(day: LocalDate): DayEndDto {
+    /** Satış elemanının bir günlük özeti (sunucudan): ödeme türüne göre toplamlar, iadeler, araçta kalan. Gün boşsa bugün. */
+    suspend fun dayEnd(day: LocalDate? = null): DayEndDto {
         val session = sessions.current() ?: throw ApiException(t("Oturum yok; yeniden giriş yapın."), UNAUTHORIZED)
-        return authorized { apiFor(sessions.serverUrl).dayEnd(bearer(session), day.toString()) }
+        val api = apiFor(sessions.serverUrl)
+        return authorized { if (day == null) api.dayEndToday(bearer(session)) else api.dayEnd(bearer(session), day.toString()) }
     }
 
     /**
