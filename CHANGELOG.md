@@ -91,3 +91,5 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - `scripts/api_tipleri_yenile.sh`: API tanımını (`docs/openapi.json`) ve web tiplerini tek komutla yeniler.
 - Web geliştirme sunucusu API portunu `API_PORT` değişkeninden okuyor (8000 doluysa).
 - Testler yeniden çalıştırıldı: 134 sunucu, 16 web, 17 Android — hepsi geçti.
+- Düzeltme: `docs/openapi.json` ve web tiplerinde bozuk Türkçe karakterler (yanlış kodlamayla üretilmişti) doğru UTF-8 ile yeniden üretildi; yenileme betiği Node.js ile yazıldı.
+- Ekip paketi temiz kopyada sıfırdan kurulup denendi: 134 sunucu, 16 web, 17 Android testi, APK (`reports/test_results.md`).

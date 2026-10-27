@@ -430,7 +430,7 @@ export interface paths {
         get: operations["get_cutting_api_v1_cuttings__cutting_id__get"];
         /**
          * Record Actuals
-         * @description Fiili kg'larÄ± taslaÄŸa kaydeder (deftere yazmaz).
+         * @description Fiili kg'ları taslağa kaydeder (deftere yazmaz).
          */
         put: operations["record_actuals_api_v1_cuttings__cutting_id__put"];
         post?: never;
@@ -451,7 +451,7 @@ export interface paths {
         put?: never;
         /**
          * Preview
-         * @description GÃ¶nderilen kg'larla denge ve daÄŸÄ±tÄ±mÄ± hesaplar; hiÃ§bir ÅŸey kaydetmez.
+         * @description Gönderilen kg'larla denge ve dağıtımı hesaplar; hiçbir şey kaydetmez.
          */
         post: operations["preview_api_v1_cuttings__cutting_id__preview_post"];
         delete?: never;
@@ -539,7 +539,7 @@ export interface paths {
         put?: never;
         /**
          * Push
-         * @description Cihazdaki bekleyen satÄ±ÅŸlarÄ± kaydeder; her satÄ±ÅŸÄ±n sonucu ayrÄ± dÃ¶ner (api.md Â§4.4).
+         * @description Cihazdaki bekleyen satışları kaydeder; her satışın sonucu ayrı döner (api.md §4.4).
          */
         post: operations["push_api_v1_sync_push_post"];
         delete?: never;
@@ -2731,7 +2731,7 @@ export interface operations {
     pull_api_v1_sync_pull_get: {
         parameters: {
             query?: {
-                /** @description CihazÄ±n son aldÄ±ÄŸÄ± deÄŸiÅŸiklik numarasÄ± */
+                /** @description Cihazın son aldığı değişiklik numarası */
                 since?: number;
             };
             header?: never;

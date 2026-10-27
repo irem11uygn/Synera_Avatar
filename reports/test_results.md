@@ -304,3 +304,25 @@ Notlar:
 
 - Bu senaryo geliştirme veritabanında iz bıraktı: SUC-2026-046 bloke, 3 satış. Temiz örnek kayıtlar için `docker compose down -v` + `up`.
 - Android arayüz akışları elle (adb) denendi; otomatik arayüz testi yok.
+
+## 27 Ekim 2026 — ekip paketi ve temiz kopyada kurulum denemesi
+
+Ekip arkadaşına verilecek git paketi (`.bundle`) temiz bir klasöre açıldı ve README adımlarıyla sıfırdan kuruldu. Çalışan diğer sistemlere dokunmamak için ayrı Compose proje adı ve 18000/18080 portları kullanıldı.
+
+| Kontrol | Sonuç |
+|---|---|
+| Paketten açma (`git clone AVATAR_Synera.bundle`) | Tamam; son commit ve `main` dalı geldi; `_kaynak/` ve `local.properties` depoda yok |
+| `docker compose up --build -d` (`API_PORT=18000`, `WEB_PORT=18080`) | 59 saniyede hazır (temel imajlar önbellekteydi); sağlık denetimi `ok`, örnek kayıtlar yüklü (4 lot) |
+| Web | Ana sayfa ve derin bağlantı (`/uretim`) HTTP 200 |
+| Sunucu testleri | **134 geçti** |
+| Web testleri (`npm ci` ile paketler sıfırdan) | **16 geçti** |
+| Android (`local.properties` yok, `ANDROID_HOME` ile) | Derleme başarılı, **17 test geçti**, APK üretildi |
+| `scripts/api_tipleri_yenile.sh` | Çalıştı (31 uç yolu) |
+
+Yolda bulunan ve düzeltilen hatalar:
+
+1. **Depodaki `docs/openapi.json` dosyasında Türkçe karakterler bozuktu** ("AVATAR â€” Synera", "Ãœretim"). Dosya daha önce Windows'ta Python'un standart girdisinden okunarak üretilmiş; metin yanlış kodlamayla çözülmüş. Bu dosyadan üretilen `web/src/api/schema.d.ts` yorumları da bozuktu. API açıklamasını (CR-008) etkiliyordu. Dosyalar doğru UTF-8 ile yeniden üretildi. Belgelerde, web ve sunucu kodunda başka bozuk karakter olmadığı tarandı.
+2. **Yenileme betiği ilk hâlinde Windows'ta çalışmadı:** `python3` adı Microsoft Store'un yönlendirme kısayoluna çıkıyordu. Betik Node.js ile yeniden yazıldı (web tipleri için zaten gerekli, fazladan araç istemiyor).
+3. Bu bilgisayarda 8000 portu başka bir projede kullanılıyor. Port `.env` ile değiştirilebiliyor (`API_PORT`, `WEB_PORT`); web geliştirme sunucusu da artık `API_PORT`'u okuyor.
+
+Not: Bu deneme T-26'nın yerini tutmaz. Gerçek temiz kurulum testi, ekip arkadaşının kendi bilgisayarında yapılacak (`is_bolumu.md`).

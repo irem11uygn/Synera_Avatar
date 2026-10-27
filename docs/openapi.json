@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "AVATAR â€” Synera",
-    "description": "Ãœretim, maliyet, satÄ±ÅŸ ve lot izlenebilirliÄŸi API'si",
+    "title": "AVATAR — Synera",
+    "description": "Üretim, maliyet, satış ve lot izlenebilirliği API'si",
     "version": "0.1.0"
   },
   "paths": {
@@ -469,7 +469,7 @@
     "/api/v1/purchases": {
       "get": {
         "tags": [
-          "alÄ±ÅŸ"
+          "alış"
         ],
         "summary": "List Purchases",
         "operationId": "list_purchases_api_v1_purchases_get",
@@ -497,7 +497,7 @@
       },
       "post": {
         "tags": [
-          "alÄ±ÅŸ"
+          "alış"
         ],
         "summary": "Create",
         "operationId": "create_api_v1_purchases_post",
@@ -543,7 +543,7 @@
     "/api/v1/purchases/{purchase_id}": {
       "get": {
         "tags": [
-          "alÄ±ÅŸ"
+          "alış"
         ],
         "summary": "Get Purchase",
         "operationId": "get_purchase_api_v1_purchases__purchase_id__get",
@@ -942,7 +942,7 @@
     "/api/v1/production-orders": {
       "get": {
         "tags": [
-          "dÄ±ÅŸ Ã¼retim"
+          "dış üretim"
         ],
         "summary": "List Orders",
         "operationId": "list_orders_api_v1_production_orders_get",
@@ -970,7 +970,7 @@
       },
       "post": {
         "tags": [
-          "dÄ±ÅŸ Ã¼retim"
+          "dış üretim"
         ],
         "summary": "Create",
         "operationId": "create_api_v1_production_orders_post",
@@ -1016,7 +1016,7 @@
     "/api/v1/production-orders/{order_id}": {
       "get": {
         "tags": [
-          "dÄ±ÅŸ Ã¼retim"
+          "dış üretim"
         ],
         "summary": "Get Order",
         "operationId": "get_order_api_v1_production_orders__order_id__get",
@@ -1063,7 +1063,7 @@
     "/api/v1/production-orders/{order_id}/ship": {
       "post": {
         "tags": [
-          "dÄ±ÅŸ Ã¼retim"
+          "dış üretim"
         ],
         "summary": "Ship",
         "operationId": "ship_api_v1_production_orders__order_id__ship_post",
@@ -1110,7 +1110,7 @@
     "/api/v1/production-orders/{order_id}/complete": {
       "post": {
         "tags": [
-          "dÄ±ÅŸ Ã¼retim"
+          "dış üretim"
         ],
         "summary": "Complete",
         "operationId": "complete_api_v1_production_orders__order_id__complete_post",
@@ -1167,7 +1167,7 @@
     "/api/v1/production-orders/{order_id}/cancel": {
       "post": {
         "tags": [
-          "dÄ±ÅŸ Ã¼retim"
+          "dış üretim"
         ],
         "summary": "Cancel",
         "operationId": "cancel_api_v1_production_orders__order_id__cancel_post",
@@ -1214,7 +1214,7 @@
     "/api/v1/cutting-recipes": {
       "get": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "List Recipes",
         "operationId": "list_recipes_api_v1_cutting_recipes_get",
@@ -1242,7 +1242,7 @@
       },
       "post": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Create Recipe",
         "operationId": "create_recipe_api_v1_cutting_recipes_post",
@@ -1288,7 +1288,7 @@
     "/api/v1/cutting-recipes/{recipe_id}": {
       "get": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Get Recipe",
         "operationId": "get_recipe_api_v1_cutting_recipes__recipe_id__get",
@@ -1335,7 +1335,7 @@
     "/api/v1/cuttings": {
       "get": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "List Cuttings",
         "operationId": "list_cuttings_api_v1_cuttings_get",
@@ -1363,7 +1363,7 @@
       },
       "post": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Create",
         "operationId": "create_api_v1_cuttings_post",
@@ -1409,7 +1409,7 @@
     "/api/v1/cuttings/{cutting_id}": {
       "get": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Get Cutting",
         "operationId": "get_cutting_api_v1_cuttings__cutting_id__get",
@@ -1454,10 +1454,10 @@
       },
       "put": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Record Actuals",
-        "description": "Fiili kg'larÄ± taslaÄŸa kaydeder (deftere yazmaz).",
+        "description": "Fiili kg'ları taslağa kaydeder (deftere yazmaz).",
         "operationId": "record_actuals_api_v1_cuttings__cutting_id__put",
         "security": [
           {
@@ -1512,10 +1512,10 @@
     "/api/v1/cuttings/{cutting_id}/preview": {
       "post": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Preview",
-        "description": "GÃ¶nderilen kg'larla denge ve daÄŸÄ±tÄ±mÄ± hesaplar; hiÃ§bir ÅŸey kaydetmez.",
+        "description": "Gönderilen kg'larla denge ve dağıtımı hesaplar; hiçbir şey kaydetmez.",
         "operationId": "preview_api_v1_cuttings__cutting_id__preview_post",
         "security": [
           {
@@ -1570,7 +1570,7 @@
     "/api/v1/cuttings/{cutting_id}/approve": {
       "post": {
         "tags": [
-          "parÃ§alama"
+          "parçalama"
         ],
         "summary": "Approve",
         "operationId": "approve_api_v1_cuttings__cutting_id__approve_post",
@@ -1617,7 +1617,7 @@
     "/api/v1/sales": {
       "get": {
         "tags": [
-          "satÄ±ÅŸ"
+          "satış"
         ],
         "summary": "List Sales",
         "operationId": "list_sales_api_v1_sales_get",
@@ -1647,7 +1647,7 @@
     "/api/v1/sales/{sale_id}": {
       "get": {
         "tags": [
-          "satÄ±ÅŸ"
+          "satış"
         ],
         "summary": "Get Sale",
         "operationId": "get_sale_api_v1_sales__sale_id__get",
@@ -1711,11 +1711,11 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
-              "description": "CihazÄ±n son aldÄ±ÄŸÄ± deÄŸiÅŸiklik numarasÄ±",
+              "description": "Cihazın son aldığı değişiklik numarası",
               "default": 0,
               "title": "Since"
             },
-            "description": "CihazÄ±n son aldÄ±ÄŸÄ± deÄŸiÅŸiklik numarasÄ±"
+            "description": "Cihazın son aldığı değişiklik numarası"
           }
         ],
         "responses": {
@@ -1748,7 +1748,7 @@
           "senkronizasyon"
         ],
         "summary": "Push",
-        "description": "Cihazdaki bekleyen satÄ±ÅŸlarÄ± kaydeder; her satÄ±ÅŸÄ±n sonucu ayrÄ± dÃ¶ner (api.md Â§4.4).",
+        "description": "Cihazdaki bekleyen satışları kaydeder; her satışın sonucu ayrı döner (api.md §4.4).",
         "operationId": "push_api_v1_sync_push_post",
         "requestBody": {
           "content": {
@@ -1802,7 +1802,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -1867,7 +1867,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -1887,7 +1887,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -2060,7 +2060,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -2396,7 +2396,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -2617,7 +2617,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -2629,7 +2629,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -2992,7 +2992,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -3004,7 +3004,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -3448,7 +3448,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -3488,7 +3488,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -3515,7 +3515,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -3530,7 +3530,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -3545,7 +3545,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "null"
@@ -3722,7 +3722,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -3734,7 +3734,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -3746,7 +3746,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -3998,7 +3998,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -4010,7 +4010,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -4169,7 +4169,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -4218,8 +4218,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1.0,
-                "minimum": 0.0
+                "maximum": 1,
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -4231,7 +4231,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string"
@@ -4707,7 +4707,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "exclusiveMinimum": 0
               },
               {
                 "type": "string"
@@ -5222,7 +5222,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "null"
