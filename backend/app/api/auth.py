@@ -54,7 +54,8 @@ def user_out(db: Db, user: User) -> UserOut:
 
 @router.post("/login", response_model=LoginResponse)
 def login(body: LoginRequest, db: Db, request: Request) -> LoginResponse:
-    client = request.client.host if request.client else "?"
+    # Web arayüzü nginx üzerinden gelir: gerçek adres X-Real-IP'de (nginx istemcinin gönderdiğini ezer).
+    client = request.headers.get("x-real-ip") or (request.client.host if request.client else "?")
     token, user = auth.login(db, body.username, body.password, client)
     return LoginResponse(token=token, user=user_out(db, user))
 

@@ -76,7 +76,7 @@ export default function ProductionNewPage() {
   }
 
   return (
-    <Page title="Yeni dış üretim emri">
+    <Page title="Yeni fason üretim emri" back={{ to: '/uretim', label: 'Fason üretim' }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues>
         form={form}
@@ -90,9 +90,9 @@ export default function ProductionNewPage() {
           <Row gutter={16}>
             <Col xs={24} md={12}>
               <Form.Item
-                label="Dış üretici"
+                label="Fasoncu"
                 name="subcontractor_id"
-                rules={[{ required: true, message: 'Dış üretici seçin.' }]}
+                rules={[{ required: true, message: 'Fasoncuyu seçin.' }]}
               >
                 <Select
                   loading={subcontractors.isPending}
@@ -124,7 +124,7 @@ export default function ProductionNewPage() {
               <Form.Item
                 label="Hizmet birim ücreti"
                 name="service_unit_price"
-                extra="Dış üreticinin birim başına işçilik ücreti (hammadde bedeli içermez)."
+                extra="Fasoncunun birim başına işçilik ücreti (hammadde bedeli içermez)."
                 rules={[decimalRule('Hizmet birim ücreti', { maxFraction: 4, required: false, allowZero: true })]}
               >
                 <Input
@@ -140,7 +140,7 @@ export default function ProductionNewPage() {
               size="small"
               column={{ xs: 1, sm: 3 }}
               items={[
-                { key: 'vkp', label: 'Satış fiyatı (VKP)', children: formatMoney(product.sale_price) },
+                { key: 'vkp', label: 'Satış fiyatı', children: formatMoney(product.sale_price) },
                 {
                   key: 'weight',
                   label: '1 adet',
@@ -236,11 +236,11 @@ export default function ProductionNewPage() {
               { key: 'raw', label: 'Hammadde', children: formatMoney(rawTotal) },
               { key: 'service', label: 'Hizmet', children: formatMoney(serviceTotal) },
               { key: 'total', label: 'Toplam', children: formatMoney(plannedTotal) },
-              { key: 'ekp', label: 'Planlanan EKP', children: formatUnitCost(plannedEkp) },
+              { key: 'ekp', label: 'Planlanan birim maliyet', children: formatUnitCost(plannedEkp) },
             ]}
           />
           <Typography.Text type="secondary">
-            Kesin EKP, mamul kabulünde gerçekten tüketilen lotların değeri ve teslim alınan miktarla hesaplanır.
+            Kesin birim maliyet, mamul kabulünde gerçekten tüketilen lotların değeri ve teslim alınan miktarla hesaplanır.
           </Typography.Text>
         </Card>
 

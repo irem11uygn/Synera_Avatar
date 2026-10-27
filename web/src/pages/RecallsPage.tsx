@@ -70,7 +70,7 @@ export function NewRecallModal({ open, onClose, lotNo = '' }: { open: boolean; o
       open={open}
       onClose={onClose}
       onSubmit={(values) => start.mutateAsync(values)}
-      okText="Başlat ve bloke et"
+      okText="Başlat ve satışa kapat"
     >
       <Form.Item label="Kaynak lot" required>
         <LotPicker value={lot} onChange={setLot} />
@@ -79,7 +79,7 @@ export function NewRecallModal({ open, onClose, lotNo = '' }: { open: boolean; o
         <Input.TextArea rows={3} maxLength={500} placeholder="Tedarikçi laboratuvar sonucu: uygunsuz" />
       </Form.Item>
       <Typography.Text type="secondary">
-        Kaynak lot ve ondan türeyen bütün lotlar tek işlemde bloke edilir; liste hemen çıkar.
+        Kaynak lot ve ondan yapılan bütün lotlar tek işlemde satışa kapatılır; kime gittiği hemen listelenir.
       </Typography.Text>
     </FormModal>
   )
@@ -91,6 +91,7 @@ export default function RecallsPage() {
   return (
     <Page
       title="Geri çağırmalar"
+      description="Sorunlu bir lot için geri çağırma başlatın: o lot ve ondan yapılan bütün ürünler hemen satışa kapanır, malın gittiği müşteriler listelenir."
       extra={
         <Button danger type="primary" onClick={() => setOpen(true)}>
           Yeni geri çağırma

@@ -79,10 +79,10 @@ function movementColumns(
       key: 'reverse',
       render: (_, row) =>
         reversed.has(row.id) ? (
-          <Tag>Ters kayıtla düzeltildi</Tag>
+          <Tag>Geri alındı</Tag>
         ) : REVERSIBLE.has(row.type) && !row.reversal_of_id ? (
           <Button size="small" onClick={() => onReverse(row)}>
-            Ters kayıt
+            Geri al
           </Button>
         ) : null,
     },
@@ -131,7 +131,7 @@ function WasteModal({ lot, open, onClose }: { lot: LotDetail; open: boolean; onC
       <Form.Item name="reason" label="Gerekçe" rules={[{ required: true, message: 'Gerekçeyi yazın.' }]}>
         <Input maxLength={255} placeholder="Soğuk zincir kırıldı" />
       </Form.Item>
-      <Typography.Text type="secondary">Lot değeri ortalama birim maliyetle düşer; bloke lotta da yapılabilir.</Typography.Text>
+      <Typography.Text type="secondary">Lot değeri ortalama birim maliyetle düşer; satışa kapalı lotta da yapılabilir.</Typography.Text>
     </FormModal>
   )
 }
@@ -146,7 +146,7 @@ function ReverseModal({ movement, lotNo, onClose }: { movement: Movement | null;
   if (!movement) return null
   return (
     <FormModal<{ reason: string }>
-      title={`Ters kayıt: ${MOVEMENT_TYPE[movement.type]} (${lotNo})`}
+      title={`Geri al: ${MOVEMENT_TYPE[movement.type]} (${lotNo})`}
       open
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
@@ -210,6 +210,7 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
   return (
     <Page
       title={`Lot ${data.lot_no}`}
+      back={{ to: '/lotlar', label: 'Lotlar' }}
       extra={
         <>
           <Button onClick={() => navigate(tracePath(data.lot_no))}>İleri izle</Button>

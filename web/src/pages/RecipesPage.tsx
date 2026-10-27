@@ -110,6 +110,7 @@ export default function RecipesPage() {
   return (
     <Page
       title="Parçalama reçeteleri"
+      description="Bir karkastan hangi parçaların ne oranda çıkması beklendiği. Parçalamada tartılan miktarlar bununla karşılaştırılır."
       extra={
         <Button type="primary" onClick={() => setOpen(true)}>
           Yeni reçete

@@ -7,7 +7,7 @@ import { Alert, Card, Col, Descriptions, Row, Spin, Table, Tag, Typography } fro
 import type { ReactNode } from 'react'
 import { api } from '../api/client'
 import type { AiEvaluation, RealComparison } from '../api/types'
-import { StatTile } from '../components/Depth'
+import { Stat } from '../components/Stat'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { formatDecimal } from '../lib/format'
@@ -127,52 +127,55 @@ export default function AiPage() {
   const meta = data.metadata as Metadata | null
 
   return (
-    <Page title="Yapay zekâ — tahmin modelleri ve değerlendirme">
+    <Page
+      title="Yapay zekâ tahminleri"
+      description="İki model: fason üretimde kaç paket çıkacağını ve birim maliyeti, parçalamada her parçanın kaç kilo çıkacağını tahmin eder. Gerçek sonuç girilince tahminle karşılaştırılır."
+    >
       {!data.available || !meta ? (
         <Alert type="warning" showIcon title="Model dosyaları bulunamadı" description={data.message} />
       ) : (
         <>
           <Typography.Paragraph>
-            İki model zorunlu: <strong>Model A</strong> dış üretimde beklenen paket sayısını ve gerçek birim maliyeti
+            İki model zorunlu: <strong>Model A</strong> fason üretimde beklenen paket sayısını ve birim maliyeti
             (EKP), <strong>Model B</strong> parçalamada beklenen parça ağırlıklarını tahmin eder. Tahmin, emir ya da
             parçalama açılırken kaydedilir ve sonradan değişmez; gerçek sonuç gelince sapma bu kayda göre hesaplanır.
             İzleme ve geri çağırma tahmin kullanmaz.
           </Typography.Paragraph>
           <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
             <Col xs={12} lg={6}>
-              <StatTile
+              <Stat
                 label="Model A — paket hatası"
                 value={`−%${num(meta.model_a.test.improvement_pct.packages_mae, 1)}`}
                 hint={`Referansa göre daha az hata: ${num(meta.model_a.test.baseline.packages_mae as number)} → ${num(meta.model_a.test.model.packages_mae as number)} paket`}
               />
             </Col>
             <Col xs={12} lg={6}>
-              <StatTile
-                label="Model A — EKP hatası"
+              <Stat
+                label="Model A — birim maliyet hatası"
                 value={`−%${num(meta.model_a.test.improvement_pct.ekp_mae_eur, 1)}`}
                 hint={`Referansa göre daha az hata: ${num(meta.model_a.test.baseline.ekp_mae_eur as number)} € → ${num(meta.model_a.test.model.ekp_mae_eur as number)} €`}
-                color="var(--success)"
+                tone="success"
               />
             </Col>
             <Col xs={12} lg={6}>
-              <StatTile
+              <Stat
                 label="Model B — parça kg hatası"
                 value={`−%${num(meta.model_b.test.improvement_pct.mae_kg, 1)}`}
                 hint={`Referansa göre daha az hata: ${num(meta.model_b.test.baseline.mae_kg as number, 3)} → ${num(meta.model_b.test.model.mae_kg as number, 3)} kg`}
-                color="#7c3aed"
+                tone="brand"
               />
             </Col>
             <Col xs={12} lg={6}>
-              <StatTile
+              <Stat
                 label="Veri"
                 value={`${meta.data.production_rows} + ${meta.data.cutting_rows}`}
                 hint="Sentetik üretim + parçalama kaydı"
-                color="var(--warning)"
+                tone="warning"
               />
             </Col>
           </Row>
 
-          <ModelSection title="Model A — dış üretim verimi ve EKP" meta={meta.model_a}>
+          <ModelSection title="Model A — fason üretim verimi ve birim maliyet" meta={meta.model_a}>
             <CompareBars
               label="Paket sayısı ortalama mutlak hatası"
               baseline={meta.model_a.test.baseline.packages_mae as number}
@@ -180,13 +183,13 @@ export default function AiPage() {
               unit="paket"
             />
             <CompareBars
-              label="EKP ortalama mutlak hatası"
+              label="Birim maliyet: ortalama hata (€)"
               baseline={meta.model_a.test.baseline.ekp_mae_eur as number}
               model={meta.model_a.test.model.ekp_mae_eur as number}
               unit="€"
             />
             <CompareBars
-              label="EKP ortalama yüzde hatası"
+              label="Birim maliyet: ortalama hata (%)"
               baseline={meta.model_a.test.baseline.ekp_mape_pct as number}
               model={meta.model_a.test.model.ekp_mape_pct as number}
               unit="%"
@@ -200,14 +203,14 @@ export default function AiPage() {
               title={() => 'Test verisinden örnek tahminler'}
               columns={[
                 { title: 'Emir', dataIndex: 'order_no' },
-                { title: 'Dış üretici', dataIndex: 'subcontractor' },
+                { title: 'Fasoncu', dataIndex: 'subcontractor' },
                 { title: 'Tedarikçi', dataIndex: 'meat_supplier' },
                 { title: 'Et kg', dataIndex: 'meat_kg', align: 'right' },
                 { title: 'Gerçek paket', dataIndex: 'actual_packages', align: 'right' },
                 { title: 'Referans', dataIndex: 'baseline_packages', align: 'right' },
                 { title: 'Model', dataIndex: 'model_packages', align: 'right' },
-                { title: 'Gerçek EKP', dataIndex: 'actual_ekp', align: 'right', render: (v: number) => `${num(v)} €` },
-                { title: 'Model EKP', dataIndex: 'model_ekp', align: 'right', render: (v: number) => `${num(v)} €` },
+                { title: 'Gerçek birim maliyet', dataIndex: 'actual_ekp', align: 'right', render: (v: number) => `${num(v)} €` },
+                { title: 'Tahmini birim maliyet', dataIndex: 'model_ekp', align: 'right', render: (v: number) => `${num(v)} €` },
               ]}
             />
           </ModelSection>

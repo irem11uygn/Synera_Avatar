@@ -39,7 +39,7 @@ export const RECIPIENT_COLUMNS: TableColumnsType<Recipient> = [
     render: (_, r) => r.sales.map((s) => `${s.sale_no} (${SALE_CHANNEL[s.channel]})`).join(', '),
   },
   {
-    title: 'İkinci kademe',
+    title: 'Müşterinin dağıttığı',
     key: 'onward',
     render: (_, r) => (
       <Space orientation="vertical" size={0}>

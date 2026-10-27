@@ -13,7 +13,7 @@ export const ORDER_COLUMNS: TableColumnsType<Order> = [
     render: (orderNo: string, row) => <Link to={`/uretim/${row.id}`}>{orderNo}</Link>,
   },
   { title: 'Durum', dataIndex: 'status', render: (status: OrderStatus) => <OrderStatusTag status={status} /> },
-  { title: 'Dış üretici', dataIndex: 'subcontractor_name' },
+  { title: 'Fasoncu', dataIndex: 'subcontractor_name' },
   { title: 'Mamul', dataIndex: 'output_product_name' },
   { title: 'Planlanan', dataIndex: 'planned_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
   {
@@ -28,6 +28,6 @@ export const ORDER_COLUMNS: TableColumnsType<Order> = [
     render: (lotNo: string | null) => (lotNo ? <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> : '—'),
   },
   { title: 'Toplam maliyet', key: 'total', align: 'right', render: (_, row) => formatMoney(row.cost?.total) },
-  { title: 'EKP', key: 'ekp', align: 'right', render: (_, row) => formatUnitCost(row.cost?.ekp_display) },
+  { title: 'Birim maliyet', key: 'ekp', align: 'right', render: (_, row) => formatUnitCost(row.cost?.ekp_display) },
   { title: 'Emir tarihi', dataIndex: 'ordered_at', render: formatDateTime },
 ]

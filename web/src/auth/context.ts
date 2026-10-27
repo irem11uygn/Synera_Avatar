@@ -1,7 +1,7 @@
 import { createContext, use } from 'react'
 import type { User } from '../api/types'
 
-export type SessionValue = { user: User; logout: () => Promise<void> }
+export type SessionValue = { user: User; logout: () => Promise<void>; setUser: (user: User) => void }
 
 export const SessionContext = createContext<SessionValue | null>(null)
 

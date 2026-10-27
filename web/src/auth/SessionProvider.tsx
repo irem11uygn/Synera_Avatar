@@ -1,16 +1,18 @@
 // Oturum: belirteç sessionStorage'da, kullanıcı bilgisi /auth/me ile doğrulanır.
-// Web arayüzü yönetici hesabı içindir; satış kullanıcıları Android uygulamasını kullanır.
+// Web arayüzü işletme çalışanları içindir (yönetici, depo, üretim, kalite, mağaza); araçtaki satış
+// elemanları telefon uygulamasını kullanır. Yönetici şifreyi sıfırladıysa önce yeni şifre belirlenir.
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Flex, Spin } from 'antd'
 import { useEffect, useState, type ReactNode } from 'react'
 import { api, ApiError, errorMessage, getToken, onUnauthorized, setToken } from '../api/client'
 import type { LoginResponse, User } from '../api/types'
+import { WEB_ROLES } from '../lib/roles'
+import { ForcedPasswordChange } from '../pages/ChangePasswordPage'
 import LoginPage from '../pages/LoginPage'
 import { SessionContext } from './context'
 
-
-const WEB_ROLE_MESSAGE = 'Web arayüzü yönetici hesabı içindir; satış kullanıcıları Android uygulamasını kullanır.'
+const WEB_ROLE_MESSAGE = 'Satış elemanı hesabı web arayüzünü kullanmaz; araçtan satış için telefon uygulamasına giriş yapın.'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -44,7 +46,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   async function login(username: string, password: string) {
     const response = await api<LoginResponse>('/auth/login', { method: 'POST', body: { username, password } })
     setToken(response.token)
-    if (response.user.role !== 'YONETICI') {
+    if (!WEB_ROLES.includes(response.user.role)) {
       await api('/auth/logout', { method: 'POST' }).catch(() => undefined)
       setToken(null)
       throw new Error(WEB_ROLE_MESSAGE)
@@ -85,7 +87,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  if (me.data.role !== 'YONETICI') {
+  if (!WEB_ROLES.includes(me.data.role)) {
     return (
       <Flex justify="center" style={{ padding: 48 }}>
         <Alert type="warning" showIcon title={WEB_ROLE_MESSAGE} action={<Button onClick={logout}>Çıkış</Button>} />
@@ -93,5 +95,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  return <SessionContext value={{ user: me.data, logout }}>{children}</SessionContext>
+  const setUser = (user: User) => queryClient.setQueryData(['me', token], user)
+
+  if (me.data.must_change_password) {
+    return (
+      <SessionContext value={{ user: me.data, logout, setUser }}>
+        <ForcedPasswordChange />
+      </SessionContext>
+    )
+  }
+
+  return <SessionContext value={{ user: me.data, logout, setUser }}>{children}</SessionContext>
 }

@@ -96,7 +96,7 @@ export default function ProductsPage() {
       align: 'right',
       render: (value: string | null) => formatUnitCost(value),
     },
-    { title: 'Satış fiyatı (VKP)', dataIndex: 'sale_price', align: 'right', render: formatMoney },
+    { title: 'Satış fiyatı', dataIndex: 'sale_price', align: 'right', render: formatMoney },
     {
       title: 'Raf ömrü',
       dataIndex: 'shelf_life_days',
@@ -124,7 +124,8 @@ export default function ProductsPage() {
 
   return (
     <Page
-      title="Ürünler"
+      title="Ürünler ve fiyatlar"
+      description="Satış fiyatı, raf ömrü ve kritik stok seviyesi burada tanımlanır. Stok kritik seviyenin altına inince ana sayfada uyarı çıkar."
       extra={
         <Button type="primary" onClick={() => setEditing('new')}>
           Yeni ürün
@@ -213,7 +214,7 @@ function ProductFields() {
       </Col>
       <Col xs={24} sm={12}>
         <Form.Item
-          label="Satış fiyatı (VKP)"
+          label="Satış fiyatı"
           name="sale_price"
           rules={[decimalRule('Satış fiyatı', { maxFraction: 2, required: false, allowZero: true })]}
         >

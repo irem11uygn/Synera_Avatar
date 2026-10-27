@@ -14,13 +14,13 @@ export function LotPicker({
   onPick?: (value: string) => void
 }) {
   const lots = useQuery({ queryKey: ['lots', 'all'], queryFn: () => api<Lot[]>('/lots') })
-  const needle = value.trim().toLocaleUpperCase('tr-TR')
+  const needle = value.trim().toUpperCase() // lot numaraları ASCII; tr-TR "sirt" → "SİRT" yapardı
   const options = (lots.data ?? [])
     .filter((lot) => !needle || lot.lot_no.includes(needle))
     .slice(0, 12)
     .map((lot) => ({
       value: lot.lot_no,
-      label: `${lot.lot_no} · ${lot.product_name}${lot.status === 'BLOKE' ? ' · BLOKE' : ''}`,
+      label: `${lot.lot_no} · ${lot.product_name}${lot.status === 'BLOKE' ? ' · satışa kapalı' : ''}`,
     }))
   return (
     <AutoComplete value={value} options={options} onChange={onChange} onSelect={(v: string) => onPick?.(v)} style={{ minWidth: 260 }}>

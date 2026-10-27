@@ -60,7 +60,8 @@ export default function PurchasesPage() {
 
   return (
     <Page
-      title="Hammadde alışları"
+      title="Mal kabul"
+      description="Tedarikçiden gelen malın girişi. Her teslimat yeni bir lot numarası alır; nakliye ve kesim gibi ek masraflar maliyete eklenir."
       extra={
         <Button type="primary" onClick={() => navigate('/alislar/yeni')}>
           Yeni alış

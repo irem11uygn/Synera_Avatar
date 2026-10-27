@@ -16,7 +16,7 @@ type Props = {
 }
 
 function LotBlock({ lot, source }: { lot: TracedLot; source: boolean }) {
-  const classes = ['lot-block', 'depth-lift']
+  const classes = ['lot-block']
   if (lot.status === 'BLOKE') classes.push('is-blocked')
   else if (source) classes.push('is-source')
   return (

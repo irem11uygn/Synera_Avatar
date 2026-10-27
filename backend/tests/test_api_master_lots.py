@@ -21,7 +21,7 @@ def test_lists_master_data(client, admin):
         "NARIN-SUCUK"
     ]
     customers = client.get(f"{API}/partners?role=customer", headers=admin).json()
-    assert [c["name"] for c in customers] == ["Market A", "Market B", "Market C"]
+    assert [c["name"] for c in customers] == ["Market A", "Market B", "Market C", "Perakende müşteri"]
     assert [w["code"] for w in client.get(f"{API}/warehouses", headers=admin).json()] == [
         "ANA",
         "DIS-FSN-01",

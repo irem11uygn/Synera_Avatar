@@ -113,6 +113,536 @@
         ]
       }
     },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "tags": [
+          "kimlik"
+        ],
+        "summary": "Change Password",
+        "description": "Kendi şifresini değiştirir; diğer cihazlardaki oturumlar kapanır, bu oturum sürer.",
+        "operationId": "change_password_api_v1_auth_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "kullanıcılar"
+        ],
+        "summary": "List Users",
+        "operationId": "list_users_api_v1_users_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserAdminOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Users Api V1 Users Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "kullanıcılar"
+        ],
+        "summary": "Create",
+        "operationId": "create_api_v1_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "put": {
+        "tags": [
+          "kullanıcılar"
+        ],
+        "summary": "Update",
+        "operationId": "update_api_v1_users__user_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}/reset-password": {
+      "post": {
+        "tags": [
+          "kullanıcılar"
+        ],
+        "summary": "Reset Password",
+        "description": "Geçici şifre verir; kullanıcı ilk girişte değiştirmek zorundadır, açık oturumları kapanır.",
+        "operationId": "reset_password_api_v1_users__user_id__reset_password_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetPasswordOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "tags": [
+          "günlük işler"
+        ],
+        "summary": "Get Dashboard",
+        "description": "Bugün ilgilenilecek işler: SKT'si yaklaşan/geçen partiler, kritik stok, açık geri çağırmalar.",
+        "operationId": "get_dashboard_api_v1_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/day-end": {
+      "get": {
+        "tags": [
+          "günlük işler"
+        ],
+        "summary": "Get Day End",
+        "description": "Günün satışları ve iadeleri; ödeme türüne ve satıcıya göre toplamlar. Gün boşsa bugün.",
+        "operationId": "get_day_end_api_v1_day_end_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "warehouse_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Warehouse Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DayEndOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync/day-end": {
+      "get": {
+        "tags": [
+          "günlük işler",
+          "senkronizasyon"
+        ],
+        "summary": "My Day End",
+        "description": "Satış elemanının kendi gün sonu: kendi satışları, iadeleri ve aracında kalan mal.",
+        "operationId": "my_day_end_api_v1_sync_day_end_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DayEndOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stock-counts": {
+      "get": {
+        "tags": [
+          "günlük işler"
+        ],
+        "summary": "List Counts",
+        "operationId": "list_counts_api_v1_stock_counts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StockCountOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Counts Api V1 Stock Counts Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "günlük işler"
+        ],
+        "summary": "Create Count",
+        "description": "Sayılan miktarlar kaydedilir; eksik çıkan mal \"Sayım farkı\" firesiyle düşülür, fazlası raporlanır.\nSatış elemanı yalnız kendi aracını sayar.",
+        "operationId": "create_count_api_v1_stock_counts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockCountIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/stock-counts/{count_id}": {
+      "get": {
+        "tags": [
+          "günlük işler"
+        ],
+        "summary": "Get Count",
+        "operationId": "get_count_api_v1_stock_counts__count_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "count_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Count Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/products": {
       "get": {
         "tags": [
@@ -1170,6 +1700,7 @@
           "dış üretim"
         ],
         "summary": "Cancel",
+        "description": "Taslak emir iptal edilir; sevk edilmiş emirde gönderilen hammadde ana depoya iade edilir.",
         "operationId": "cancel_api_v1_production_orders__order_id__cancel_post",
         "security": [
           {
@@ -1187,6 +1718,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/CancelIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1689,33 +2237,108 @@
       }
     },
     "/api/v1/sales": {
+      "post": {
+        "tags": [
+          "satış"
+        ],
+        "summary": "Create",
+        "description": "Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz.",
+        "operationId": "create_api_v1_sales_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreSaleIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "satış"
         ],
         "summary": "List Sales",
+        "description": "Satışlar, yeniden eskiye. `day` verilirse yalnız o iş günü (yerel saat).",
         "operationId": "list_sales_api_v1_sales_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/SaleOut"
                   },
-                  "type": "array",
                   "title": "Response List Sales Api V1 Sales Get"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/sales/{sale_id}": {
@@ -3015,7 +3638,8 @@
       "AlertKind": {
         "type": "string",
         "enum": [
-          "GERI_CAGIRMA_IHLALI"
+          "GERI_CAGIRMA_IHLALI",
+          "SKT_IHLALI"
         ],
         "title": "AlertKind"
       },
@@ -3085,6 +3709,46 @@
           "ADET"
         ],
         "title": "BaseUnit"
+      },
+      "CancelIn": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "title": "CancelIn"
+      },
+      "ChangePasswordIn": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordIn"
       },
       "ColumnKind": {
         "type": "string",
@@ -3292,6 +3956,76 @@
           "ekp_display"
         ],
         "title": "CostOut"
+      },
+      "CountLineIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Lot No"
+          },
+          "counted_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Counted Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "counted_qty"
+        ],
+        "title": "CountLineIn"
+      },
+      "CountLineOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "system_qty": {
+            "type": "string",
+            "title": "System Qty"
+          },
+          "counted_qty": {
+            "type": "string",
+            "title": "Counted Qty"
+          },
+          "difference": {
+            "type": "string",
+            "title": "Difference"
+          },
+          "shortage_value": {
+            "type": "string",
+            "title": "Shortage Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "system_qty",
+          "counted_qty",
+          "difference",
+          "shortage_value"
+        ],
+        "title": "CountLineOut"
       },
       "CustomerOut": {
         "properties": {
@@ -3777,6 +4511,283 @@
         ],
         "title": "CuttingStatus"
       },
+      "DashboardOut": {
+        "properties": {
+          "today": {
+            "type": "string",
+            "format": "date",
+            "title": "Today"
+          },
+          "expiry_warning_days": {
+            "type": "integer",
+            "title": "Expiry Warning Days"
+          },
+          "expiring": {
+            "items": {
+              "$ref": "#/components/schemas/ExpiringLotOut"
+            },
+            "type": "array",
+            "title": "Expiring"
+          },
+          "low_stock": {
+            "items": {
+              "$ref": "#/components/schemas/LowStockOut"
+            },
+            "type": "array",
+            "title": "Low Stock"
+          },
+          "open_recalls": {
+            "items": {
+              "$ref": "#/components/schemas/OpenRecallOut"
+            },
+            "type": "array",
+            "title": "Open Recalls"
+          },
+          "unread_alerts": {
+            "type": "integer",
+            "title": "Unread Alerts"
+          },
+          "draft_orders": {
+            "type": "integer",
+            "title": "Draft Orders"
+          },
+          "shipped_orders": {
+            "type": "integer",
+            "title": "Shipped Orders"
+          },
+          "draft_cuttings": {
+            "type": "integer",
+            "title": "Draft Cuttings"
+          },
+          "today_sale_count": {
+            "type": "integer",
+            "title": "Today Sale Count"
+          },
+          "today_sales_amount": {
+            "type": "string",
+            "title": "Today Sales Amount"
+          },
+          "stock_value": {
+            "type": "string",
+            "title": "Stock Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "today",
+          "expiry_warning_days",
+          "expiring",
+          "low_stock",
+          "open_recalls",
+          "unread_alerts",
+          "draft_orders",
+          "shipped_orders",
+          "draft_cuttings",
+          "today_sale_count",
+          "today_sales_amount",
+          "stock_value"
+        ],
+        "title": "DashboardOut"
+      },
+      "DayEndOut": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "sale_count": {
+            "type": "integer",
+            "title": "Sale Count"
+          },
+          "sales_amount": {
+            "type": "string",
+            "title": "Sales Amount"
+          },
+          "cost_amount": {
+            "type": "string",
+            "title": "Cost Amount"
+          },
+          "refund_amount": {
+            "type": "string",
+            "title": "Refund Amount"
+          },
+          "net_amount": {
+            "type": "string",
+            "title": "Net Amount"
+          },
+          "by_payment": {
+            "items": {
+              "$ref": "#/components/schemas/DayTotalOut"
+            },
+            "type": "array",
+            "title": "By Payment"
+          },
+          "by_seller": {
+            "items": {
+              "$ref": "#/components/schemas/DayTotalOut"
+            },
+            "type": "array",
+            "title": "By Seller"
+          },
+          "sales": {
+            "items": {
+              "$ref": "#/components/schemas/DaySaleOut"
+            },
+            "type": "array",
+            "title": "Sales"
+          },
+          "returns": {
+            "items": {
+              "$ref": "#/components/schemas/DayReturnOut"
+            },
+            "type": "array",
+            "title": "Returns"
+          },
+          "stock_left": {
+            "items": {
+              "$ref": "#/components/schemas/StockLeftOut"
+            },
+            "type": "array",
+            "title": "Stock Left"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "sale_count",
+          "sales_amount",
+          "cost_amount",
+          "refund_amount",
+          "net_amount",
+          "by_payment",
+          "by_seller",
+          "sales",
+          "returns",
+          "stock_left"
+        ],
+        "title": "DayEndOut"
+      },
+      "DayReturnOut": {
+        "properties": {
+          "return_no": {
+            "type": "string",
+            "title": "Return No"
+          },
+          "sale_no": {
+            "type": "string",
+            "title": "Sale No"
+          },
+          "customer_name": {
+            "type": "string",
+            "title": "Customer Name"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "refund_amount": {
+            "type": "string",
+            "title": "Refund Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "return_no",
+          "sale_no",
+          "customer_name",
+          "lot_no",
+          "qty",
+          "refund_amount"
+        ],
+        "title": "DayReturnOut"
+      },
+      "DaySaleOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "sale_no": {
+            "type": "string",
+            "title": "Sale No"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/SaleChannel"
+          },
+          "customer_name": {
+            "type": "string",
+            "title": "Customer Name"
+          },
+          "seller_name": {
+            "type": "string",
+            "title": "Seller Name"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "recall_violation": {
+            "type": "boolean",
+            "title": "Recall Violation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sale_no",
+          "sold_at",
+          "channel",
+          "customer_name",
+          "seller_name",
+          "payment_method",
+          "amount",
+          "recall_violation"
+        ],
+        "title": "DaySaleOut"
+      },
+      "DayTotalOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "sale_count": {
+            "type": "integer",
+            "title": "Sale Count"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "sale_count",
+          "amount"
+        ],
+        "title": "DayTotalOut"
+      },
       "DocType": {
         "type": "string",
         "enum": [
@@ -3835,6 +4846,57 @@
           "real"
         ],
         "title": "EvaluationOut"
+      },
+      "ExpiringLotOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "expiry_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry Date"
+          },
+          "days_left": {
+            "type": "integer",
+            "title": "Days Left"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "warehouses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warehouses"
+          },
+          "blocked": {
+            "type": "boolean",
+            "title": "Blocked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "expiry_date",
+          "days_left",
+          "qty",
+          "warehouses",
+          "blocked"
+        ],
+        "title": "ExpiringLotOut"
       },
       "ExtraCostIn": {
         "properties": {
@@ -4396,6 +5458,43 @@
         ],
         "title": "LotStatus"
       },
+      "LowStockOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_code": {
+            "type": "string",
+            "title": "Product Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "min_stock": {
+            "type": "string",
+            "title": "Min Stock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product_code",
+          "product_name",
+          "base_unit",
+          "qty",
+          "min_stock"
+        ],
+        "title": "LowStockOut"
+      },
       "MovementOut": {
         "properties": {
           "id": {
@@ -4671,6 +5770,35 @@
           "BILINMIYOR"
         ],
         "title": "OnwardStatus"
+      },
+      "OpenRecallOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "recall_no": {
+            "type": "string",
+            "title": "Recall No"
+          },
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recall_no",
+          "lot_no",
+          "started_at"
+        ],
+        "title": "OpenRecallOut"
       },
       "OrderIn": {
         "properties": {
@@ -5143,6 +6271,16 @@
         ],
         "title": "PartnerOut"
       },
+      "PaymentMethod": {
+        "type": "string",
+        "enum": [
+          "NAKIT",
+          "KART",
+          "HAVALE",
+          "VERESIYE"
+        ],
+        "title": "PaymentMethod"
+      },
       "PlannedInputIn": {
         "properties": {
           "lot_no": {
@@ -5323,6 +6461,21 @@
               }
             ],
             "title": "Shelf Life Days"
+          },
+          "min_stock": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Stock"
           },
           "active": {
             "type": "boolean",
@@ -5990,6 +7143,16 @@
             "maxItems": 50,
             "minItems": 1,
             "title": "Lines"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -7089,6 +8252,37 @@
         ],
         "title": "ReprocessOut"
       },
+      "ResetPasswordIn": {
+        "properties": {
+          "new_password": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "title": "ResetPasswordIn"
+      },
+      "ResetPasswordOut": {
+        "properties": {
+          "temporary_password": {
+            "type": "string",
+            "title": "Temporary Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temporary_password"
+        ],
+        "title": "ResetPasswordOut"
+      },
       "ReturnIn": {
         "properties": {
           "sale_line_id": {
@@ -7345,6 +8539,20 @@
             "type": "integer",
             "title": "Warehouse Id"
           },
+          "seller_name": {
+            "type": "string",
+            "title": "Seller Name"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "device_id": {
             "anyOf": [
               {
@@ -7395,6 +8603,8 @@
           "customer_id",
           "customer_name",
           "warehouse_id",
+          "seller_name",
+          "payment_method",
           "device_id",
           "sold_at",
           "received_at",
@@ -7485,6 +8695,110 @@
         ],
         "title": "Species"
       },
+      "StockCountIn": {
+        "properties": {
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CountLineIn"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "warehouse_id",
+          "lines"
+        ],
+        "title": "StockCountIn"
+      },
+      "StockCountOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "count_no": {
+            "type": "string",
+            "title": "Count No"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "title": "Warehouse Code"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "counted_by": {
+            "type": "string",
+            "title": "Counted By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CountLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "shortage_value": {
+            "type": "string",
+            "title": "Shortage Value"
+          },
+          "surplus_lines": {
+            "type": "integer",
+            "title": "Surplus Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "count_no",
+          "warehouse_id",
+          "warehouse_code",
+          "note",
+          "counted_by",
+          "created_at",
+          "lines",
+          "shortage_value",
+          "surplus_lines"
+        ],
+        "title": "StockCountOut"
+      },
       "StockItemOut": {
         "properties": {
           "lot_no": {
@@ -7525,6 +8839,46 @@
           "qty"
         ],
         "title": "StockItemOut"
+      },
+      "StockLeftOut": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_unit": {
+            "$ref": "#/components/schemas/BaseUnit"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "product_name",
+          "base_unit",
+          "expiry_date",
+          "qty"
+        ],
+        "title": "StockLeftOut"
       },
       "StockOut": {
         "properties": {
@@ -7617,6 +8971,81 @@
           "qty"
         ],
         "title": "StockRowOut"
+      },
+      "StoreLineIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty"
+        ],
+        "title": "StoreLineIn"
+      },
+      "StoreSaleIn": {
+        "properties": {
+          "customer_id": {
+            "type": "integer",
+            "title": "Customer Id"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "title": "Warehouse Id"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/StoreLineIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "warehouse_id",
+          "payment_method",
+          "lines"
+        ],
+        "title": "StoreSaleIn"
       },
       "SupplierRefOut": {
         "properties": {
@@ -8000,6 +9429,111 @@
         ],
         "title": "TransferReason"
       },
+      "UserAdminOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          },
+          "warehouse_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Code"
+          },
+          "must_change_password": {
+            "type": "boolean",
+            "title": "Must Change Password"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "full_name",
+          "role",
+          "warehouse_id",
+          "warehouse_code",
+          "must_change_password",
+          "active"
+        ],
+        "title": "UserAdminOut"
+      },
+      "UserCreateIn": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "Username"
+          },
+          "full_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Full Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "full_name",
+          "role",
+          "password"
+        ],
+        "title": "UserCreateIn"
+      },
       "UserOut": {
         "properties": {
           "id": {
@@ -8038,6 +9572,10 @@
               }
             ],
             "title": "Warehouse Code"
+          },
+          "must_change_password": {
+            "type": "boolean",
+            "title": "Must Change Password"
           }
         },
         "type": "object",
@@ -8047,7 +9585,8 @@
           "full_name",
           "role",
           "warehouse_id",
-          "warehouse_code"
+          "warehouse_code",
+          "must_change_password"
         ],
         "title": "UserOut"
       },
@@ -8055,9 +9594,49 @@
         "type": "string",
         "enum": [
           "YONETICI",
+          "DEPO",
+          "URETIM",
+          "KALITE",
+          "MAGAZA",
           "SATIS"
         ],
-        "title": "UserRole"
+        "title": "UserRole",
+        "description": "Orta ölçekli işletme: her çalışan yalnız kendi işinin ekranlarını görür."
+      },
+      "UserUpdateIn": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Full Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warehouse Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "role",
+          "active"
+        ],
+        "title": "UserUpdateIn"
       },
       "ValidationError": {
         "properties": {
@@ -8420,6 +9999,17 @@
               }
             ],
             "title": "Shelf Life Days"
+          },
+          "min_stock": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Stock"
           },
           "active": {
             "type": "boolean",

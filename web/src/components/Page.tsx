@@ -1,20 +1,39 @@
-import { Flex, Space, Typography } from 'antd'
+import { Space, Typography } from 'antd'
 import { useEffect, type ReactNode } from 'react'
+import { Link } from './Link'
 
-/** Sayfa başlığı (aynı zamanda sekme başlığı), sağda işlem düğmeleri. */
-export function Page({ title, extra, children }: { title: string; extra?: ReactNode; children: ReactNode }) {
+type Props = {
+  title: string
+  /** Başlığın altındaki bir iki cümle: bu ekranda ne yapılır. */
+  description?: ReactNode
+  /** Üst sayfaya dönüş bağlantısı, ör. { to: '/satislar', label: 'Satışlar' }. */
+  back?: { to: string; label: string }
+  extra?: ReactNode
+  children: ReactNode
+}
+
+/** Sayfa başlığı (aynı zamanda sekme başlığı), kısa açıklama, sağda işlem düğmeleri. */
+export function Page({ title, description, back, extra, children }: Props) {
   useEffect(() => {
-    document.title = `${title} — AVATAR`
+    document.title = `${title} — Synera`
   }, [title])
 
   return (
     <>
-      <Flex justify="space-between" align="center" wrap gap="small" style={{ marginBottom: 16 }}>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          {title}
-        </Typography.Title>
+      <div className="page-head">
+        <div style={{ minWidth: 0 }}>
+          {back && (
+            <span className="page-back">
+              <Link to={back.to}>← {back.label}</Link>
+            </span>
+          )}
+          <Typography.Title level={1} className="page-title">
+            {title}
+          </Typography.Title>
+          {description && <p className="page-description">{description}</p>}
+        </div>
         {extra && <Space wrap>{extra}</Space>}
-      </Flex>
+      </div>
       {children}
     </>
   )

@@ -26,7 +26,7 @@ import { useState } from 'react'
 import { api, errorMessage } from '../api/client'
 import { refreshBusinessData, usePartners, useWarehouses } from '../api/queries'
 import type { Recall, RecallResolution, Recipient, Trace } from '../api/types'
-import { StatTile } from '../components/Depth'
+import { Stat } from '../components/Stat'
 import { FormModal } from '../components/FormModal'
 import { Link } from '../components/Link'
 import { Page } from '../components/Page'
@@ -34,7 +34,7 @@ import { QueryError } from '../components/QueryError'
 import { LotStatusTag } from '../components/StatusTags'
 import { RECIPIENT_COLUMNS } from '../components/recipientColumns'
 import { TraceFlow } from '../components/TraceFlow'
-import { sum } from '../lib/decimal'
+import { compare, sum } from '../lib/decimal'
 import { downloadFile } from '../lib/download'
 import { formatDateTime, formatQty, unitLabel } from '../lib/format'
 import { LOT_ORIGIN, RECALL_RESOLUTION, RECALL_STATUS, WAREHOUSE_KIND, options } from '../lib/labels'
@@ -93,7 +93,7 @@ function ReturnModal({ recipient, onClose }: { recipient: Recipient | null; onCl
         <Input maxLength={255} />
       </Form.Item>
       <Typography.Text type="secondary">
-        Mal aynı lot numarasıyla depoya döner; bloke lota iade kabul edilir. Değeri satıştaki maliyetin payıdır.
+        Mal aynı lot numarasıyla depoya döner; satışa kapalı lota da iade alınır. Değeri satıştaki maliyetin payıdır.
       </Typography.Text>
     </FormModal>
   )
@@ -113,7 +113,7 @@ function OnwardModal({ recipient, onClose }: { recipient: Recipient | null; onCl
   if (!recipient) return null
   return (
     <FormModal<OnwardValues>
-      title={`${recipient.customer} — ikinci kademe teslimat`}
+      title={`${recipient.customer} — müşterinin dağıttığı yer`}
       open
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
@@ -145,7 +145,7 @@ function OnwardModal({ recipient, onClose }: { recipient: Recipient | null; onCl
         <Input maxLength={255} placeholder="Market B'nin e-postası" />
       </Form.Item>
       <Typography.Text type="secondary">
-        Yalnız kaydedilen ikinci kademe teslimat "kesin" görünür; kayıt yoksa müşteri "bilinen son alıcı" kalır.
+        Müşteri malı kendi şubesine ya da alıcısına verdiyse buraya yazın; geri çağırmada onlara da ulaşılır.
       </Typography.Text>
     </FormModal>
   )
@@ -232,11 +232,11 @@ export default function RecallDetailPage({ id }: { id: number }) {
     fixed: 'right',
     render: (_, r) => (
       <Space orientation="vertical" size={4}>
-        <Button size="small" onClick={() => setReturning(r)} disabled={Number(r.qty) <= 0}>
+        <Button size="small" onClick={() => setReturning(r)} disabled={compare(r.qty, '0') <= 0}>
           İade al
         </Button>
         <Button size="small" onClick={() => setOnward(r)}>
-          İkinci kademe ekle
+          Dağıttığı yeri ekle
         </Button>
       </Space>
     ),
@@ -245,6 +245,7 @@ export default function RecallDetailPage({ id }: { id: number }) {
   return (
     <Page
       title={`Geri çağırma ${data.recall_no}`}
+      back={{ to: '/geri-cagirma', label: 'Geri çağırmalar' }}
       extra={
         <>
           <Button onClick={download} loading={downloading}>
@@ -265,7 +266,7 @@ export default function RecallDetailPage({ id }: { id: number }) {
         style={{ marginBottom: 16 }}
         title={
           open
-            ? `Açık: ${data.source_lot_no} ve türevleri bloke. Web, API ve Android'den satılamaz, transfer edilemez, üretimde kullanılamaz.`
+            ? `Açık: ${data.source_lot_no} ve ondan yapılan bütün lotlar satışa kapalı — mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz.`
             : `Kapandı (${data.resolution ? RECALL_RESOLUTION[data.resolution] : ''}) — ${formatDateTime(data.closed_at)}`
         }
         description={`Neden: ${data.reason} · Başlatan: ${data.started_by_name ?? '—'} · ${formatDateTime(data.started_at)}`}
@@ -273,19 +274,19 @@ export default function RecallDetailPage({ id }: { id: number }) {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} lg={6}>
-          <StatTile label="Etkilenen lot" value={data.lot_count} color="var(--danger)" hint="Hepsi bloke" />
+          <Stat label="Etkilenen lot" value={data.lot_count} tone="danger" hint="Hepsi satışa kapalı" />
         </Col>
         <Col xs={12} lg={6}>
-          <StatTile label="Alıcı (market)" value={data.customer_count} color="var(--accent)" />
+          <Stat label="Alıcı (market)" value={data.customer_count} tone="brand" />
         </Col>
         <Col xs={12} lg={6}>
-          <StatTile label="Müşterilerde kalan" value={heldText} color="var(--warning)" />
+          <Stat label="Müşterilerde kalan" value={heldText} tone="warning" />
         </Col>
         <Col xs={12} lg={6}>
-          <StatTile
+          <Stat
             label="Bizdeki stok"
             value={stockText}
-            color="var(--success)"
+            tone="success"
             hint={data.violation_count ? `${data.violation_count} çevrimdışı ihlal` : 'İhlal yok'}
           />
         </Col>

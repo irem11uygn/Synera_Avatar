@@ -37,6 +37,7 @@ export default function CuttingListPage() {
   return (
     <Page
       title="Parçalama"
+      description="Bütün karkas parçalara ayrılır; maliyet parçalara dağıtılır. Tartım girilip onaylanınca parçalar stoka girer."
       extra={
         <Button type="primary" onClick={() => navigate('/parcalama/yeni')}>
           Yeni parçalama

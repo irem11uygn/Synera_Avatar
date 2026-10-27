@@ -66,7 +66,7 @@ export default function CuttingNewPage() {
   }
 
   return (
-    <Page title="Yeni parçalama">
+    <Page title="Yeni parçalama" back={{ to: '/parcalama', label: 'Parçalama' }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues> form={form} layout="vertical" onFinish={finish} validateTrigger="onBlur">
         <Card size="small" style={{ marginBottom: 16 }}>

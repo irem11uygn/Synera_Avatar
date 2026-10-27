@@ -41,7 +41,7 @@ def test_raw_material_default_prices_match_specification(session):
 
 def test_markets_and_registered_second_tier_branches(session):
     customers = session.scalars(select(Partner.name).where(Partner.is_customer).order_by(Partner.name)).all()
-    assert customers == ["Market A", "Market B", "Market C"]
+    assert customers == ["Market A", "Market B", "Market C", "Perakende müşteri"]
     market_b = by_code(session, Partner, "M-B")
     branches = session.scalars(select(Partner.code).where(Partner.parent_id == market_b.id)).all()
     assert sorted(branches) == ["M-B-S1", "M-B-S2"]

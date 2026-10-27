@@ -72,6 +72,180 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change Password
+         * @description Kendi şifresini değiştirir; diğer cihazlardaki oturumlar kapanır, bu oturum sürer.
+         */
+        post: operations["change_password_api_v1_auth_change_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Users */
+        get: operations["list_users_api_v1_users_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_users_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update */
+        put: operations["update_api_v1_users__user_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Password
+         * @description Geçici şifre verir; kullanıcı ilk girişte değiştirmek zorundadır, açık oturumları kapanır.
+         */
+        post: operations["reset_password_api_v1_users__user_id__reset_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dashboard
+         * @description Bugün ilgilenilecek işler: SKT'si yaklaşan/geçen partiler, kritik stok, açık geri çağırmalar.
+         */
+        get: operations["get_dashboard_api_v1_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/day-end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Day End
+         * @description Günün satışları ve iadeleri; ödeme türüne ve satıcıya göre toplamlar. Gün boşsa bugün.
+         */
+        get: operations["get_day_end_api_v1_day_end_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sync/day-end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Day End
+         * @description Satış elemanının kendi gün sonu: kendi satışları, iadeleri ve aracında kalan mal.
+         */
+        get: operations["my_day_end_api_v1_sync_day_end_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/stock-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Counts */
+        get: operations["list_counts_api_v1_stock_counts_get"];
+        put?: never;
+        /**
+         * Create Count
+         * @description Sayılan miktarlar kaydedilir; eksik çıkan mal "Sayım farkı" firesiyle düşülür, fazlası raporlanır.
+         *     Satış elemanı yalnız kendi aracını sayar.
+         */
+        post: operations["create_count_api_v1_stock_counts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/stock-counts/{count_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Count */
+        get: operations["get_count_api_v1_stock_counts__count_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/products": {
         parameters: {
             query?: never;
@@ -358,7 +532,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Cancel */
+        /**
+         * Cancel
+         * @description Taslak emir iptal edilir; sevk edilmiş emirde gönderilen hammadde ana depoya iade edilir.
+         */
         post: operations["cancel_api_v1_production_orders__order_id__cancel_post"];
         delete?: never;
         options?: never;
@@ -502,10 +679,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Sales */
+        /**
+         * List Sales
+         * @description Satışlar, yeniden eskiye. `day` verilirse yalnız o iş günü (yerel saat).
+         */
         get: operations["list_sales_api_v1_sales_get"];
         put?: never;
-        post?: never;
+        /**
+         * Create
+         * @description Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz.
+         */
+        post: operations["create_api_v1_sales_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -944,7 +1128,7 @@ export interface components {
          * AlertKind
          * @enum {string}
          */
-        AlertKind: "GERI_CAGIRMA_IHLALI";
+        AlertKind: "GERI_CAGIRMA_IHLALI" | "SKT_IHLALI";
         /** AlertOut */
         AlertOut: {
             /** Id */
@@ -974,6 +1158,18 @@ export interface components {
          * @enum {string}
          */
         BaseUnit: "KG" | "ADET";
+        /** CancelIn */
+        CancelIn: {
+            /** Note */
+            note?: string | null;
+        };
+        /** ChangePasswordIn */
+        ChangePasswordIn: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
         /**
          * ColumnKind
          * @enum {string}
@@ -1025,6 +1221,29 @@ export interface components {
             ekp: string;
             /** Ekp Display */
             ekp_display: string;
+        };
+        /** CountLineIn */
+        CountLineIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Counted Qty */
+            counted_qty: number | string;
+        };
+        /** CountLineOut */
+        CountLineOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** System Qty */
+            system_qty: string;
+            /** Counted Qty */
+            counted_qty: string;
+            /** Difference */
+            difference: string;
+            /** Shortage Value */
+            shortage_value: string;
         };
         /** CustomerOut */
         CustomerOut: {
@@ -1157,6 +1376,110 @@ export interface components {
          * @enum {string}
          */
         CuttingStatus: "TASLAK" | "ONAYLANDI";
+        /** DashboardOut */
+        DashboardOut: {
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** Expiry Warning Days */
+            expiry_warning_days: number;
+            /** Expiring */
+            expiring: components["schemas"]["ExpiringLotOut"][];
+            /** Low Stock */
+            low_stock: components["schemas"]["LowStockOut"][];
+            /** Open Recalls */
+            open_recalls: components["schemas"]["OpenRecallOut"][];
+            /** Unread Alerts */
+            unread_alerts: number;
+            /** Draft Orders */
+            draft_orders: number;
+            /** Shipped Orders */
+            shipped_orders: number;
+            /** Draft Cuttings */
+            draft_cuttings: number;
+            /** Today Sale Count */
+            today_sale_count: number;
+            /** Today Sales Amount */
+            today_sales_amount: string;
+            /** Stock Value */
+            stock_value: string;
+        };
+        /** DayEndOut */
+        DayEndOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Sale Count */
+            sale_count: number;
+            /** Sales Amount */
+            sales_amount: string;
+            /** Cost Amount */
+            cost_amount: string;
+            /** Refund Amount */
+            refund_amount: string;
+            /** Net Amount */
+            net_amount: string;
+            /** By Payment */
+            by_payment: components["schemas"]["DayTotalOut"][];
+            /** By Seller */
+            by_seller: components["schemas"]["DayTotalOut"][];
+            /** Sales */
+            sales: components["schemas"]["DaySaleOut"][];
+            /** Returns */
+            returns: components["schemas"]["DayReturnOut"][];
+            /** Stock Left */
+            stock_left: components["schemas"]["StockLeftOut"][];
+        };
+        /** DayReturnOut */
+        DayReturnOut: {
+            /** Return No */
+            return_no: string;
+            /** Sale No */
+            sale_no: string;
+            /** Customer Name */
+            customer_name: string;
+            /** Lot No */
+            lot_no: string;
+            /** Qty */
+            qty: string;
+            /** Refund Amount */
+            refund_amount: string;
+        };
+        /** DaySaleOut */
+        DaySaleOut: {
+            /** Id */
+            id: number;
+            /** Sale No */
+            sale_no: string;
+            /**
+             * Sold At
+             * Format: date-time
+             */
+            sold_at: string;
+            channel: components["schemas"]["SaleChannel"];
+            /** Customer Name */
+            customer_name: string;
+            /** Seller Name */
+            seller_name: string;
+            payment_method: components["schemas"]["PaymentMethod"] | null;
+            /** Amount */
+            amount: string;
+            /** Recall Violation */
+            recall_violation: boolean;
+        };
+        /** DayTotalOut */
+        DayTotalOut: {
+            /** Key */
+            key: string;
+            /** Sale Count */
+            sale_count: number;
+            /** Amount */
+            amount: string;
+        };
         /**
          * DocType
          * @enum {string}
@@ -1174,6 +1497,27 @@ export interface components {
             } | null;
             /** Real */
             real: components["schemas"]["RealComparisonOut"][];
+        };
+        /** ExpiringLotOut */
+        ExpiringLotOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /**
+             * Expiry Date
+             * Format: date
+             */
+            expiry_date: string;
+            /** Days Left */
+            days_left: number;
+            /** Qty */
+            qty: string;
+            /** Warehouses */
+            warehouses: string[];
+            /** Blocked */
+            blocked: boolean;
         };
         /** ExtraCostIn */
         ExtraCostIn: {
@@ -1365,6 +1709,20 @@ export interface components {
          * @enum {string}
          */
         LotStatus: "AKTIF" | "BLOKE";
+        /** LowStockOut */
+        LowStockOut: {
+            /** Product Id */
+            product_id: number;
+            /** Product Code */
+            product_code: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Qty */
+            qty: string;
+            /** Min Stock */
+            min_stock: string;
+        };
         /** MovementOut */
         MovementOut: {
             /** Id */
@@ -1443,6 +1801,20 @@ export interface components {
          * @enum {string}
          */
         OnwardStatus: "KAYITLI" | "KISMEN" | "BILINMIYOR";
+        /** OpenRecallOut */
+        OpenRecallOut: {
+            /** Id */
+            id: number;
+            /** Recall No */
+            recall_no: string;
+            /** Lot No */
+            lot_no: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+        };
         /** OrderIn */
         OrderIn: {
             /** Subcontractor Id */
@@ -1570,6 +1942,11 @@ export interface components {
             /** Id */
             id: number;
         };
+        /**
+         * PaymentMethod
+         * @enum {string}
+         */
+        PaymentMethod: "NAKIT" | "KART" | "HAVALE" | "VERESIYE";
         /** PlannedInputIn */
         PlannedInputIn: {
             /** Lot No */
@@ -1612,6 +1989,8 @@ export interface components {
             sale_price?: number | string | null;
             /** Shelf Life Days */
             shelf_life_days?: number | null;
+            /** Min Stock */
+            min_stock?: number | string | null;
             /**
              * Active
              * @default true
@@ -1826,6 +2205,7 @@ export interface components {
             sold_at: string;
             /** Lines */
             lines: components["schemas"]["PushLineIn"][];
+            payment_method?: components["schemas"]["PaymentMethod"] | null;
         };
         /**
          * PushStatus
@@ -2154,6 +2534,16 @@ export interface components {
             /** Note */
             note: string | null;
         };
+        /** ResetPasswordIn */
+        ResetPasswordIn: {
+            /** New Password */
+            new_password?: string | null;
+        };
+        /** ResetPasswordOut */
+        ResetPasswordOut: {
+            /** Temporary Password */
+            temporary_password: string;
+        };
         /** ReturnIn */
         ReturnIn: {
             /** Sale Line Id */
@@ -2250,6 +2640,9 @@ export interface components {
             customer_name: string;
             /** Warehouse Id */
             warehouse_id: number;
+            /** Seller Name */
+            seller_name: string;
+            payment_method: components["schemas"]["PaymentMethod"] | null;
             /** Device Id */
             device_id: string | null;
             /**
@@ -2306,6 +2699,41 @@ export interface components {
          * @enum {string}
          */
         Species: "KUZU" | "KOYUN" | "KECI";
+        /** StockCountIn */
+        StockCountIn: {
+            /** Warehouse Id */
+            warehouse_id: number;
+            /** Note */
+            note?: string | null;
+            /** Lines */
+            lines: components["schemas"]["CountLineIn"][];
+        };
+        /** StockCountOut */
+        StockCountOut: {
+            /** Id */
+            id: number;
+            /** Count No */
+            count_no: string;
+            /** Warehouse Id */
+            warehouse_id: number;
+            /** Warehouse Code */
+            warehouse_code: string;
+            /** Note */
+            note: string | null;
+            /** Counted By */
+            counted_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Lines */
+            lines: components["schemas"]["CountLineOut"][];
+            /** Shortage Value */
+            shortage_value: string;
+            /** Surplus Lines */
+            surplus_lines: number;
+        };
         /** StockItemOut */
         StockItemOut: {
             /** Lot No */
@@ -2318,6 +2746,18 @@ export interface components {
             /** Warehouse Name */
             warehouse_name: string;
             warehouse_kind: components["schemas"]["WarehouseKind"];
+            /** Qty */
+            qty: string;
+        };
+        /** StockLeftOut */
+        StockLeftOut: {
+            /** Lot No */
+            lot_no: string;
+            /** Product Name */
+            product_name: string;
+            base_unit: components["schemas"]["BaseUnit"];
+            /** Expiry Date */
+            expiry_date: string | null;
             /** Qty */
             qty: string;
         };
@@ -2352,6 +2792,25 @@ export interface components {
             warehouse_name: string;
             /** Qty */
             qty: string;
+        };
+        /** StoreLineIn */
+        StoreLineIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Qty */
+            qty: number | string;
+            /** Unit Price */
+            unit_price?: number | string | null;
+        };
+        /** StoreSaleIn */
+        StoreSaleIn: {
+            /** Customer Id */
+            customer_id: number;
+            /** Warehouse Id */
+            warehouse_id: number;
+            payment_method: components["schemas"]["PaymentMethod"];
+            /** Lines */
+            lines: components["schemas"]["StoreLineIn"][];
         };
         /** SupplierRefOut */
         SupplierRefOut: {
@@ -2470,6 +2929,36 @@ export interface components {
          * @enum {string}
          */
         TransferReason: "ARAC_YUKLEME" | "DIS_URETIM_SEVK" | "DIS_URETIM_IADE" | "DIGER";
+        /** UserAdminOut */
+        UserAdminOut: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["UserRole"];
+            /** Warehouse Id */
+            warehouse_id: number | null;
+            /** Warehouse Code */
+            warehouse_code: string | null;
+            /** Must Change Password */
+            must_change_password: boolean;
+            /** Active */
+            active: boolean;
+        };
+        /** UserCreateIn */
+        UserCreateIn: {
+            /** Username */
+            username: string;
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["UserRole"];
+            /** Password */
+            password: string;
+            /** Warehouse Id */
+            warehouse_id?: number | null;
+        };
         /** UserOut */
         UserOut: {
             /** Id */
@@ -2483,12 +2972,25 @@ export interface components {
             warehouse_id: number | null;
             /** Warehouse Code */
             warehouse_code: string | null;
+            /** Must Change Password */
+            must_change_password: boolean;
         };
         /**
          * UserRole
+         * @description Orta ölçekli işletme: her çalışan yalnız kendi işinin ekranlarını görür.
          * @enum {string}
          */
-        UserRole: "YONETICI" | "SATIS";
+        UserRole: "YONETICI" | "DEPO" | "URETIM" | "KALITE" | "MAGAZA" | "SATIS";
+        /** UserUpdateIn */
+        UserUpdateIn: {
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["UserRole"];
+            /** Active */
+            active: boolean;
+            /** Warehouse Id */
+            warehouse_id?: number | null;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -2604,6 +3106,8 @@ export interface components {
             sale_price?: string | null;
             /** Shelf Life Days */
             shelf_life_days?: number | null;
+            /** Min Stock */
+            min_stock?: string | null;
             /**
              * Active
              * @default true
@@ -2737,6 +3241,330 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    change_password_api_v1_auth_change_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_users_api_v1_users_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserAdminOut"][];
+                };
+            };
+        };
+    };
+    create_api_v1_users_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserAdminOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_api_v1_users__user_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserAdminOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_api_v1_users__user_id__reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetPasswordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dashboard_api_v1_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardOut"];
+                };
+            };
+        };
+    };
+    get_day_end_api_v1_day_end_get: {
+        parameters: {
+            query?: {
+                day?: string | null;
+                user_id?: number | null;
+                warehouse_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DayEndOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_day_end_api_v1_sync_day_end_get: {
+        parameters: {
+            query?: {
+                day?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DayEndOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_counts_api_v1_stock_counts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockCountOut"][];
+                };
+            };
+        };
+    };
+    create_count_api_v1_stock_counts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockCountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockCountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_count_api_v1_stock_counts__count_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                count_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockCountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };
@@ -3382,7 +4210,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CancelIn"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -3728,7 +4560,9 @@ export interface operations {
     };
     list_sales_api_v1_sales_get: {
         parameters: {
-            query?: never;
+            query?: {
+                day?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3742,6 +4576,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_v1_sales_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSaleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -22,7 +22,6 @@ import { useState } from 'react'
 import { api, errorMessage } from '../api/client'
 import { useProducts } from '../api/queries'
 import type { ColumnKind, Report, ReportCode, ReportInfo } from '../api/types'
-import { Tilt } from '../components/Depth'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { downloadFile } from '../lib/download'
@@ -54,11 +53,11 @@ const STATUS_TEXT: Record<string, string> = {
 
 const REPORT_ICON: Record<ReportCode, string> = {
   purchases: 'Alış',
-  production: 'Görev 1',
-  cuttings: 'Görev 2',
-  'lot-movements': 'Defter',
+  production: 'Üretim',
+  cuttings: 'Parçalama',
+  'lot-movements': 'Stok hareketi',
   sales: 'Satış',
-  recalls: 'Görev 3',
+  recalls: 'Kalite',
   integrity: 'Denetim',
 }
 
@@ -128,6 +127,7 @@ function ReportView({ code }: { code: ReportCode }) {
   return (
     <Page
       title={data?.title ?? 'Rapor'}
+      back={{ to: '/raporlar', label: 'Raporlar' }}
       extra={
         <>
           <Button onClick={() => navigate('/raporlar')}>Bütün raporlar</Button>
@@ -216,19 +216,25 @@ function ReportView({ code }: { code: ReportCode }) {
 function ReportList() {
   const reports = useQuery({ queryKey: ['reports'], queryFn: () => api<ReportInfo[]>('/reports') })
   return (
-    <Page title="Raporlar">
+    <Page
+      title="Raporlar"
+      description="Bir rapor seçin; ekranda görün, Excel'de açmak için CSV olarak indirin."
+    >
       {reports.isError && <QueryError error={reports.error} onRetry={() => reports.refetch()} />}
       <Row gutter={[16, 16]}>
         {(reports.data ?? []).map((report) => (
           <Col key={report.code} xs={24} md={12} xl={8}>
-            <button type="button" className="stat-button" onClick={() => navigate(`/raporlar/${report.code}`)}>
-              <Tilt className="stat-tile" style={{ minHeight: 132 }}>
-                <Tag color="blue">{REPORT_ICON[report.code]}</Tag>
-                <div className="stat-tile-value" style={{ fontSize: 20 }}>
-                  {report.title}
-                </div>
-                <div className="stat-tile-hint">{report.description}</div>
-              </Tilt>
+            <button
+              type="button"
+              className="stat"
+              style={{ minHeight: 132 }}
+              onClick={() => navigate(`/raporlar/${report.code}`)}
+            >
+              <Tag color="blue">{REPORT_ICON[report.code]}</Tag>
+              <div className="stat-value" style={{ fontSize: 19 }}>
+                {report.title}
+              </div>
+              <div className="stat-hint">{report.description}</div>
             </button>
           </Col>
         ))}

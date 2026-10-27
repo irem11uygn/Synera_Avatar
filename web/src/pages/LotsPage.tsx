@@ -38,7 +38,10 @@ export default function LotsPage() {
   })
 
   return (
-    <Page title="Lotlar">
+    <Page
+      title="Lotlar (partiler)"
+      description="Her mal girişi bir lot numarası alır. Lot kartında nereden geldiği, nereye gittiği ve bütün hareketleri görünür."
+    >
       {lots.isError && <QueryError error={lots.error} onRetry={() => lots.refetch()} />}
       <Space wrap style={{ marginBottom: 16 }}>
         <Input.Search

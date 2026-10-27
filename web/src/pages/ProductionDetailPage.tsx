@@ -80,7 +80,7 @@ export default function ProductionDetailPage({ id }: { id: number }) {
 
   if (order.isError) {
     return (
-      <Page title="Dış üretim emri">
+      <Page title="Fason üretim emri">
         <QueryError error={order.error} onRetry={() => order.refetch()} />
       </Page>
     )
@@ -120,7 +120,7 @@ export default function ProductionDetailPage({ id }: { id: number }) {
     ) : null
 
   return (
-    <Page title={`Dış üretim emri ${data.order_no}`} extra={actions}>
+    <Page title={`Fason üretim emri ${data.order_no}`} back={{ to: '/uretim', label: 'Fason üretim' }} extra={actions}>
       {actionError && <Alert type="error" showIcon role="alert" title={actionError} style={{ marginBottom: 16 }} />}
 
       <Card size="small" style={{ marginBottom: 16 }}>
@@ -145,7 +145,7 @@ export default function ProductionDetailPage({ id }: { id: number }) {
           column={{ xs: 1, sm: 2, lg: 3 }}
           items={[
             { key: 'status', label: 'Durum', children: <OrderStatusTag status={data.status} /> },
-            { key: 'sub', label: 'Dış üretici', children: data.subcontractor_name },
+            { key: 'sub', label: 'Fasoncu', children: data.subcontractor_name },
             { key: 'product', label: 'Mamul', children: data.output_product_name },
             { key: 'planned', label: 'Planlanan', children: formatQty(data.planned_qty, unit) },
             { key: 'received', label: 'Teslim alınan', children: formatQty(data.received_qty, unit) },
@@ -237,7 +237,7 @@ function CompleteForm({ order }: { order: Order }) {
     try {
       const done = await api<Order>(`/production-orders/${order.id}/complete`, { method: 'POST', body })
       await refreshBusinessData(queryClient)
-      message.success(`Mamul kabul edildi: ${done.output_lot_no}, EKP ${formatUnitCost(done.cost?.ekp_display)}.`)
+      message.success(`Mamul kabul edildi: ${done.output_lot_no}, birim maliyet ${formatUnitCost(done.cost?.ekp_display)}.`)
     } catch (caught) {
       setError(errorMessage(caught))
       setSaving(false)
@@ -423,7 +423,7 @@ function CostBreakdown({ order }: { order: Order }) {
       })),
     {
       key: 'service',
-      label: 'Dış üretim hizmeti',
+      label: 'Fason işçilik',
       detail: serviceDetail,
       amount: cost.service,
     },
@@ -439,26 +439,26 @@ function CostBreakdown({ order }: { order: Order }) {
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title={`EKP (€ / ${unitLabel(unit)})`} value={formatUnitCost(cost.ekp_display)} />
+            <Statistic title={`Birim maliyet — EKP (€ / ${unitLabel(unit)})`} value={formatUnitCost(cost.ekp_display)} />
             <Typography.Text type="secondary">Saklanan tam değer: {formatUnitCost(cost.ekp)}</Typography.Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
             <Statistic title="Brüt kâr / birim" value={formatMoney(order.sales?.gross_profit_per_unit)} />
-            <Typography.Text type="secondary">VKP {formatMoney(order.sales?.vkp)}</Typography.Text>
+            <Typography.Text type="secondary">Satış fiyatı {formatMoney(order.sales?.vkp)}</Typography.Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Marj (brüt kâr / VKP)" value={formatPercent(order.sales?.margin_pct)} />
+            <Statistic title="Marj (brüt kâr / satış fiyatı)" value={formatPercent(order.sales?.margin_pct)} />
           </Card>
         </Col>
       </Row>
 
       <Row gutter={16}>
         <Col xs={24} lg={14}>
-          <Card size="small" title="EKP dökümü" style={{ marginBottom: 16 }}>
+          <Card size="small" title="Birim maliyet nasıl hesaplandı?" style={{ marginBottom: 16 }}>
             <Table
               rowKey="key"
               size="small"
@@ -481,7 +481,7 @@ function CostBreakdown({ order }: { order: Order }) {
                   </Table.Summary.Row>
                   <Table.Summary.Row>
                     <Table.Summary.Cell index={0} colSpan={2}>
-                      ÷ Teslim alınan {formatQty(order.received_qty, unit)} = EKP
+                      ÷ Teslim alınan {formatQty(order.received_qty, unit)} = birim maliyet
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} align="right">
                       <Typography.Text strong>{formatUnitCost(cost.ekp_display)}</Typography.Text>
@@ -491,7 +491,7 @@ function CostBreakdown({ order }: { order: Order }) {
               )}
             />
             <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
-              Lot değeri toplam maliyettir ({formatMoney(cost.total)}). EKP {formatUnitCost(cost.ekp)} olarak saklanır,
+              Lot değeri toplam maliyettir ({formatMoney(cost.total)}). Birim maliyet {formatUnitCost(cost.ekp)} olarak saklanır,
               ekranda {formatUnitCost(cost.ekp_display)} gösterilir; satış maliyetleri lot değerinden dağıtıldığı için
               yuvarlama farkı oluşmaz.
             </Typography.Paragraph>

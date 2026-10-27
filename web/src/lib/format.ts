@@ -71,3 +71,8 @@ export function todayIso(now: Date = new Date()): string {
   const day = String(now.getDate()).padStart(2, '0')
   return `${now.getFullYear()}-${month}-${day}`
 }
+
+/** İki takvim günü arasındaki gün sayısı (YYYY-MM-DD); eksi: geçmiş. */
+export function daysLeft(day: string, today: string): number {
+  return Math.round((Date.parse(`${day}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
+}

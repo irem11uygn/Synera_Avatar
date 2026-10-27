@@ -22,7 +22,7 @@ import { useState } from 'react'
 import { api } from '../api/client'
 import { refreshBusinessData } from '../api/queries'
 import type { Recall, Recipient, Trace } from '../api/types'
-import { StatTile } from '../components/Depth'
+import { Stat } from '../components/Stat'
 import { FormModal } from '../components/FormModal'
 import { Link } from '../components/Link'
 import { Page } from '../components/Page'
@@ -62,7 +62,7 @@ function RecallButton({ trace }: { trace: Trace }) {
       navigate(`/geri-cagirma/${recall.id}`)
     },
   })
-  if (trace.source.status === 'BLOKE') return <Tag color="red">Bu lot zaten bloke</Tag>
+  if (trace.source.status === 'BLOKE') return <Tag color="red">Bu lot zaten satışa kapalı</Tag>
   return (
     <>
       <Button danger type="primary" onClick={() => setOpen(true)}>
@@ -73,11 +73,11 @@ function RecallButton({ trace }: { trace: Trace }) {
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={(values) => start.mutateAsync(values)}
-        okText="Başlat ve bloke et"
+        okText="Başlat ve satışa kapat"
       >
         <Typography.Paragraph>
-          {trace.source.lot_no} ve ondan türeyen <strong>{trace.lots.length - 1}</strong> lot tek işlemde bloke
-          edilir. Bloke lot web, API ve Android'den satılamaz, transfer edilemez, üretimde kullanılamaz.
+          {trace.source.lot_no} ve ondan türeyen <strong>{trace.lots.length - 1}</strong> lot tek işlemde
+          satışa kapatılır: mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz.
         </Typography.Paragraph>
         <Form.Item name="reason" label="Neden" rules={[{ required: true, message: 'Nedeni yazın.' }]}>
           <Input.TextArea rows={3} maxLength={500} placeholder="Tedarikçi laboratuvar sonucu: uygunsuz" />
@@ -90,7 +90,7 @@ function RecallButton({ trace }: { trace: Trace }) {
 function ForwardDetails({ trace }: { trace: Trace }) {
   return (
     <>
-      <Card size="small" title="Bizdeki stok (ana depo, araçlar, dış üretici)" style={{ marginBottom: 16 }}>
+      <Card size="small" title="Elimizdeki stok (ana depo, araçlar, fasoncu)" style={{ marginBottom: 16 }}>
         <Table
           rowKey={(row) => `${row.lot_no}-${row.warehouse_code}`}
           size="small"
@@ -194,28 +194,28 @@ function TraceResult({ lotNo, direction }: { lotNo: string; direction: Direction
         {forward ? (
           <>
             <Col xs={12} lg={6}>
-              <StatTile label="Etkilenen lot" value={data.lots.length} hint="Kaynak + türevler" />
+              <Stat label="Etkilenen lot" value={data.lots.length} hint="Kaynak + türevler" />
             </Col>
             <Col xs={12} lg={6}>
-              <StatTile label="Bizdeki stok" value={totalsByUnit(data.stock)} color="var(--warning)" />
+              <Stat label="Bizdeki stok" value={totalsByUnit(data.stock)} tone="warning" />
             </Col>
             <Col xs={12} lg={6}>
-              <StatTile label="Alıcı" value={new Set(data.recipients.map((r) => r.customer_id)).size} color="var(--success)" />
+              <Stat label="Alıcı" value={new Set(data.recipients.map((r) => r.customer_id)).size} tone="success" />
             </Col>
             <Col xs={12} lg={6}>
-              <StatTile label="Müşterilerde" value={totalsByUnit(data.recipients)} color="var(--danger)" />
+              <Stat label="Müşterilerde" value={totalsByUnit(data.recipients)} tone="danger" />
             </Col>
           </>
         ) : (
           <>
             <Col xs={12} lg={8}>
-              <StatTile label="Kaynak lot" value={data.lots.length - 1} />
+              <Stat label="Kaynak lot" value={data.lots.length - 1} />
             </Col>
             <Col xs={12} lg={8}>
-              <StatTile label="Tedarikçi" value={new Set(data.suppliers.map((s) => s.supplier)).size} color="var(--success)" />
+              <Stat label="Tedarikçi" value={new Set(data.suppliers.map((s) => s.supplier)).size} tone="success" />
             </Col>
             <Col xs={24} lg={8}>
-              <StatTile label="Üretim / parçalama" value={data.processes.length} color="var(--warning)" />
+              <Stat label="Üretim / parçalama" value={data.processes.length} tone="warning" />
             </Col>
           </>
         )}
@@ -236,10 +236,13 @@ function TraceResult({ lotNo, direction }: { lotNo: string; direction: Direction
 
 export default function TracePage({ lotNo, direction = 'forward' }: { lotNo?: string; direction?: Direction }) {
   const [text, setText] = useState(lotNo ?? '')
-  const go = (value: string, dir: Direction = direction) => value.trim() && navigate(tracePath(value.trim().toLocaleUpperCase('tr-TR'), dir))
+  const go = (value: string, dir: Direction = direction) => value.trim() && navigate(tracePath(value.trim().toUpperCase(), dir))
 
   return (
-    <Page title="Lot izleme">
+    <Page
+      title="Lot izleme"
+      description="Bir lot numarası yazın: ileri izlemede o maldan ne yapıldığını ve hangi müşterilere gittiğini, geri izlemede hangi hammaddeden ve tedarikçiden geldiğini görürsünüz."
+    >
       <Card size="small" style={{ marginBottom: 16 }}>
         <Space wrap>
           <LotPicker value={text} onChange={setText} onPick={(v) => go(v)} />

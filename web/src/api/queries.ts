@@ -3,7 +3,7 @@
 
 import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { api } from './client'
-import type { Partner, Product, ProductKind, StockRow, Warehouse } from './types'
+import type { DayEnd, Partner, Product, ProductKind, StockRow, Warehouse } from './types'
 
 export function useProducts(kind?: ProductKind) {
   return useQuery({
@@ -28,6 +28,13 @@ export function useStock(params: { warehouse_id?: number; product_id?: number } 
     queryKey: ['stock', params],
     queryFn: () => api<StockRow[]>('/stock', { query: params }),
     enabled,
+  })
+}
+
+export function useDayEnd(day: string, warehouseId?: number) {
+  return useQuery({
+    queryKey: ['day-end', day, warehouseId ?? 'all'],
+    queryFn: () => api<DayEnd>('/day-end', { query: { day, warehouse_id: warehouseId } }),
   })
 }
 

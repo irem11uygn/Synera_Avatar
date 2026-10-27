@@ -1,20 +1,24 @@
-// Satışlar (FR-401, FR-605): Android'den gelen satışlar ve satır bazında lot, maliyet, brüt kâr;
-// müşteri iadesi (FR-303). Bir satış satırı = bir lot = bir stok hareketi.
+// Satışlar ve iadeler: mağaza ve araç satışları, satır bazında lot; müşteri iadesi aynı lotla depoya
+// döner. Bir satış satırı = bir lot = bir stok hareketi.
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Card, Col, Form, Input, Row, Select, Table, Tag, Typography, Button, type TableColumnsType } from 'antd'
+import { PrinterOutlined, RollbackOutlined, ShoppingCartOutlined } from '@ant-design/icons'
+import { Button, Col, Form, Input, Row, Select, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { useState } from 'react'
 import { api } from '../api/client'
 import { refreshBusinessData, useWarehouses } from '../api/queries'
-import type { Return, Sale, SaleLine } from '../api/types'
-import { StatTile } from '../components/Depth'
+import type { PaymentMethod, Return, Sale, SaleLine } from '../api/types'
+import { useSession } from '../auth/context'
+import { Stat } from '../components/Stat'
 import { FormModal } from '../components/FormModal'
 import { Link } from '../components/Link'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { sum } from '../lib/decimal'
-import { formatDateTime, formatMoney, formatQty, unitLabel } from '../lib/format'
-import { SALE_CHANNEL, WAREHOUSE_KIND } from '../lib/labels'
+import { formatDate, formatDateTime, formatMoney, formatQty, todayIso, unitLabel } from '../lib/format'
+import { PAYMENT_METHOD, SALE_CHANNEL, WAREHOUSE_KIND } from '../lib/labels'
+import { can } from '../lib/roles'
+import { navigate } from '../lib/router'
 import { decimalRule, toApiDecimal } from '../lib/rules'
 
 type ReturnTarget = { sale: Sale; line: SaleLine }
@@ -65,9 +69,16 @@ function ReturnModal({ target, onClose }: { target: ReturnTarget | null; onClose
 }
 
 export default function SalesPage() {
-  const sales = useQuery({ queryKey: ['sales'], queryFn: () => api<Sale[]>('/sales') })
+  const { user } = useSession()
+  const [day, setDay] = useState<string>(todayIso())
+  const sales = useQuery({
+    queryKey: ['sales', day || 'all'],
+    queryFn: () => api<Sale[]>('/sales', { query: { day: day || undefined } }),
+  })
   const returns = useQuery({ queryKey: ['returns'], queryFn: () => api<Return[]>('/returns') })
   const [target, setTarget] = useState<ReturnTarget | null>(null)
+  const manager = user.role === 'YONETICI'
+  const canReturn = can(user.role, 'returns')
 
   const data = sales.data ?? []
   const amount = sum(data.map((s) => s.total_amount), 2)
@@ -76,94 +87,128 @@ export default function SalesPage() {
   const columns: TableColumnsType<Sale> = [
     { title: 'Belge', dataIndex: 'sale_no' },
     { title: 'Zaman', dataIndex: 'sold_at', render: formatDateTime },
-    { title: 'Kanal', dataIndex: 'channel', render: (c: Sale['channel']) => <Tag>{SALE_CHANNEL[c]}</Tag> },
     { title: 'Müşteri', dataIndex: 'customer_name' },
-    { title: 'Tutar', dataIndex: 'total_amount', align: 'right', render: formatMoney },
-    { title: 'Maliyet', dataIndex: 'total_cost', align: 'right', render: formatMoney },
+    { title: 'Yer', dataIndex: 'channel', render: (c: Sale['channel']) => SALE_CHANNEL[c], responsive: ['md'] },
     {
-      title: 'Durum',
-      dataIndex: 'recall_violation',
-      render: (v: boolean) => (v ? <Tag color="orange">Geri çağrılmış lot satıldı</Tag> : <Tag color="green">Normal</Tag>),
+      title: 'Ödeme',
+      dataIndex: 'payment_method',
+      render: (p: PaymentMethod | null) => (p ? PAYMENT_METHOD[p] : '—'),
+      responsive: ['lg'],
+    },
+    { title: 'Tutar', dataIndex: 'total_amount', align: 'right', render: formatMoney },
+    ...(manager
+      ? [{ title: 'Maliyet', dataIndex: 'total_cost', align: 'right' as const, render: formatMoney, responsive: ['xl' as const] }]
+      : []),
+    {
+      title: '',
+      key: 'actions',
+      render: (_, sale) => (
+        <Space>
+          {sale.recall_violation && <Tag color="orange">Geri çağrılmış lot satıldı</Tag>}
+          <Button size="small" icon={<PrinterOutlined />} onClick={() => navigate(`/yazdir/satis/${sale.id}`)}>
+            Fiş
+          </Button>
+        </Space>
+      ),
     },
   ]
 
   return (
-    <Page title="Satışlar">
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+    <Page
+      title="Satışlar ve iadeler"
+      description={
+        canReturn
+          ? 'Mağaza ve araç satışları. İade almak için satırın başındaki + işaretine basın, ilgili üründe "İade al"ı seçin.'
+          : 'Mağaza ve araç satışları.'
+      }
+      extra={
+        can(user.role, 'store') && (
+          <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => navigate('/magaza-satisi')}>
+            Yeni mağaza satışı
+          </Button>
+        )
+      }
+    >
+      <Space wrap style={{ marginBottom: 16 }}>
+        <Input type="date" value={day} max={todayIso()} onChange={(e) => setDay(e.target.value)} aria-label="Gün" style={{ width: 180 }} />
+        <Button onClick={() => setDay(todayIso())} disabled={day === todayIso()}>
+          Bugün
+        </Button>
+        <Button onClick={() => setDay('')} disabled={day === ''}>
+          Bütün satışlar
+        </Button>
+      </Space>
+      <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
         <Col xs={12} lg={6}>
-          <StatTile label="Satış belgesi" value={data.length} />
+          <Stat label="Satış belgesi" value={data.length} hint={day ? formatDate(day) : 'Bütün günler'} />
         </Col>
         <Col xs={12} lg={6}>
-          <StatTile label="Ciro" value={formatMoney(amount)} color="var(--success)" />
+          <Stat label="Ciro" value={formatMoney(amount)} tone="success" />
         </Col>
-        <Col xs={12} lg={6}>
-          <StatTile label="Satılan malın maliyeti" value={formatMoney(cost)} color="var(--warning)" />
-        </Col>
-        <Col xs={12} lg={6}>
-          <StatTile label="İade kaydı" value={returns.data?.length ?? '—'} color="var(--danger)" />
-        </Col>
+        {manager && (
+          <Col xs={12} lg={6}>
+            <Stat label="Satılan malın maliyeti" value={formatMoney(cost)} tone="warning" />
+          </Col>
+        )}
       </Row>
-      <Card size="small" title="Satışlar (satırları görmek için satırı açın)" style={{ marginBottom: 16 }}>
-        {sales.isError && <QueryError error={sales.error} onRetry={() => sales.refetch()} />}
-        <Table<Sale>
-          rowKey="id"
-          size="small"
-          loading={sales.isPending}
-          dataSource={data}
-          columns={columns}
-          pagination={{ pageSize: 20, hideOnSinglePage: true }}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: 'Henüz satış yok. Satışlar Android uygulamasından gelir.' }}
-          expandable={{
-            expandedRowRender: (sale) => (
-              <Table<SaleLine>
-                rowKey="id"
-                size="small"
-                pagination={false}
-                dataSource={sale.lines}
-                columns={[
-                  { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
-                  { title: 'Ürün', dataIndex: 'product_name' },
-                  { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string, l) => formatQty(v, l.base_unit) },
-                  { title: 'Birim fiyat', dataIndex: 'unit_price', align: 'right', render: formatMoney },
-                  { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
-                  { title: 'Maliyet', dataIndex: 'cost_amount', align: 'right', render: formatMoney },
-                  {
-                    title: 'İşlem',
-                    key: 'return',
-                    render: (_, line) => (
-                      <Button size="small" onClick={() => setTarget({ sale, line })}>
-                        İade al
-                      </Button>
-                    ),
-                  },
-                ]}
-              />
-            ),
-          }}
-        />
-      </Card>
-      <Card size="small" title="Müşteri iadeleri">
-        <Table<Return>
-          rowKey="id"
-          size="small"
-          loading={returns.isPending}
-          dataSource={returns.data}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: 'İade yok.' }}
-          columns={[
-            { title: 'İade no', dataIndex: 'return_no' },
-            { title: 'Zaman', dataIndex: 'created_at', render: formatDateTime },
-            { title: 'Satış', dataIndex: 'sale_no' },
-            { title: 'Müşteri', dataIndex: 'customer_name' },
-            { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
-            { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
-            { title: 'Depo', dataIndex: 'warehouse_code' },
-            { title: 'Neden', dataIndex: 'reason', render: (v: string | null) => v ?? '—' },
-          ]}
-        />
-      </Card>
+      {sales.isError && <QueryError error={sales.error} onRetry={() => sales.refetch()} />}
+      <Table<Sale>
+        rowKey="id"
+        loading={sales.isPending}
+        dataSource={data}
+        columns={columns}
+        pagination={{ pageSize: 20, hideOnSinglePage: true }}
+        scroll={{ x: 'max-content' }}
+        locale={{ emptyText: day ? `${formatDate(day)} günü satış yok.` : 'Henüz satış yok.' }}
+        expandable={{
+          expandedRowRender: (sale) => (
+            <Table<SaleLine>
+              rowKey="id"
+              size="small"
+              pagination={false}
+              dataSource={sale.lines}
+              scroll={{ x: 'max-content' }}
+              columns={[
+                { title: 'Ürün', dataIndex: 'product_name' },
+                { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
+                { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string, l) => formatQty(v, l.base_unit) },
+                { title: 'Birim fiyat', dataIndex: 'unit_price', align: 'right', render: formatMoney },
+                { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
+                ...(canReturn
+                  ? [
+                      {
+                        title: '',
+                        key: 'return',
+                        render: (_: unknown, line: SaleLine) => (
+                          <Button size="small" icon={<RollbackOutlined />} onClick={() => setTarget({ sale, line })}>
+                            İade al
+                          </Button>
+                        ),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          ),
+        }}
+      />
+      <div className="section-title">Müşteri iadeleri</div>
+      <Table<Return>
+        rowKey="id"
+        loading={returns.isPending}
+        dataSource={returns.data}
+        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+        scroll={{ x: 'max-content' }}
+        locale={{ emptyText: 'İade yok.' }}
+        columns={[
+          { title: 'İade no', dataIndex: 'return_no' },
+          { title: 'Zaman', dataIndex: 'created_at', render: formatDateTime },
+          { title: 'Müşteri', dataIndex: 'customer_name' },
+          { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
+          { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
+          { title: 'Neden', dataIndex: 'reason', render: (v: string | null) => v ?? '—', responsive: ['md'] },
+        ]}
+      />
       <ReturnModal target={target} onClose={() => setTarget(null)} />
     </Page>
   )

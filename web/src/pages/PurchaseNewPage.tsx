@@ -94,7 +94,7 @@ export default function PurchaseNewPage() {
   }
 
   return (
-    <Page title="Yeni hammadde alışı">
+    <Page title="Yeni mal kabul" back={{ to: '/alislar', label: 'Mal kabul' }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues>
         form={form}

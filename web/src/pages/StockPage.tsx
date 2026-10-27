@@ -64,7 +64,10 @@ export default function StockPage() {
   const stock = useStock({ warehouse_id: warehouseId === 'all' ? undefined : warehouseId, product_id: productId })
 
   return (
-    <Page title="Stok durumu">
+    <Page
+      title="Stok durumu"
+      description="Hangi depoda, hangi lottan ne kadar mal var. Kırmızı: süresi geçmiş ya da satışa kapalı."
+    >
       {stock.isError && <QueryError error={stock.error} onRetry={() => stock.refetch()} />}
       <Space wrap style={{ marginBottom: 16 }}>
         <Segmented<number | 'all'>

@@ -14,10 +14,11 @@ export default function ProductionListPage() {
 
   return (
     <Page
-      title="Dış üretim emirleri"
+      title="Fason üretim"
+      description="Hammaddeyi fasoncuya gönderip ürettirdiğiniz işler. Adımlar: emir aç → hammaddeyi sevk et → ürünü teslim al (birim maliyet hesaplanır)."
       extra={
         <Button type="primary" onClick={() => navigate('/uretim/yeni')}>
-          Yeni dış üretim emri
+          Yeni fason üretim emri
         </Button>
       }
     >
@@ -30,7 +31,7 @@ export default function ProductionListPage() {
         dataSource={orders.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'Henüz dış üretim emri yok.' }}
+        locale={{ emptyText: 'Henüz fason üretim emri yok.' }}
       />
     </Page>
   )

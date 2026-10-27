@@ -24,6 +24,7 @@ export default function AlertsPage() {
   return (
     <Page
       title="Uyarılar"
+      description="Telefondan çevrimdışı yapılan sorunlu satışlar: satışa kapalı ya da son kullanma tarihi geçmiş lot satılmış. Müşteriyi arayıp malı geri toplayın, sonra uyarıyı okundu yapın."
       extra={
         <Segmented<boolean>
           value={onlyOpen}

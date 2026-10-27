@@ -5,7 +5,7 @@ import { Card, Col, Row, Tag, Typography } from 'antd'
 import type { Forecast, Order } from '../api/types'
 import { formatDateTime, formatMoney, formatPercent, formatQty } from '../lib/format'
 import { Link } from './Link'
-import { StatTile } from './Depth'
+import { Stat } from './Stat'
 
 function signed(value: string | null | undefined, format: (v: string) => string): string {
   if (value == null) return '—'
@@ -35,34 +35,34 @@ export function ForecastCard({ order }: { order: Order }) {
     >
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <StatTile
+          <Stat
             label="Beklenen miktar (tahmin)"
             value={formatQty(forecast.expected_qty, unit)}
             hint={`Et bazlı verim ${formatPercent(forecast.yield_main_pct)}`}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <StatTile
+          <Stat
             label="Gerçekleşen"
             value={done ? formatQty(order.received_qty, unit) : 'Kabul bekleniyor'}
             hint={done ? `Sapma ${signed(forecast.qty_deviation, (v) => formatQty(v, unit))}` : undefined}
-            color="var(--success)"
+            tone="success"
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <StatTile label="Tahmini EKP" value={formatMoney(forecast.ekp)} hint="Hammadde değeri + hizmet × tahmini adet" />
+          <Stat label="Tahmini birim maliyet" value={formatMoney(forecast.ekp)} hint="Hammadde değeri + hizmet × tahmini adet" />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <StatTile
-            label="Gerçek EKP"
+          <Stat
+            label="Gerçek birim maliyet"
             value={done ? formatMoney(order.cost?.ekp_display) : '—'}
             hint={done ? `Sapma ${signed(forecast.ekp_deviation, formatMoney)}` : undefined}
-            color="var(--success)"
+            tone="success"
           />
         </Col>
       </Row>
       <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
-        Referans yöntem (geçmiş ortalama verim): {formatQty(forecast.baseline_qty, unit)} · EKP{' '}
+        Referans yöntem (geçmiş ortalama verim): {formatQty(forecast.baseline_qty, unit)} · birim maliyet{' '}
         {formatMoney(forecast.baseline_ekp)}
         {done && forecast.baseline_qty_deviation != null && (
           <> · referans sapması {signed(forecast.baseline_qty_deviation, (v) => formatQty(v, unit))}</>

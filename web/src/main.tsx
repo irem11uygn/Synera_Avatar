@@ -19,13 +19,29 @@ createRoot(document.getElementById('root')!).render(
     <ConfigProvider
       locale={trTR}
       theme={{
-        // Derinlikli görünüm: yuvarlak köşeler, mavi vurgu, açık zemin; gölgeler index.css'te.
-        token: { colorPrimary: '#2563eb', borderRadius: 10, colorBgLayout: 'transparent', fontSize: 14 },
+        // Sade, okunaklı iş uygulaması: düz yüzeyler, 15 px yazı, büyük dokunma alanları.
+        token: {
+          colorPrimary: '#0f766e',
+          colorInfo: '#1d4ed8',
+          colorSuccess: '#2e7d32',
+          colorWarning: '#b45309',
+          colorError: '#c62828',
+          colorText: '#1f2328',
+          colorTextSecondary: '#4b5563',
+          colorBorder: '#d5dae0',
+          colorBorderSecondary: '#e3e6ea',
+          colorBgLayout: '#f4f5f7',
+          borderRadius: 8,
+          fontSize: 15,
+          controlHeight: 38,
+          fontFamily:
+            "'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
+        },
         components: {
-          Layout: { headerBg: '#0b1d3a', siderBg: '#ffffff', bodyBg: 'transparent' },
-          Card: { borderRadiusLG: 16 },
-          Menu: { itemBorderRadius: 10, itemMarginInline: 8 },
-          Table: { headerBg: '#f3f6fc', borderRadius: 12 },
+          Menu: { itemHeight: 42, itemBorderRadius: 6, itemMarginInline: 10, itemSelectedBg: '#e6f4f2', itemSelectedColor: '#0b5d57' },
+          Table: { headerBg: '#f8f9fb', headerColor: '#4b5563', cellPaddingBlock: 12, rowHoverBg: '#f8f9fb' },
+          Card: { headerFontSize: 16 },
+          Button: { fontWeight: 550 },
         },
       }}
     >

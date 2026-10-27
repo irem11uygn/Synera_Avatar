@@ -77,7 +77,8 @@ export default function TransfersPage() {
 
   return (
     <Page
-      title="Transferler"
+      title="Araca yükleme ve depo aktarma"
+      description="Satış aracına mal yükleyin ya da depolar arasında mal taşıyın. Telefon uygulaması araç stokunu bir sonraki eşitlemede alır."
       extra={
         <Button type="primary" onClick={() => setOpen(true)} disabled={!warehouses.data}>
           Yeni transfer
@@ -149,7 +150,7 @@ function TransferFields() {
           </Form.Item>
         </Col>
       </Row>
-      <Typography.Text type="secondary">Yalnız çıkış deposunda bakiyesi olan ve bloke olmayan lotlar listelenir.</Typography.Text>
+      <Typography.Text type="secondary">Yalnız çıkış deposunda bakiyesi olan ve satışa açık lotlar listelenir.</Typography.Text>
       <Form.List name="lines">
         {(fields, { add, remove }) => (
           <>

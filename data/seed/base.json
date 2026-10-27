@@ -10,7 +10,8 @@
     {"code": "M-B", "name": "Market B", "is_customer": true, "contact_person": "Can Öztürk", "phone": "+90 000 000 03 02", "email": "market-b@example.com", "address": "Manisa"},
     {"code": "M-C", "name": "Market C", "is_customer": true, "contact_person": "Zeynep Aydın", "phone": "+90 000 000 03 03", "email": "market-c@example.com", "address": "Aydın"},
     {"code": "M-B-S1", "name": "Market B Şube 1", "parent_code": "M-B", "contact_person": "Burak Koç", "phone": "+90 000 000 03 12", "email": "market-b-sube1@example.com", "address": "Manisa"},
-    {"code": "M-B-S2", "name": "Market B Şube 2", "parent_code": "M-B", "contact_person": "Selin Kurt", "phone": "+90 000 000 03 13", "email": "market-b-sube2@example.com", "address": "Akhisar"}
+    {"code": "M-B-S2", "name": "Market B Şube 2", "parent_code": "M-B", "contact_person": "Selin Kurt", "phone": "+90 000 000 03 13", "email": "market-b-sube2@example.com", "address": "Akhisar"},
+    {"code": "PERAKENDE", "name": "Perakende müşteri", "is_customer": true, "address": "Mağaza tezgâhı (adı bilinmeyen peşin müşteri)"}
   ],
   "warehouses": [
     {"code": "ANA", "name": "Ana depo", "kind": "ANA"},

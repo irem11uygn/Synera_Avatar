@@ -61,7 +61,7 @@ export default function CuttingDetailPage({ id }: { id: number }) {
 
   const data = cutting.data
   return (
-    <Page title={`Parçalama ${data.cutting_no}`}>
+    <Page title={`Parçalama ${data.cutting_no}`} back={{ to: '/parcalama', label: 'Parçalama' }}>
       <Card size="small" style={{ marginBottom: 16 }}>
         <Descriptions
           size="small"

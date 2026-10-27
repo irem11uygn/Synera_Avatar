@@ -50,7 +50,7 @@ function NewReprocessModal({ open, onClose }: { open: boolean; onClose: () => vo
       okText="İşle ve yeni lotu aç"
     >
       <Typography.Paragraph type="secondary">
-        Girdiler ana depodan tüketilir. Bloke lot kullanılamaz. Yeni lot girdilerine miktarlarıyla bağlanır; izleme
+        Girdiler ana depodan tüketilir. Satışa kapalı lot kullanılamaz. Yeni lot girdilerine miktarlarıyla bağlanır; izleme
         ekranında görünür.
       </Typography.Paragraph>
       <Form.List name="inputs">
@@ -114,6 +114,7 @@ export default function ReprocessingPage() {
   return (
     <Page
       title="Yeniden işleme"
+      description="Elimizdeki ürünlerden yeni ürün yapmak (ör. parçalardan kıyma). Yeni lot, kullanılan lotlara bağlanır; izleme kopmaz."
       extra={
         <Button type="primary" onClick={() => setOpen(true)}>
           Yeni yeniden işleme

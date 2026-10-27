@@ -15,7 +15,7 @@ import { textOrNull } from '../lib/rules'
 
 type Role = 'supplier' | 'customer' | 'subcontractor'
 
-const ROLE_LABEL: Record<Role, string> = { supplier: 'Tedarikçi', customer: 'Müşteri', subcontractor: 'Dış üretici' }
+const ROLE_LABEL: Record<Role, string> = { supplier: 'Tedarikçi', customer: 'Müşteri', subcontractor: 'Fasoncu' }
 
 type FormValues = {
   code: string
@@ -121,10 +121,11 @@ export default function PartnersPage() {
 
   return (
     <Page
-      title="Cariler"
+      title="Müşteri ve tedarikçiler"
+      description="Müşteri, tedarikçi ve fasoncu firmaların iletişim bilgileri. Geri çağırmada müşteriye bu bilgilerle ulaşılır."
       extra={
         <Button type="primary" onClick={() => setEditing('new')}>
-          Yeni cari
+          Yeni firma
         </Button>
       }
     >
@@ -136,7 +137,7 @@ export default function PartnersPage() {
           { value: 'all', label: 'Tümü' },
           { value: 'supplier', label: 'Tedarikçiler' },
           { value: 'customer', label: 'Müşteriler' },
-          { value: 'subcontractor', label: 'Dış üreticiler' },
+          { value: 'subcontractor', label: 'Fasoncular' },
         ]}
         style={{ marginBottom: 16 }}
       />
@@ -150,7 +151,7 @@ export default function PartnersPage() {
         scroll={{ x: 'max-content' }}
       />
       <FormModal<FormValues>
-        title={editing === 'new' ? 'Yeni cari' : `Cariyi düzenle: ${editing?.code ?? ''}`}
+        title={editing === 'new' ? 'Yeni firma' : `Firmayı düzenle: ${editing?.code ?? ''}`}
         open={editing !== null}
         onClose={() => setEditing(null)}
         initialValues={editing && editing !== 'new' ? toFormValues(editing) : { roles: [] }}
@@ -172,7 +173,7 @@ export default function PartnersPage() {
             <Form.Item
               label="Rol"
               name="roles"
-              extra="Dış üretici seçilince ona ait bir dış üretici deposu otomatik açılır."
+              extra="Fasoncu seçilince ona ait bir fasoncu deposu otomatik açılır; gönderilen hammadde orada izlenir."
               rules={[{ required: true, type: 'array', min: 1, message: 'En az bir rol seçin.' }]}
             >
               <Checkbox.Group
@@ -181,7 +182,7 @@ export default function PartnersPage() {
             </Form.Item>
           </Col>
           <Col span={24}>
-            <Form.Item label="Ana firma (bu cari bir şubeyse)" name="parent_id">
+            <Form.Item label="Ana firma (bu firma bir şubeyse)" name="parent_id">
               <Select
                 allowClear
                 showSearch={{ optionFilterProp: 'label' }}
