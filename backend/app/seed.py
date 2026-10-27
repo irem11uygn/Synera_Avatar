@@ -8,7 +8,7 @@
 
 import json
 import logging
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db import get_sessionmaker
 from app.demo import build_demo_scenario
+from app.domain.clock import business_today
 from app.models import CuttingRecipe, CuttingRecipeLine, NumberSequence, Partner, Product, User, Warehouse
 from app.models.enums import (
     AllocationMethod,
@@ -174,6 +175,14 @@ def _load_recipes(session: Session, rows: list[dict[str, Any]], products: dict[s
             )
 
 
+def _purchase_date(row: dict[str, Any]) -> date:
+    """Örnek alış tarihi kurulum gününe göredir: demo hangi gün kurulursa kurulsun lotların son kullanma
+    tarihi geçmemiş olur. Sabit tarih de verilebilir ("doc_date")."""
+    if "doc_date" in row:
+        return date.fromisoformat(row["doc_date"])
+    return business_today() - timedelta(days=row.get("days_before_install", 1))
+
+
 def _load_purchases(
     session: Session,
     rows: list[dict[str, Any]],
@@ -187,7 +196,7 @@ def _load_purchases(
             session,
             supplier_id=partners[row["supplier_code"]].id,
             doc_no=row["doc_no"],
-            doc_date=date.fromisoformat(row["doc_date"]),
+            doc_date=_purchase_date(row),
             warehouse_id=warehouses[row["warehouse_code"]].id,
             lines=[
                 PurchaseLineInput(

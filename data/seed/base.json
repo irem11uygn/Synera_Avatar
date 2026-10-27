@@ -1,5 +1,5 @@
 {
-  "_aciklama": "SEED_PROFILE=base: ana veriler + hammadde alışları. Bütün firma ve kişi adları uydurmadır; e-postalar ayrılmış example.com alanında. Demo kullanıcı parolaları yalnız yerel demo içindir. Belge sayaçları şartname senaryosundaki numaraları üretecek biçimde ayarlıdır (ilk dış üretim emri URT-2026-045). Alışlar alış servisi ve stok defteri üzerinden yüklenir. Kuzu alışında 287,50 € mal bedeline 63,50 € kesim + nakliye eklenir; lot değeri 351,00 € olur (Görev 2 notundaki tutarın bizim modelimizdeki karşılığı).",
+  "_aciklama": "SEED_PROFILE=base: ana veriler + hammadde alışları. Bütün firma ve kişi adları uydurmadır; e-postalar ayrılmış example.com alanında. Demo kullanıcı parolaları yalnız yerel demo içindir. Belge sayaçları şartname senaryosundaki numaraları üretecek biçimde ayarlıdır (ilk dış üretim emri URT-2026-045). Alışlar alış servisi ve stok defteri üzerinden yüklenir; tarihleri kurulumdan bir gün öncedir (days_before_install), böylece demo her gün güncel görünür. Kuzu alışında 287,50 € mal bedeline 63,50 € kesim + nakliye eklenir; lot değeri 351,00 € olur (Görev 2 notundaki tutarın bizim modelimizdeki karşılığı).",
   "partners": [
     {"code": "TED-ET", "name": "Örnek Et Tedarik", "is_supplier": true, "contact_person": "Mehmet Kaya", "phone": "+90 000 000 01 01", "email": "et-tedarik@example.com", "address": "Konya"},
     {"code": "TED-BAH", "name": "Örnek Baharat", "is_supplier": true, "contact_person": "Elif Şahin", "phone": "+90 000 000 01 02", "email": "baharat@example.com", "address": "Gaziantep"},
@@ -63,19 +63,19 @@
   ],
   "purchases": [
     {
-      "doc_no": "FAT-ET-2026-0412", "supplier_code": "TED-ET", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "doc_no": "FAT-ET-2026-0412", "supplier_code": "TED-ET", "days_before_install": 1, "warehouse_code": "ANA",
       "lines": [{"product_code": "ET", "lot_no": "ET-2026-001", "qty": "100", "unit_price": "9.70"}]
     },
     {
-      "doc_no": "FAT-BAH-2026-0098", "supplier_code": "TED-BAH", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "doc_no": "FAT-BAH-2026-0098", "supplier_code": "TED-BAH", "days_before_install": 1, "warehouse_code": "ANA",
       "lines": [{"product_code": "BAHARAT", "lot_no": "BAH-2026-014", "qty": "2", "unit_price": "24.00"}]
     },
     {
-      "doc_no": "FAT-BAG-2026-0057", "supplier_code": "TED-BAG", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "doc_no": "FAT-BAG-2026-0057", "supplier_code": "TED-BAG", "days_before_install": 1, "warehouse_code": "ANA",
       "lines": [{"product_code": "BAGIRSAK", "lot_no": "BAG-2026-007", "qty": "5", "unit_price": "11.60"}]
     },
     {
-      "doc_no": "FAT-KUZU-2026-0233", "supplier_code": "TED-KUZU", "doc_date": "2026-10-24", "warehouse_code": "ANA",
+      "doc_no": "FAT-KUZU-2026-0233", "supplier_code": "TED-KUZU", "days_before_install": 1, "warehouse_code": "ANA",
       "lines": [
         {
           "product_code": "KUZU-BUTUN", "lot_no": "KUZU-2026-012", "qty": "25", "unit_price": "11.50",
