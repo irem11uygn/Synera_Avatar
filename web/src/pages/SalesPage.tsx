@@ -20,6 +20,7 @@ import { PAYMENT_METHOD, SALE_CHANNEL, WAREHOUSE_KIND } from '../lib/labels'
 import { can } from '../lib/roles'
 import { navigate } from '../lib/router'
 import { decimalRule, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type ReturnTarget = { sale: Sale; line: SaleLine }
 type ReturnValues = { qty: string; warehouse_id?: number; reason?: string }
@@ -39,29 +40,29 @@ function ReturnModal({ target, onClose }: { target: ReturnTarget | null; onClose
   const { sale, line } = target
   return (
     <FormModal<ReturnValues>
-      title={`${sale.sale_no} · ${line.lot_no} — müşteri iadesi`}
+      title={t('{sale} · {lot} — müşteri iadesi', { sale: sale.sale_no, lot: line.lot_no })}
       open
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
-      okText="İadeyi kaydet"
+      okText={t('İadeyi kaydet')}
     >
       <Typography.Paragraph>
-        {sale.customer_name} · satılan {formatQty(line.qty, line.base_unit)}. Mal aynı lotla depoya döner.
+        {t('{customer} · satılan {qty}. Mal aynı lotla depoya döner.', { customer: sale.customer_name, qty: formatQty(line.qty, line.base_unit) })}
       </Typography.Paragraph>
       <Form.Item
         name="qty"
         label={`Miktar (${unitLabel(line.base_unit)})`}
-        rules={[decimalRule('Miktar', { maxFraction: 3, integer: line.base_unit === 'ADET' })]}
+        rules={[decimalRule(t('Miktar'), { maxFraction: 3, integer: line.base_unit === 'ADET' })]}
       >
         <Input inputMode="decimal" autoComplete="off" />
       </Form.Item>
-      <Form.Item name="warehouse_id" label="Giriş deposu" extra="Boş bırakılırsa ana depo">
+      <Form.Item name="warehouse_id" label={t('Giriş deposu')} extra={t('Boş bırakılırsa ana depo')}>
         <Select
           allowClear
           options={(warehouses.data ?? []).map((w) => ({ value: w.id, label: `${w.name} (${WAREHOUSE_KIND[w.kind]})` }))}
         />
       </Form.Item>
-      <Form.Item name="reason" label="Neden">
+      <Form.Item name="reason" label={t('Neden')}>
         <Input maxLength={255} />
       </Form.Item>
     </FormModal>
@@ -85,28 +86,28 @@ export default function SalesPage() {
   const cost = sum(data.map((s) => s.total_cost), 2)
 
   const columns: TableColumnsType<Sale> = [
-    { title: 'Belge', dataIndex: 'sale_no' },
-    { title: 'Zaman', dataIndex: 'sold_at', render: formatDateTime },
-    { title: 'Müşteri', dataIndex: 'customer_name' },
-    { title: 'Yer', dataIndex: 'channel', render: (c: Sale['channel']) => SALE_CHANNEL[c], responsive: ['md'] },
+    { title: t('Belge'), dataIndex: 'sale_no' },
+    { title: t('Zaman'), dataIndex: 'sold_at', render: formatDateTime },
+    { title: t('Müşteri'), dataIndex: 'customer_name' },
+    { title: t('Yer'), dataIndex: 'channel', render: (c: Sale['channel']) => SALE_CHANNEL[c], responsive: ['md'] },
     {
-      title: 'Ödeme',
+      title: t('Ödeme'),
       dataIndex: 'payment_method',
       render: (p: PaymentMethod | null) => (p ? PAYMENT_METHOD[p] : '—'),
       responsive: ['lg'],
     },
-    { title: 'Tutar', dataIndex: 'total_amount', align: 'right', render: formatMoney },
+    { title: t('Tutar'), dataIndex: 'total_amount', align: 'right', render: formatMoney },
     ...(manager
-      ? [{ title: 'Maliyet', dataIndex: 'total_cost', align: 'right' as const, render: formatMoney, responsive: ['xl' as const] }]
+      ? [{ title: t('Maliyet'), dataIndex: 'total_cost', align: 'right' as const, render: formatMoney, responsive: ['xl' as const] }]
       : []),
     {
       title: '',
       key: 'actions',
       render: (_, sale) => (
         <Space>
-          {sale.recall_violation && <Tag color="orange">Geri çağrılmış lot satıldı</Tag>}
+          {sale.recall_violation && <Tag color="orange">{t('Geri çağrılmış lot satıldı')}</Tag>}
           <Button size="small" icon={<PrinterOutlined />} onClick={() => navigate(`/yazdir/satis/${sale.id}`)}>
-            Fiş
+            {t('Fiş')}
           </Button>
         </Space>
       ),
@@ -115,39 +116,39 @@ export default function SalesPage() {
 
   return (
     <Page
-      title="Satışlar ve iadeler"
+      title={t('Satışlar ve iadeler')}
       description={
         canReturn
-          ? 'Mağaza ve araç satışları. İade almak için satırın başındaki + işaretine basın, ilgili üründe "İade al"ı seçin.'
-          : 'Mağaza ve araç satışları.'
+          ? t(t('Mağaza ve araç satışları. İade almak için satırın başındaki + işaretine basın, ilgili üründe "İade al" düğmesini seçin.'))
+          : t('Mağaza ve araç satışları.')
       }
       extra={
         can(user.role, 'store') && (
           <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => navigate('/magaza-satisi')}>
-            Yeni mağaza satışı
+            {t('Yeni mağaza satışı')}
           </Button>
         )
       }
     >
       <Space wrap style={{ marginBottom: 16 }}>
-        <Input type="date" value={day} max={todayIso()} onChange={(e) => setDay(e.target.value)} aria-label="Gün" style={{ width: 180 }} />
+        <Input type="date" value={day} max={todayIso()} onChange={(e) => setDay(e.target.value)} aria-label={t('Gün')} style={{ width: 180 }} />
         <Button onClick={() => setDay(todayIso())} disabled={day === todayIso()}>
-          Bugün
+          {t('Bugün')}
         </Button>
         <Button onClick={() => setDay('')} disabled={day === ''}>
-          Bütün satışlar
+          {t('Bütün satışlar')}
         </Button>
       </Space>
       <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
         <Col xs={12} lg={6}>
-          <Stat label="Satış belgesi" value={data.length} hint={day ? formatDate(day) : 'Bütün günler'} />
+          <Stat label={t('Satış belgesi')} value={data.length} hint={day ? formatDate(day) : t('Bütün günler')} />
         </Col>
         <Col xs={12} lg={6}>
-          <Stat label="Ciro" value={formatMoney(amount)} tone="success" />
+          <Stat label={t('Ciro')} value={formatMoney(amount)} tone="success" />
         </Col>
         {manager && (
           <Col xs={12} lg={6}>
-            <Stat label="Satılan malın maliyeti" value={formatMoney(cost)} tone="warning" />
+            <Stat label={t('Satılan malın maliyeti')} value={formatMoney(cost)} tone="warning" />
           </Col>
         )}
       </Row>
@@ -159,7 +160,7 @@ export default function SalesPage() {
         columns={columns}
         pagination={{ pageSize: 20, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: day ? `${formatDate(day)} günü satış yok.` : 'Henüz satış yok.' }}
+        locale={{ emptyText: day ? t('{day} günü satış yok.', { day: formatDate(day) }) : t('Henüz satış yok.') }}
         expandable={{
           expandedRowRender: (sale) => (
             <Table<SaleLine>
@@ -169,11 +170,11 @@ export default function SalesPage() {
               dataSource={sale.lines}
               scroll={{ x: 'max-content' }}
               columns={[
-                { title: 'Ürün', dataIndex: 'product_name' },
-                { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
-                { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string, l) => formatQty(v, l.base_unit) },
-                { title: 'Birim fiyat', dataIndex: 'unit_price', align: 'right', render: formatMoney },
-                { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
+                { title: t('Ürün'), dataIndex: 'product_name' },
+                { title: t('Lot'), dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
+                { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string, l) => formatQty(v, l.base_unit) },
+                { title: t('Birim fiyat'), dataIndex: 'unit_price', align: 'right', render: formatMoney },
+                { title: t('Tutar'), dataIndex: 'amount', align: 'right', render: formatMoney },
                 ...(canReturn
                   ? [
                       {
@@ -181,7 +182,7 @@ export default function SalesPage() {
                         key: 'return',
                         render: (_: unknown, line: SaleLine) => (
                           <Button size="small" icon={<RollbackOutlined />} onClick={() => setTarget({ sale, line })}>
-                            İade al
+                            {t('İade al')}
                           </Button>
                         ),
                       },
@@ -192,21 +193,21 @@ export default function SalesPage() {
           ),
         }}
       />
-      <div className="section-title">Müşteri iadeleri</div>
+      <div className="section-title">{t('Müşteri iadeleri')}</div>
       <Table<Return>
         rowKey="id"
         loading={returns.isPending}
         dataSource={returns.data}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'İade yok.' }}
+        locale={{ emptyText: t('İade yok.') }}
         columns={[
-          { title: 'İade no', dataIndex: 'return_no' },
-          { title: 'Zaman', dataIndex: 'created_at', render: formatDateTime },
-          { title: 'Müşteri', dataIndex: 'customer_name' },
-          { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
-          { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
-          { title: 'Neden', dataIndex: 'reason', render: (v: string | null) => v ?? '—', responsive: ['md'] },
+          { title: t('İade no'), dataIndex: 'return_no' },
+          { title: t('Zaman'), dataIndex: 'created_at', render: formatDateTime },
+          { title: t('Müşteri'), dataIndex: 'customer_name' },
+          { title: t('Lot'), dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
+          { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
+          { title: t('Neden'), dataIndex: 'reason', render: (v: string | null) => v ?? '—', responsive: ['md'] },
         ]}
       />
       <ReturnModal target={target} onClose={() => setTarget(null)} />

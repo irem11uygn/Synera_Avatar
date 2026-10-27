@@ -14,6 +14,7 @@ import { formatMoney, todayIso, unitLabel } from '../lib/format'
 import { options, PURCHASE_COST_KIND } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { decimalRule, fromApiDecimal, textOrNull, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type CostValues = { kind: PurchaseCostKind; amount: string; note?: string }
 type LineValues = {
@@ -84,7 +85,7 @@ export default function PurchaseNewPage() {
     try {
       const purchase = await api<Purchase>('/purchases', { method: 'POST', body: toInput(values) })
       await refreshBusinessData(queryClient)
-      message.success(`${purchase.doc_no} kaydedildi: ${purchase.lines.length} lot açıldı.`)
+      message.success(t('{doc} kaydedildi: {n} lot açıldı.', { doc: purchase.doc_no, n: purchase.lines.length }))
       navigate('/alislar')
     } catch (caught) {
       setError(errorMessage(caught))
@@ -94,7 +95,7 @@ export default function PurchaseNewPage() {
   }
 
   return (
-    <Page title="Yeni mal kabul" back={{ to: '/alislar', label: 'Mal kabul' }}>
+    <Page title={t('Yeni mal kabul')} back={{ to: '/alislar', label: t('Mal kabul') }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues>
         form={form}
@@ -104,10 +105,10 @@ export default function PurchaseNewPage() {
         initialValues={{ doc_date: todayIso(), lines: [{ extra_costs: [] }] }}
         scrollToFirstError
       >
-        <Card title="Belge" size="small" style={{ marginBottom: 16 }}>
+        <Card title={t('Belge')} size="small" style={{ marginBottom: 16 }}>
           <Row gutter={16}>
             <Col xs={24} md={8}>
-              <Form.Item label="Tedarikçi" name="supplier_id" rules={[{ required: true, message: 'Tedarikçi seçin.' }]}>
+              <Form.Item label={t('Tedarikçi')} name="supplier_id" rules={[{ required: true, message: t('Tedarikçi seçin.') }]}>
                 <Select
                   loading={suppliers.isPending}
                   showSearch={{ optionFilterProp: 'label' }}
@@ -117,20 +118,20 @@ export default function PurchaseNewPage() {
             </Col>
             <Col xs={24} sm={12} md={8}>
               <Form.Item
-                label="Fatura / irsaliye no"
+                label={t('Fatura / irsaliye no')}
                 name="doc_no"
-                rules={[{ required: true, whitespace: true, message: 'Belge numarası gerekli.' }]}
+                rules={[{ required: true, whitespace: true, message: t('Belge numarası gerekli.') }]}
               >
                 <Input maxLength={50} autoComplete="off" spellCheck={false} />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12} md={8}>
-              <Form.Item label="Belge tarihi" name="doc_date" rules={[{ required: true, message: 'Tarih gerekli.' }]}>
+              <Form.Item label={t('Belge tarihi')} name="doc_date" rules={[{ required: true, message: t('Tarih gerekli.') }]}>
                 <Input type="date" />
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item label="Not" name="note">
+              <Form.Item label={t('Not')} name="note">
                 <Input maxLength={255} autoComplete="off" />
               </Form.Item>
             </Col>
@@ -151,7 +152,7 @@ export default function PurchaseNewPage() {
                 />
               ))}
               <Button onClick={() => add({ extra_costs: [] })} style={{ marginBottom: 16 }}>
-                Satır ekle
+                {t('Satır ekle')}
               </Button>
             </>
           )}
@@ -159,9 +160,9 @@ export default function PurchaseNewPage() {
 
         <Flex gap="small">
           <Button type="primary" htmlType="submit" loading={saving}>
-            Alışı kaydet
+            {t('Alışı kaydet')}
           </Button>
-          <Button onClick={() => navigate('/alislar')}>Vazgeç</Button>
+          <Button onClick={() => navigate('/alislar')}>{t('Vazgeç')}</Button>
         </Flex>
       </Form>
     </Page>
@@ -198,19 +199,19 @@ function PurchaseLine({ form, name, index, products, onRemove }: LineProps) {
   return (
     <Card
       size="small"
-      title={`Satır ${index + 1}`}
+      title={t('Satır {n}', { n: index + 1 })}
       style={{ marginBottom: 16 }}
       extra={
         onRemove && (
           <Button size="small" danger onClick={onRemove}>
-            Satırı sil
+            {t('Satırı sil')}
           </Button>
         )
       }
     >
       <Row gutter={16}>
         <Col xs={24} md={8}>
-          <Form.Item label="Ürün" name={[name, 'product_id']} rules={[{ required: true, message: 'Ürün seçin.' }]}>
+          <Form.Item label={t('Ürün')} name={[name, 'product_id']} rules={[{ required: true, message: t('Ürün seçin.') }]}>
             <Select
               showSearch={{ optionFilterProp: 'label' }}
               onChange={chooseProduct}
@@ -220,60 +221,60 @@ function PurchaseLine({ form, name, index, products, onRemove }: LineProps) {
         </Col>
         <Col xs={24} sm={12} md={8}>
           <Form.Item
-            label="Lot no"
+            label={t('Lot no')}
             name={[name, 'lot_no']}
-            extra="Tedarikçinin lot / parti numarası."
-            rules={[{ required: true, whitespace: true, message: 'Lot numarası zorunlu.' }]}
+            extra={t('Tedarikçinin lot / parti numarası.')}
+            rules={[{ required: true, whitespace: true, message: t('Lot numarası zorunlu.') }]}
           >
             <Input maxLength={40} autoComplete="off" spellCheck={false} />
           </Form.Item>
         </Col>
         <Col xs={24} sm={12} md={8}>
-          <Form.Item label="Son kullanma tarihi" name={[name, 'expiry_date']}>
+          <Form.Item label={t('Son kullanma tarihi')} name={[name, 'expiry_date']}>
             <Input type="date" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8}>
-          <Form.Item label="Miktar" name={[name, 'qty']} rules={[decimalRule('Miktar', { maxFraction: 3 })]}>
+          <Form.Item label={t('Miktar')} name={[name, 'qty']} rules={[decimalRule(t('Miktar'), { maxFraction: 3 })]}>
             {/* Sonek her zaman var: sonradan eklenirse giriş kutusu yeniden kurulur ve odak kaybolur. */}
             <Input inputMode="decimal" autoComplete="off" suffix={<span>{product ? unitLabel(product.base_unit) : ''}</span>} />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8}>
           <Form.Item
-            label="Birim fiyat"
+            label={t('Birim fiyat')}
             name={[name, 'unit_price']}
-            rules={[decimalRule('Birim fiyat', { maxFraction: 4, allowZero: true })]}
+            rules={[decimalRule(t('Birim fiyat'), { maxFraction: 4, allowZero: true })]}
           >
             <Input inputMode="decimal" autoComplete="off" suffix="€" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8}>
           <Form.Item
-            label="Fatura tutarı"
+            label={t('Fatura tutarı')}
             name={[name, 'invoice_amount']}
-            extra="Boşsa miktar × fiyat alınır."
-            rules={[decimalRule('Fatura tutarı', { maxFraction: 2, required: false, allowZero: true })]}
+            extra={t('Boşsa miktar × fiyat alınır.')}
+            rules={[decimalRule(t('Fatura tutarı'), { maxFraction: 2, required: false, allowZero: true })]}
           >
             <Input inputMode="decimal" autoComplete="off" suffix="€" />
           </Form.Item>
         </Col>
         <Col span={24}>
           <Form.Item
-            label="Fark açıklaması"
+            label={t('Fark açıklaması')}
             name={[name, 'discrepancy_note']}
             dependencies={[['lines', name, 'invoice_amount'], ['lines', name, 'qty'], ['lines', name, 'unit_price']]}
             rules={[
               {
                 validator: async (_rule, value: string | undefined) => {
                   if (preview(form.getFieldValue(['lines', name]))?.mismatch && !value?.trim()) {
-                    throw new Error('Fatura tutarı miktar × fiyattan farklı; farkın nedenini yazın.')
+                    throw new Error(t('Fatura tutarı miktar × fiyattan farklı; farkın nedenini yazın.'))
                   }
                 },
               },
             ]}
           >
-            <Input maxLength={500} autoComplete="off" placeholder="ör. kesim ve nakliye dahil" />
+            <Input maxLength={500} autoComplete="off" placeholder={t('ör. kesim ve nakliye dahil')} />
           </Form.Item>
         </Col>
       </Row>
@@ -284,24 +285,24 @@ function PurchaseLine({ form, name, index, products, onRemove }: LineProps) {
             {costs.map((cost) => (
               <Row gutter={8} key={cost.key} align="top">
                 <Col xs={24} sm={6}>
-                  <Form.Item label="Ek maliyet" name={[cost.name, 'kind']} rules={[{ required: true, message: 'Tür seçin.' }]}>
+                  <Form.Item label={t('Ek maliyet')} name={[cost.name, 'kind']} rules={[{ required: true, message: t('Tür seçin.') }]}>
                     <Select options={options(PURCHASE_COST_KIND)} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={6}>
-                  <Form.Item label="Tutar" name={[cost.name, 'amount']} rules={[decimalRule('Tutar', { maxFraction: 2 })]}>
+                  <Form.Item label={t('Tutar')} name={[cost.name, 'amount']} rules={[decimalRule(t('Tutar'), { maxFraction: 2 })]}>
                     <Input inputMode="decimal" autoComplete="off" suffix="€" />
                   </Form.Item>
                 </Col>
                 <Col xs={20} sm={10}>
-                  <Form.Item label="Açıklama" name={[cost.name, 'note']}>
+                  <Form.Item label={t('Açıklama')} name={[cost.name, 'note']}>
                     <Input maxLength={255} autoComplete="off" />
                   </Form.Item>
                 </Col>
                 <Col xs={4} sm={2}>
                   <Form.Item label=" ">
-                    <Button aria-label="Ek maliyeti sil" onClick={() => remove(cost.name)}>
-                      Sil
+                    <Button aria-label={t('Ek maliyeti sil')} onClick={() => remove(cost.name)}>
+                      {t('Sil')}
                     </Button>
                   </Form.Item>
                 </Col>
@@ -318,8 +319,8 @@ function PurchaseLine({ form, name, index, products, onRemove }: LineProps) {
         {shown && (
           <Space size="large" wrap>
             <Typography.Text>Miktar × fiyat: {formatMoney(shown.computed)}</Typography.Text>
-            {shown.mismatch && <Typography.Text type="warning">Fatura farklı: {formatMoney(shown.invoice)}</Typography.Text>}
-            <Typography.Text strong>Lot değeri (ön izleme): {formatMoney(shown.lotValue)}</Typography.Text>
+            {shown.mismatch && <Typography.Text type="warning">{t('Fatura farklı: {v}', { v: formatMoney(shown.invoice) })}</Typography.Text>}
+            <Typography.Text strong>{t('Lot değeri (ön izleme): {v}', { v: formatMoney(shown.lotValue) })}</Typography.Text>
           </Space>
         )}
       </div>

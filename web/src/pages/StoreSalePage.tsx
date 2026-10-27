@@ -18,6 +18,7 @@ import { formatDate, formatMoney, formatQty, todayIso } from '../lib/format'
 import { options, PAYMENT_METHOD } from '../lib/labels'
 import { can } from '../lib/roles'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 type Line = { key: number; product: Product; qtyText: string; priceText: string }
 
@@ -36,11 +37,11 @@ function check(line: Line, stock: StockRow[], today: string): Checked {
   const price = parseUserDecimal(line.priceText, 2)
   let problem: string | null = null
   if (!qty || compare(qty, '0') <= 0)
-    problem = line.product.base_unit === 'ADET' ? 'Adet tam sayı olmalı.' : 'Miktarı yazın (ör. 2,5).'
-  else if (!price) problem = 'Birim fiyatı yazın.'
+    problem = line.product.base_unit === 'ADET' ? t('Adet tam sayı olmalı.') : t('Miktarı yazın (ör. 2,5).')
+  else if (!price) problem = t('Birim fiyatı yazın.')
   const { picks, short } = qty ? allocate(lotsOf(stock, line.product.id), qty, today) : { picks: [], short: '0' }
   if (!problem && compare(short, '0') > 0)
-    problem = `Satılabilir stok yetmiyor: ${formatQty(short, line.product.base_unit)} eksik.`
+    problem = t('Satılabilir stok yetmiyor: {qty} eksik.', { qty: formatQty(short, line.product.base_unit) })
   const amount = qty && price ? multiply(qty, price, 2) : null
   return { line, qty, price, picks, short, amount, problem }
 }
@@ -83,11 +84,11 @@ export default function StoreSalePage() {
   const ready = chosenCustomer !== undefined && lines.length > 0 && payment && checked.every((c) => !c.problem)
   const missing =
     chosenCustomer === undefined
-      ? 'Müşteriyi seçin.'
+      ? t('Müşteriyi seçin.')
       : lines.length === 0
-        ? 'Ürün ekleyin.'
+        ? t('Ürün ekleyin.')
         : !payment
-          ? 'Ödeme türünü seçin.'
+          ? t('Ödeme türünü seçin.')
           : null
 
   const save = useMutation({
@@ -131,25 +132,25 @@ export default function StoreSalePage() {
 
   if (!can(user.role, 'store')) {
     return (
-      <Page title="Mağaza satışı">
-        <Alert type="info" showIcon title="Mağaza satışını mağaza/kasa çalışanı ya da yönetici yapar." />
+      <Page title={t('Mağaza satışı')}>
+        <Alert type="info" showIcon title={t('Mağaza satışını mağaza/kasa çalışanı ya da yönetici yapar.')} />
       </Page>
     )
   }
 
   if (saved) {
     return (
-      <Page title="Mağaza satışı">
+      <Page title={t('Mağaza satışı')}>
         <Result
           status="success"
-          title={`Satış kaydedildi: ${saved.sale_no}`}
+          title={t('Satış kaydedildi: {no}', { no: saved.sale_no })}
           subTitle={`${saved.customer_name} · ${formatMoney(saved.total_amount)} · ${PAYMENT_METHOD[saved.payment_method ?? 'NAKIT']}`}
           extra={[
             <Button key="print" type="primary" size="large" icon={<PrinterOutlined />} onClick={() => navigate(`/yazdir/satis/${saved.id}`)}>
-              Fiş / irsaliye yazdır
+              {t('Fiş / irsaliye yazdır')}
             </Button>,
             <Button key="new" size="large" onClick={reset}>
-              Yeni satış
+              {t('Yeni satış')}
             </Button>,
           ]}
         />
@@ -161,14 +162,14 @@ export default function StoreSalePage() {
 
   return (
     <Page
-      title="Mağaza satışı"
-      description="Ürünü ekleyin, miktarı yazın. Lot otomatik seçilir: son kullanma tarihi en yakın olan önce satılır."
+      title={t('Mağaza satışı')}
+      description={t('Ürünü ekleyin, miktarı yazın. Lot otomatik seçilir: son kullanma tarihi en yakın olan önce satılır.')}
     >
       {problem && <QueryError error={problem} />}
 
       <div className="step-box">
         <div className="step-box-title">
-          <span className="step-number">1</span> Müşteri
+          <span className="step-number">1</span> {t('Müşteri')}
         </div>
         <Select
           showSearch={{ optionFilterProp: 'label' }}
@@ -177,37 +178,37 @@ export default function StoreSalePage() {
           value={chosenCustomer}
           onChange={setCustomerId}
           loading={customers.isPending}
-          aria-label="Müşteri"
-          placeholder="Müşteri seçin"
+          aria-label={t('Müşteri')}
+          placeholder={t('Müşteri seçin')}
           options={(customers.data ?? []).map((c) => ({ value: c.id, label: c.name }))}
         />
         <div className="muted" style={{ marginTop: 6 }}>
-          Adını bilmediğiniz peşin müşteri için "Perakende müşteri" seçili kalabilir.
+          {t('Adını bilmediğiniz peşin müşteri için "Perakende müşteri" seçili kalabilir.')}
         </div>
       </div>
 
       <div className="step-box">
         <div className="step-box-title">
-          <span className="step-number">2</span> Ürünler
+          <span className="step-number">2</span> {t('Ürünler')}
         </div>
         <Select
           showSearch={{ optionFilterProp: 'label' }}
           size="large"
-          placeholder="Ürün ekle — adını yazmaya başlayın"
+          placeholder={t('Ürün ekle — adını yazmaya başlayın')}
           style={{ width: '100%', maxWidth: 480, marginBottom: 16 }}
           value={null}
           onChange={(value: number) => addProduct(value)}
           loading={stock.isPending || products.isPending}
-          aria-label="Ürün ekle"
+          aria-label={t('Ürün ekle')}
           suffixIcon={<PlusOutlined />}
           options={available.map((p) => ({
             value: p.id,
             label: `${p.name}${p.sale_price ? ` — ${formatMoney(p.sale_price)} / ${p.base_unit === 'ADET' ? 'adet' : 'kg'}` : ''}`,
           }))}
-          notFoundContent={stock.isPending ? 'Yükleniyor…' : 'Mağazada satılabilir stoku olan ürün yok.'}
+          notFoundContent={stock.isPending ? t('Yükleniyor…') : t('Mağazada satılabilir stoku olan ürün yok.')}
         />
         {lines.length === 0 ? (
-          <Empty description="Henüz ürün eklenmedi." image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <Empty description={t('Henüz ürün eklenmedi.')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
           <Table<Checked>
             rowKey={(c) => c.line.key}
@@ -216,7 +217,7 @@ export default function StoreSalePage() {
             scroll={{ x: 'max-content' }}
             columns={[
               {
-                title: 'Ürün',
+                title: t('Ürün'),
                 render: (_, c) => (
                   <>
                     <Typography.Text strong>{c.line.product.name}</Typography.Text>
@@ -231,13 +232,13 @@ export default function StoreSalePage() {
                           {c.problem}
                         </Tag>
                       ) : (
-                        <div className="muted">Miktarı yazın.</div>
+                        <div className="muted">{t('Miktarı yazın.')}</div>
                       ))}
                   </>
                 ),
               },
               {
-                title: 'Miktar',
+                title: t('Miktar'),
                 width: 150,
                 render: (_, c) => (
                   <Input
@@ -245,12 +246,12 @@ export default function StoreSalePage() {
                     inputMode="decimal"
                     suffix={c.line.product.base_unit === 'ADET' ? 'adet' : 'kg'}
                     onChange={(e) => update(c.line.key, { qtyText: e.target.value })}
-                    aria-label={`${c.line.product.name} miktarı`}
+                    aria-label={t('{product} miktarı', { product: c.line.product.name })}
                   />
                 ),
               },
               {
-                title: 'Birim fiyat',
+                title: t('Birim fiyat'),
                 width: 150,
                 render: (_, c) => (
                   <Input
@@ -258,11 +259,11 @@ export default function StoreSalePage() {
                     inputMode="decimal"
                     suffix="€"
                     onChange={(e) => update(c.line.key, { priceText: e.target.value })}
-                    aria-label={`${c.line.product.name} birim fiyatı`}
+                    aria-label={t('{product} birim fiyatı', { product: c.line.product.name })}
                   />
                 ),
               },
-              { title: 'Tutar', align: 'right', render: (_, c) => <span className="num">{formatMoney(c.amount)}</span> },
+              { title: t('Tutar'), align: 'right', render: (_, c) => <span className="num">{formatMoney(c.amount)}</span> },
               {
                 title: '',
                 width: 56,
@@ -271,7 +272,7 @@ export default function StoreSalePage() {
                     type="text"
                     danger
                     icon={<DeleteOutlined />}
-                    aria-label={`${c.line.product.name} satırını sil`}
+                    aria-label={t('{product} satırını sil', { product: c.line.product.name })}
                     onClick={() => setLines((current) => current.filter((l) => l.key !== c.line.key))}
                   />
                 ),
@@ -283,7 +284,7 @@ export default function StoreSalePage() {
 
       <div className="step-box">
         <div className="step-box-title">
-          <span className="step-number">3</span> Ödeme
+          <span className="step-number">3</span> {t('Ödeme')}
         </div>
         <Radio.Group
           size="large"
@@ -292,11 +293,11 @@ export default function StoreSalePage() {
           value={payment}
           onChange={(e) => setPayment(e.target.value)}
           options={options(PAYMENT_METHOD)}
-          aria-label="Ödeme türü"
+          aria-label={t('Ödeme türü')}
         />
         {payment === 'VERESIYE' && (
           <div className="muted" style={{ marginTop: 8 }}>
-            Veresiye satış müşterinin hesabına yazılır; gün sonunda ayrı görünür.
+            {t('Veresiye satış müşterinin hesabına yazılır; gün sonunda ayrı görünür.')}
           </div>
         )}
       </div>
@@ -304,13 +305,13 @@ export default function StoreSalePage() {
       {save.isError && <Alert type="error" showIcon role="alert" title={errorMessage(save.error)} style={{ marginBottom: 16 }} />}
       <div className="total-bar">
         <div>
-          <div className="muted">Toplam</div>
+          <div className="muted">{t('Toplam')}</div>
           <div className="total-bar-amount">{formatMoney(total)}</div>
         </div>
         <Space wrap>
           {missing && <Typography.Text type="secondary">{missing}</Typography.Text>}
           <Button type="primary" size="large" disabled={!ready} loading={save.isPending} onClick={() => save.mutate()}>
-            Satışı kaydet
+            {t('Satışı kaydet')}
           </Button>
         </Space>
       </div>

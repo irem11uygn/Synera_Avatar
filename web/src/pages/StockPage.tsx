@@ -10,6 +10,7 @@ import { QueryError } from '../components/QueryError'
 import { LotStatusTag } from '../components/StatusTags'
 import { sum } from '../lib/decimal'
 import { formatDate, formatQty, formatUnitCost } from '../lib/format'
+import { t } from '../lib/i18n'
 
 type View = 'lot' | 'product'
 
@@ -23,20 +24,20 @@ type ProductTotal = {
 }
 
 const LOT_COLUMNS: TableColumnsType<StockRow> = [
-  { title: 'Depo', dataIndex: 'warehouse_name' },
-  { title: 'Ürün', dataIndex: 'product_name' },
-  { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-  { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (qty: string, row) => formatQty(qty, row.base_unit) },
+  { title: t('Depo'), dataIndex: 'warehouse_name' },
+  { title: t('Ürün'), dataIndex: 'product_name' },
+  { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+  { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (qty: string, row) => formatQty(qty, row.base_unit) },
   { title: 'SKT', dataIndex: 'expiry_date', render: formatDate },
-  { title: 'Durum', dataIndex: 'lot_status', render: (status: StockRow['lot_status']) => <LotStatusTag status={status} /> },
-  { title: 'Birim maliyet', dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
+  { title: t('Durum'), dataIndex: 'lot_status', render: (status: StockRow['lot_status']) => <LotStatusTag status={status} /> },
+  { title: t('Birim maliyet'), dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
 ]
 
 const PRODUCT_COLUMNS: TableColumnsType<ProductTotal> = [
-  { title: 'Depo', dataIndex: 'warehouse_name' },
-  { title: 'Ürün', dataIndex: 'product_name' },
-  { title: 'Lot sayısı', dataIndex: 'lots', align: 'right' },
-  { title: 'Toplam miktar', dataIndex: 'qty', align: 'right', render: (qty: string, row) => formatQty(qty, row.base_unit) },
+  { title: t('Depo'), dataIndex: 'warehouse_name' },
+  { title: t('Ürün'), dataIndex: 'product_name' },
+  { title: t('Lot sayısı'), dataIndex: 'lots', align: 'right' },
+  { title: t('Toplam miktar'), dataIndex: 'qty', align: 'right', render: (qty: string, row) => formatQty(qty, row.base_unit) },
 ]
 
 function totalsByProduct(rows: StockRow[]): ProductTotal[] {
@@ -65,20 +66,20 @@ export default function StockPage() {
 
   return (
     <Page
-      title="Stok durumu"
-      description="Hangi depoda, hangi lottan ne kadar mal var. Kırmızı: süresi geçmiş ya da satışa kapalı."
+      title={t('Stok durumu')}
+      description={t('Hangi depoda, hangi lottan ne kadar mal var. Kırmızı: süresi geçmiş ya da satışa kapalı.')}
     >
       {stock.isError && <QueryError error={stock.error} onRetry={() => stock.refetch()} />}
       <Space wrap style={{ marginBottom: 16 }}>
         <Segmented<number | 'all'>
           value={warehouseId}
           onChange={setWarehouseId}
-          options={[{ value: 'all', label: 'Bütün depolar' }, ...(warehouses.data ?? []).map((w) => ({ value: w.id, label: w.name }))]}
+          options={[{ value: 'all', label: t('Bütün depolar') }, ...(warehouses.data ?? []).map((w) => ({ value: w.id, label: w.name }))]}
         />
         <Select
           allowClear
-          placeholder="Ürün süz"
-          aria-label="Ürün süz"
+          placeholder={t('Ürün süz')}
+          aria-label={t('Ürün süz')}
           style={{ minWidth: 220 }}
           value={productId}
           onChange={setProductId}
@@ -89,8 +90,8 @@ export default function StockPage() {
           value={view}
           onChange={setView}
           options={[
-            { value: 'lot', label: 'Lot bazında' },
-            { value: 'product', label: 'Ürün bazında' },
+            { value: 'lot', label: t('Lot bazında') },
+            { value: 'product', label: t('Ürün bazında') },
           ]}
         />
       </Space>

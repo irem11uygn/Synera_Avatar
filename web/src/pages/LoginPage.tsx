@@ -1,6 +1,8 @@
 import { Alert, Button, Form, Input, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 import { errorMessage } from '../api/client'
+import { LanguageSwitch } from '../components/LanguageSwitch'
+import { t } from '../lib/i18n'
 
 type Values = { username: string; password: string }
 
@@ -11,7 +13,7 @@ export default function LoginPage({ onLogin, notice }: Props) {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    document.title = 'Giriş — Synera'
+    document.title = t('Giriş — Synera')
   }, [])
 
   async function finish({ username, password }: Values) {
@@ -34,21 +36,24 @@ export default function LoginPage({ onLogin, notice }: Props) {
             S
           </span>
           <span className="shell-brand-name">Synera</span>
+          <span style={{ marginLeft: 'auto' }}>
+            <LanguageSwitch />
+          </span>
         </div>
         <Typography.Title level={1} style={{ fontSize: 26, margin: '24px 0 4px' }}>
-          Giriş yap
+          {t('Giriş yap')}
         </Typography.Title>
         <Typography.Paragraph type="secondary" style={{ marginBottom: 24 }}>
-          Üretim, stok, satış ve lot izleme sistemi
+          {t('Üretim, stok, satış ve lot izleme sistemi')}
         </Typography.Paragraph>
         {shown && (
           <Alert type={error ? 'error' : 'info'} showIcon role="alert" title={shown} style={{ marginBottom: 16 }} />
         )}
         <Form<Values> layout="vertical" onFinish={finish} requiredMark={false} size="large">
           <Form.Item
-            label="Kullanıcı adı"
+            label={t('Kullanıcı adı')}
             name="username"
-            rules={[{ required: true, whitespace: true, message: 'Kullanıcı adınızı yazın.' }]}
+            rules={[{ required: true, whitespace: true, message: t('Kullanıcı adınızı yazın.') }]}
           >
             <Input
               id="username"
@@ -61,20 +66,19 @@ export default function LoginPage({ onLogin, notice }: Props) {
             />
           </Form.Item>
           <Form.Item
-            label="Şifre"
+            label={t('Şifre')}
             name="password"
             htmlFor="current-password"
-            rules={[{ required: true, message: 'Şifrenizi yazın.' }]}
+            rules={[{ required: true, message: t('Şifrenizi yazın.') }]}
           >
             <Input.Password id="current-password" required autoComplete="current-password" enterKeyHint="done" />
           </Form.Item>
           <Button type="primary" htmlType="submit" block loading={busy}>
-            Giriş yap
+            {t('Giriş yap')}
           </Button>
         </Form>
         <Typography.Paragraph type="secondary" style={{ marginTop: 20, marginBottom: 0, fontSize: 13 }}>
-          Şifrenizi unuttuysanız yöneticinize başvurun; geçici şifre verir. Araçtaki satış elemanları telefon
-          uygulamasını kullanır.
+          {t('Şifrenizi unuttuysanız yöneticinize başvurun; geçici şifre verir. Araçtaki satış elemanları telefon uygulamasını kullanır.')}
         </Typography.Paragraph>
       </div>
     </div>

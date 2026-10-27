@@ -21,110 +21,111 @@ import type {
   TransferReason,
   WarehouseKind,
 } from '../api/types'
+import { t } from './i18n'
 
 export const PRODUCT_KIND: Record<ProductKind, string> = {
-  HAMMADDE: 'Hammadde',
-  MAMUL: 'Mamul',
-  PARCA: 'Parça',
-  YAN_URUN: 'Yan ürün',
+  HAMMADDE: t('Hammadde'),
+  MAMUL: t('Mamul'),
+  PARCA: t('Parça'),
+  YAN_URUN: t('Yan ürün'),
 }
 
 export const WAREHOUSE_KIND: Record<WarehouseKind, string> = {
-  ANA: 'Ana depo',
-  DIS_URETICI: 'Fasoncu deposu',
-  ARAC: 'Satış aracı',
+  ANA: t('Ana depo'),
+  DIS_URETICI: t('Fasoncu deposu'),
+  ARAC: t('Satış aracı'),
 }
 
-export const LOT_STATUS: Record<LotStatus, string> = { AKTIF: 'Satışa açık', BLOKE: 'Satışa kapalı' }
+export const LOT_STATUS: Record<LotStatus, string> = { AKTIF: t('Satışa açık'), BLOKE: t('Satışa kapalı') }
 
 export const LOT_ORIGIN: Record<LotOrigin, string> = {
-  ALIS: 'Alış',
-  URETIM: 'Fason üretim',
-  PARCALAMA: 'Parçalama',
-  YENIDEN_ISLEME: 'Yeniden işleme',
+  ALIS: t('Alış'),
+  URETIM: t('Fason üretim'),
+  PARCALAMA: t('Parçalama'),
+  YENIDEN_ISLEME: t('Yeniden işleme'),
 }
 
 export const LINK_PROCESS: Record<LinkProcess, string> = {
-  URETIM: 'Fason üretim',
-  PARCALAMA: 'Parçalama',
-  YENIDEN_ISLEME: 'Yeniden işleme',
+  URETIM: t('Fason üretim'),
+  PARCALAMA: t('Parçalama'),
+  YENIDEN_ISLEME: t('Yeniden işleme'),
 }
 
 export const MOVEMENT_TYPE: Record<MovementType, string> = {
-  ALIS_GIRIS: 'Mal kabul',
-  TRANSFER_CIKIS: 'Depodan çıkış (aktarma)',
-  TRANSFER_GIRIS: 'Depoya giriş (aktarma)',
-  URETIM_TUKETIM: 'Üretimde tüketim',
-  URETIM_GIRIS: 'Üretimden giriş',
-  PARCALAMA_TUKETIM: 'Parçalamada tüketim',
-  PARCALAMA_GIRIS: 'Parçalamadan giriş',
-  SATIS: 'Satış',
-  IADE_GIRIS: 'Müşteri iadesi',
-  FIRE: 'Fire / imha',
-  TERS_KAYIT: 'Düzeltme (geri alma)',
+  ALIS_GIRIS: t('Mal kabul'),
+  TRANSFER_CIKIS: t('Depodan çıkış (aktarma)'),
+  TRANSFER_GIRIS: t('Depoya giriş (aktarma)'),
+  URETIM_TUKETIM: t('Üretimde tüketim'),
+  URETIM_GIRIS: t('Üretimden giriş'),
+  PARCALAMA_TUKETIM: t('Parçalamada tüketim'),
+  PARCALAMA_GIRIS: t('Parçalamadan giriş'),
+  SATIS: t('Satış'),
+  IADE_GIRIS: t('Müşteri iadesi'),
+  FIRE: t('Fire / imha'),
+  TERS_KAYIT: t('Düzeltme (geri alma)'),
 }
 
 export const ORDER_STATUS: Record<OrderStatus, string> = {
-  TASLAK: 'Taslak',
-  SEVK_EDILDI: 'Sevk edildi',
-  TAMAMLANDI: 'Tamamlandı',
-  IPTAL: 'İptal',
+  TASLAK: t('Taslak'),
+  SEVK_EDILDI: t('Sevk edildi'),
+  TAMAMLANDI: t('Tamamlandı'),
+  IPTAL: t('İptal'),
 }
 
 export const TRANSFER_REASON: Record<TransferReason, string> = {
-  ARAC_YUKLEME: 'Araca yükleme',
-  DIS_URETIM_SEVK: 'Fasoncuya sevk',
-  DIS_URETIM_IADE: 'Fasoncudan iade',
-  DIGER: 'Depolar arası',
+  ARAC_YUKLEME: t('Araca yükleme'),
+  DIS_URETIM_SEVK: t('Fasoncuya sevk'),
+  DIS_URETIM_IADE: t('Fasoncudan iade'),
+  DIGER: t('Depolar arası'),
 }
 
 export const PURCHASE_COST_KIND: Record<PurchaseCostKind, string> = {
-  NAKLIYE: 'Nakliye',
-  KESIM: 'Kesim',
-  VETERINER: 'Veteriner',
-  DIGER: 'Diğer',
+  NAKLIYE: t('Nakliye'),
+  KESIM: t('Kesim'),
+  VETERINER: t('Veteriner'),
+  DIGER: t('Diğer'),
 }
 
 export const ALLOCATION_METHOD: Record<AllocationMethod, string> = {
-  MIKTAR: 'Kiloya göre',
-  DEGER: 'Piyasa değerine göre',
+  MIKTAR: t('Kiloya göre'),
+  DEGER: t('Piyasa değerine göre'),
 }
 
-export const CUTTING_STATUS: Record<CuttingStatus, string> = { TASLAK: 'Taslak', ONAYLANDI: 'Onaylandı' }
+export const CUTTING_STATUS: Record<CuttingStatus, string> = { TASLAK: t('Taslak'), ONAYLANDI: t('Onaylandı') }
 
 export const RECIPE_LINE_TYPE: Record<RecipeLineType, string> = {
-  PARCA: 'Parça',
-  YAN_URUN: 'Yan ürün',
-  FIRE: 'Fire',
+  PARCA: t('Parça'),
+  YAN_URUN: t('Yan ürün'),
+  FIRE: t('Fire'),
 }
 
-export const SPECIES: Record<Species, string> = { KUZU: 'Kuzu', KOYUN: 'Koyun', KECI: 'Keçi' }
+export const SPECIES: Record<Species, string> = { KUZU: t('Kuzu'), KOYUN: t('Koyun'), KECI: t('Keçi') }
 
 export const ONWARD_STATUS: Record<OnwardStatus, string> = {
-  KAYITLI: 'Müşterinin dağıttığı yerler kayıtlı',
-  KISMEN: 'Bir kısmının nereye gittiği biliniyor',
-  BILINMIYOR: 'Müşteriden sonrası bilinmiyor',
+  KAYITLI: t('Müşterinin dağıttığı yerler kayıtlı'),
+  KISMEN: t('Bir kısmının nereye gittiği biliniyor'),
+  BILINMIYOR: t('Müşteriden sonrası bilinmiyor'),
 }
 
-export const RECALL_STATUS: Record<RecallStatus, string> = { ACIK: 'Açık', KAPANDI: 'Kapandı' }
+export const RECALL_STATUS: Record<RecallStatus, string> = { ACIK: t('Açık'), KAPANDI: t('Kapandı') }
 
 export const RECALL_RESOLUTION: Record<RecallResolution, string> = {
-  IMHA: 'İmha et (elimizdeki mal düşülür, lotlar satışa kapalı kalır)',
-  SERBEST: 'Sorun yok, satışa aç (lotlar yeniden satılabilir)',
+  IMHA: t('İmha et (elimizdeki mal düşülür, lotlar satışa kapalı kalır)'),
+  SERBEST: t('Sorun yok, satışa aç (lotlar yeniden satılabilir)'),
 }
 
-export const SALE_CHANNEL: Record<SaleChannel, string> = { ANDROID: 'Araç (telefon)', WEB: 'Mağaza' }
+export const SALE_CHANNEL: Record<SaleChannel, string> = { ANDROID: t('Araç (telefon)'), WEB: t('Mağaza') }
 
 export const PAYMENT_METHOD: Record<PaymentMethod, string> = {
-  NAKIT: 'Nakit',
-  KART: 'Kredi kartı',
-  HAVALE: 'Havale / EFT',
-  VERESIYE: 'Veresiye (açık hesap)',
+  NAKIT: t('Nakit'),
+  KART: t('Kredi kartı'),
+  HAVALE: t('Havale / EFT'),
+  VERESIYE: t('Veresiye (açık hesap)'),
 }
 
 /** Gün sonu toplamlarındaki ödeme anahtarı; eski uygulama sürümünden gelen satışta ödeme türü yoktur. */
 export function paymentLabel(key: string): string {
-  return key in PAYMENT_METHOD ? PAYMENT_METHOD[key as PaymentMethod] : 'Belirtilmedi (eski uygulama)'
+  return key in PAYMENT_METHOD ? PAYMENT_METHOD[key as PaymentMethod] : t('Belirtilmedi (eski uygulama)')
 }
 
 /** Select bileşeni için { value, label } listesi. */

@@ -34,6 +34,7 @@ import { LINK_PROCESS, LOT_ORIGIN, MOVEMENT_TYPE } from '../lib/labels'
 import { tracePath } from '../lib/paths'
 import { navigate } from '../lib/router'
 import { decimalRule, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type LinkRow = LotDetail['parents'][number]
 
@@ -57,32 +58,32 @@ function movementColumns(
   onReverse: (movement: Movement) => void,
 ): TableColumnsType<Movement> {
   return [
-    { title: 'Zaman', dataIndex: 'posted_at', render: formatDateTime },
+    { title: t('Zaman'), dataIndex: 'posted_at', render: formatDateTime },
     {
-      title: 'Hareket',
+      title: t('Hareket'),
       dataIndex: 'type',
       render: (type: MovementType, row) => (
         <>
           {MOVEMENT_TYPE[type]}
-          {row.reversal_of_id && <Tag style={{ marginInlineStart: 8 }}>#{row.reversal_of_id} kaydının tersi</Tag>}
+          {row.reversal_of_id && <Tag style={{ marginInlineStart: 8 }}>{t('#{id} kaydının tersi', { id: row.reversal_of_id })}</Tag>}
         </>
       ),
     },
-    { title: 'Depo', dataIndex: 'warehouse_code' },
-    { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (qty: string) => formatQty(qty, unit) },
-    { title: 'Değer', dataIndex: 'value', align: 'right', render: formatMoney },
-    { title: 'Belge', key: 'doc', render: (_, row) => documentCell(row) },
-    { title: 'Kullanıcı', dataIndex: 'user_name', render: (v: string | null) => v ?? 'Örnek kayıt' },
-    { title: 'Not', dataIndex: 'note', render: (v: string | null) => v ?? '—' },
+    { title: t('Depo'), dataIndex: 'warehouse_code' },
+    { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (qty: string) => formatQty(qty, unit) },
+    { title: t('Değer'), dataIndex: 'value', align: 'right', render: formatMoney },
+    { title: t('Belge'), key: 'doc', render: (_, row) => documentCell(row) },
+    { title: t('Kullanıcı'), dataIndex: 'user_name', render: (v: string | null) => v ?? t('Örnek kayıt') },
+    { title: t('Not'), dataIndex: 'note', render: (v: string | null) => v ?? '—' },
     {
-      title: 'Düzeltme',
+      title: t('Düzeltme'),
       key: 'reverse',
       render: (_, row) =>
         reversed.has(row.id) ? (
-          <Tag>Geri alındı</Tag>
+          <Tag>{t('Geri alındı')}</Tag>
         ) : REVERSIBLE.has(row.type) && !row.reversal_of_id ? (
           <Button size="small" onClick={() => onReverse(row)}>
-            Geri al
+            {t('Geri al')}
           </Button>
         ) : null,
     },
@@ -109,9 +110,9 @@ function WasteModal({ lot, open, onClose }: { lot: LotDetail; open: boolean; onC
       open={open}
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
-      okText="Fireyi kaydet"
+      okText={t('Fireyi kaydet')}
     >
-      <Form.Item name="warehouse_id" label="Depo" rules={[{ required: true, message: 'Depoyu seçin.' }]}>
+      <Form.Item name="warehouse_id" label={t('Depo')} rules={[{ required: true, message: t('Depoyu seçin.') }]}>
         <Select
           options={(warehouses.data ?? [])
             .filter((w) => codes.has(w.code))
@@ -123,15 +124,17 @@ function WasteModal({ lot, open, onClose }: { lot: LotDetail; open: boolean; onC
       </Form.Item>
       <Form.Item
         name="qty"
-        label="Miktar"
-        rules={[decimalRule('Miktar', { maxFraction: 3, integer: lot.base_unit === 'ADET' })]}
+        label={t('Miktar')}
+        rules={[decimalRule(t('Miktar'), { maxFraction: 3, integer: lot.base_unit === 'ADET' })]}
       >
         <Input inputMode="decimal" autoComplete="off" />
       </Form.Item>
-      <Form.Item name="reason" label="Gerekçe" rules={[{ required: true, message: 'Gerekçeyi yazın.' }]}>
-        <Input maxLength={255} placeholder="Soğuk zincir kırıldı" />
+      <Form.Item name="reason" label={t('Gerekçe')} rules={[{ required: true, message: t('Gerekçeyi yazın.') }]}>
+        <Input maxLength={255} placeholder={t('Soğuk zincir kırıldı')} />
       </Form.Item>
-      <Typography.Text type="secondary">Lot değeri ortalama birim maliyetle düşer; satışa kapalı lotta da yapılabilir.</Typography.Text>
+      <Typography.Text type="secondary">
+        {t('Lot değeri ortalama birim maliyetle düşer; satışa kapalı lotta da yapılabilir.')}
+      </Typography.Text>
     </FormModal>
   )
 }
@@ -150,24 +153,24 @@ function ReverseModal({ movement, lotNo, onClose }: { movement: Movement | null;
       open
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
-      okText="Ters kaydı yaz"
+      okText={t('Geri al')}
     >
       <Typography.Paragraph>
-        Defterde hiçbir hareket silinmez ya da değiştirilmez. Bu hareketin tam tersi yeni bir hareket olarak yazılır
-        {movement.type.startsWith('TRANSFER') ? ' (transferin iki hareketi birlikte)' : ''}.
+        {t('Defterde hiçbir hareket silinmez ya da değiştirilmez. Bu hareketin tam tersi yeni bir hareket olarak yazılır')}
+        {movement.type.startsWith('TRANSFER') ? t(' (transferin iki hareketi birlikte)') : ''}.
       </Typography.Paragraph>
-      <Form.Item name="reason" label="Gerekçe" rules={[{ required: true, message: 'Gerekçeyi yazın.' }]}>
-        <Input maxLength={255} placeholder="Yanlış lot seçilmiş" />
+      <Form.Item name="reason" label={t('Gerekçe')} rules={[{ required: true, message: t('Gerekçeyi yazın.') }]}>
+        <Input maxLength={255} placeholder={t('Yanlış lot seçilmiş')} />
       </Form.Item>
     </FormModal>
   )
 }
 
 const LINK_COLUMNS: TableColumnsType<LinkRow> = [
-  { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-  { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (qty: string) => formatQty(qty) },
+  { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+  { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (qty: string) => formatQty(qty) },
   {
-    title: 'Süreç',
+    title: t('Süreç'),
     dataIndex: 'process',
     render: (process: LinkRow['process'], row) => {
       const page = process === 'URETIM' ? '/uretim' : process === 'PARCALAMA' ? '/parcalama' : null
@@ -210,11 +213,11 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
   return (
     <Page
       title={`Lot ${data.lot_no}`}
-      back={{ to: '/lotlar', label: 'Lotlar' }}
+      back={{ to: '/lotlar', label: t('Lotlar') }}
       extra={
         <>
-          <Button onClick={() => navigate(tracePath(data.lot_no))}>İleri izle</Button>
-          <Button onClick={() => navigate(tracePath(data.lot_no, 'backward'))}>Geri izle</Button>
+          <Button onClick={() => navigate(tracePath(data.lot_no))}>{t('İleri izle')}</Button>
+          <Button onClick={() => navigate(tracePath(data.lot_no, 'backward'))}>{t('Geri izle')}</Button>
           {data.balances.length > 0 && <Button onClick={() => setWasting(true)}>Fire / imha</Button>}
         </>
       }
@@ -224,32 +227,32 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
           size="small"
           column={{ xs: 1, sm: 2, lg: 3 }}
           items={[
-            { key: 'product', label: 'Ürün', children: `${data.product_code} · ${data.product_name}` },
-            { key: 'origin', label: 'Köken', children: LOT_ORIGIN[data.origin] },
-            { key: 'status', label: 'Durum', children: <LotStatusTag status={data.status} /> },
-            { key: 'supplier', label: 'Tedarikçi', children: data.supplier_name ?? '—' },
-            { key: 'produced', label: 'Üretim / giriş', children: formatDate(data.produced_at) },
-            { key: 'expiry', label: 'Son kullanma', children: formatDate(data.expiry_date) },
+            { key: 'product', label: t('Ürün'), children: `${data.product_code} · ${data.product_name}` },
+            { key: 'origin', label: t('Köken'), children: LOT_ORIGIN[data.origin] },
+            { key: 'status', label: t('Durum'), children: <LotStatusTag status={data.status} /> },
+            { key: 'supplier', label: t('Tedarikçi'), children: data.supplier_name ?? '—' },
+            { key: 'produced', label: t('Üretim / giriş'), children: formatDate(data.produced_at) },
+            { key: 'expiry', label: t('Son kullanma'), children: formatDate(data.expiry_date) },
             {
               key: 'initial',
-              label: 'Başlangıç',
+              label: t('Başlangıç'),
               children: `${formatQty(data.initial_qty, data.base_unit)} · ${formatMoney(data.initial_value)}`,
             },
             {
               key: 'remaining',
-              label: 'Kalan',
+              label: t('Kalan'),
               children: `${formatQty(data.remaining_qty, data.base_unit)} · ${formatMoney(data.remaining_value)}`,
             },
-            { key: 'unit_cost', label: 'Birim maliyet', children: formatUnitCost(data.unit_cost) },
+            { key: 'unit_cost', label: t('Birim maliyet'), children: formatUnitCost(data.unit_cost) },
           ]}
         />
       </Card>
 
       <Row gutter={16}>
         <Col xs={24} lg={8}>
-          <Card size="small" title="Depo bakiyeleri" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Depo bakiyeleri')} style={{ marginBottom: 16 }}>
             {data.balances.length === 0 ? (
-              <Empty description="Hiçbir depoda kalmadı" />
+              <Empty description={t('Hiçbir depoda kalmadı')} />
             ) : (
               <Descriptions
                 size="small"
@@ -264,32 +267,32 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card size="small" title="Kaynak lotlar (geri izleme)" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Kaynak lotlar (geri izleme)')} style={{ marginBottom: 16 }}>
             <Table<LinkRow>
               rowKey={(row) => `${row.lot_no}-${row.process_id}`}
               size="small"
               columns={LINK_COLUMNS}
               dataSource={data.parents}
               pagination={false}
-              locale={{ emptyText: 'Kaynak lot yok (alışla geldi).' }}
+              locale={{ emptyText: t('Kaynak lot yok (alışla geldi).') }}
             />
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card size="small" title="Bu lottan üretilenler (ileri izleme)" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Bu lottan üretilenler (ileri izleme)')} style={{ marginBottom: 16 }}>
             <Table<LinkRow>
               rowKey={(row) => `${row.lot_no}-${row.process_id}`}
               size="small"
               columns={LINK_COLUMNS}
               dataSource={data.children}
               pagination={false}
-              locale={{ emptyText: 'Bu lottan henüz üretim yapılmadı.' }}
+              locale={{ emptyText: t('Bu lottan henüz üretim yapılmadı.') }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Card size="small" title="Hareket geçmişi">
+      <Card size="small" title={t('Hareket geçmişi')}>
         {movements.isError && <QueryError error={movements.error} onRetry={() => movements.refetch()} />}
         <Table<Movement>
           rowKey="id"
@@ -303,7 +306,7 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
             totalQty === null ? null : (
               <Table.Summary.Row>
                 <Table.Summary.Cell index={0} colSpan={3}>
-                  <Typography.Text strong>Toplam</Typography.Text>
+                  <Typography.Text strong>{t('Toplam')}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={3} align="right">
                   <Typography.Text strong>{formatQty(totalQty, data.base_unit)}</Typography.Text>
@@ -313,9 +316,9 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={5} colSpan={4}>
                   {consistent ? (
-                    <Tag color="green">Kalan miktar ve değerle tutarlı</Tag>
+                    <Tag color="green">{t('Kalan miktar ve değerle tutarlı')}</Tag>
                   ) : (
-                    <Tag color="red">Kalanla tutarsız — bütünlük raporuna bakın</Tag>
+                    <Tag color="red">{t('Kalanla tutarsız — bütünlük raporuna bakın')}</Tag>
                   )}
                 </Table.Summary.Cell>
               </Table.Summary.Row>

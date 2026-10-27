@@ -35,6 +35,7 @@ import {
   SALE_CHANNEL,
 } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 // Durum sütunlarında gelen kodların Türkçesi (hepsi tek sözlükte; kodlar çakışmıyor).
 const STATUS_TEXT: Record<string, string> = {
@@ -44,21 +45,21 @@ const STATUS_TEXT: Record<string, string> = {
   ...ALLOCATION_METHOD,
   ...SALE_CHANNEL,
   ...RECALL_STATUS,
-  IMHA: 'İmha',
-  SERBEST: 'Serbest',
-  KAYITLI: 'Kesin (kayıtlı)',
-  KISMEN: 'Kısmen kayıtlı',
-  BILINMIYOR: 'Sonrası bilinmiyor',
+  IMHA: t('İmha'),
+  SERBEST: t('Serbest'),
+  KAYITLI: t('Kesin (kayıtlı)'),
+  KISMEN: t('Kısmen kayıtlı'),
+  BILINMIYOR: t('Sonrası bilinmiyor'),
 }
 
 const REPORT_ICON: Record<ReportCode, string> = {
-  purchases: 'Alış',
-  production: 'Üretim',
-  cuttings: 'Parçalama',
-  'lot-movements': 'Stok hareketi',
-  sales: 'Satış',
-  recalls: 'Kalite',
-  integrity: 'Denetim',
+  purchases: t('Alış'),
+  production: t('Üretim'),
+  cuttings: t('Parçalama'),
+  'lot-movements': t('Stok hareketi'),
+  sales: t('Satış'),
+  recalls: t('Kalite'),
+  integrity: t('Denetim'),
 }
 
 type Value = string | number | boolean | null | undefined
@@ -80,7 +81,7 @@ function renderCell(kind: ColumnKind, value: Value) {
     case 'datetime':
       return formatDateTime(text)
     case 'bool':
-      return value ? 'Evet' : 'Hayır'
+      return value ? t('Evet') : t('Hayır')
     case 'status':
       return STATUS_TEXT[text] ?? text
     default:
@@ -126,13 +127,13 @@ function ReportView({ code }: { code: ReportCode }) {
 
   return (
     <Page
-      title={data?.title ?? 'Rapor'}
-      back={{ to: '/raporlar', label: 'Raporlar' }}
+      title={data?.title ?? t('Rapor')}
+      back={{ to: '/raporlar', label: t('Raporlar') }}
       extra={
         <>
-          <Button onClick={() => navigate('/raporlar')}>Bütün raporlar</Button>
+          <Button onClick={() => navigate('/raporlar')}>{t('Bütün raporlar')}</Button>
           <Button type="primary" onClick={download} loading={downloading} disabled={!data}>
-            CSV indir
+            {t('CSV indir')}
           </Button>
         </>
       }
@@ -144,7 +145,7 @@ function ReportView({ code }: { code: ReportCode }) {
             {allowed.has('date') && (
               <DatePicker.RangePicker
                 format="DD.MM.YYYY"
-                aria-label="Tarih aralığı"
+                aria-label={t('Tarih aralığı')}
                 onChange={(_, [from, to]) =>
                   setDraft((d) => ({
                     ...d,
@@ -159,8 +160,8 @@ function ReportView({ code }: { code: ReportCode }) {
                 allowClear
                 showSearch
                 optionFilterProp="label"
-                placeholder="Ürün"
-                aria-label="Ürün"
+                placeholder={t('Ürün')}
+                aria-label={t('Ürün')}
                 style={{ minWidth: 200 }}
                 options={(products.data ?? []).map((p) => ({ value: p.id, label: p.name }))}
                 onChange={(product_id?: number) => setDraft((d) => ({ ...d, product_id }))}
@@ -169,13 +170,13 @@ function ReportView({ code }: { code: ReportCode }) {
             {allowed.has('lot') && (
               <Input
                 allowClear
-                placeholder="Lot (ör. SUC-2026-045)"
-                aria-label="Lot"
+                placeholder={t('Lot (ör. SUC-2026-045)')}
+                aria-label={t('Lot')}
                 style={{ width: 200 }}
                 onChange={(e) => setDraft((d) => ({ ...d, lot_no: e.target.value || undefined }))}
               />
             )}
-            <Button onClick={() => setFilters(draft)}>Süz</Button>
+            <Button onClick={() => setFilters(draft)}>{t('Süz')}</Button>
           </Space>
         </Card>
       )}
@@ -192,7 +193,7 @@ function ReportView({ code }: { code: ReportCode }) {
           dataSource={data?.rows.map((row, index) => ({ ...row, __row: index }))}
           pagination={{ pageSize: 50, hideOnSinglePage: true }}
           scroll={{ x: 'max-content' }}
-          locale={{ emptyText: 'Bu süzgeçlerle kayıt yok.' }}
+          locale={{ emptyText: t('Bu süzgeçlerle kayıt yok.') }}
           summary={() =>
             totals.length === 0 || !data ? null : (
               <Table.Summary.Row>
@@ -200,7 +201,7 @@ function ReportView({ code }: { code: ReportCode }) {
                   const total = data.totals[column.key]
                   return (
                     <Table.Summary.Cell key={column.key} index={index} align={NUMERIC.includes(column.kind) ? 'right' : undefined}>
-                      {index === 0 ? <strong>Toplam</strong> : total != null ? <strong>{renderCell(column.kind, total)}</strong> : null}
+                      {index === 0 ? <strong>{t('Toplam')}</strong> : total != null ? <strong>{renderCell(column.kind, total)}</strong> : null}
                     </Table.Summary.Cell>
                   )
                 })}
@@ -217,8 +218,8 @@ function ReportList() {
   const reports = useQuery({ queryKey: ['reports'], queryFn: () => api<ReportInfo[]>('/reports') })
   return (
     <Page
-      title="Raporlar"
-      description="Bir rapor seçin; ekranda görün, Excel'de açmak için CSV olarak indirin."
+      title={t('Raporlar')}
+      description={t("Bir rapor seçin; ekranda görün, Excel'de açmak için CSV olarak indirin.")}
     >
       {reports.isError && <QueryError error={reports.error} onRetry={() => reports.refetch()} />}
       <Row gutter={[16, 16]}>

@@ -15,6 +15,7 @@ import { compare, parseUserDecimal } from '../lib/decimal'
 import { formatDate, formatDateTime, formatQty, unitLabel } from '../lib/format'
 import { TRANSFER_REASON } from '../lib/labels'
 import { decimalRule, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type LineValues = { lot_no?: string; qty?: string }
 type FormValues = {
@@ -27,12 +28,12 @@ type FormValues = {
 const MANUAL_REASONS: TransferReason[] = ['ARAC_YUKLEME', 'DIGER']
 
 const COLUMNS: TableColumnsType<Transfer> = [
-  { title: 'Transfer no', dataIndex: 'transfer_no' },
-  { title: 'Zaman', dataIndex: 'transferred_at', render: formatDateTime },
-  { title: 'Çıkış', dataIndex: 'from_warehouse_code' },
-  { title: 'Giriş', dataIndex: 'to_warehouse_code' },
+  { title: t('Belge no'), dataIndex: 'transfer_no' },
+  { title: t('Zaman'), dataIndex: 'transferred_at', render: formatDateTime },
+  { title: t('Çıkış'), dataIndex: 'from_warehouse_code' },
+  { title: t('Giriş'), dataIndex: 'to_warehouse_code' },
   {
-    title: 'Neden',
+    title: t('Neden'),
     dataIndex: 'reason',
     render: (reason: TransferReason, row) =>
       row.production_order_id ? (
@@ -42,7 +43,7 @@ const COLUMNS: TableColumnsType<Transfer> = [
       ),
   },
   {
-    title: 'Lotlar',
+    title: t('Lotlar'),
     dataIndex: 'lines',
     render: (lines: Transfer['lines']) =>
       lines.map((line) => (
@@ -77,11 +78,11 @@ export default function TransfersPage() {
 
   return (
     <Page
-      title="Araca yükleme ve depo aktarma"
-      description="Satış aracına mal yükleyin ya da depolar arasında mal taşıyın. Telefon uygulaması araç stokunu bir sonraki eşitlemede alır."
+      title={t('Araca yükleme ve depo aktarma')}
+      description={t('Satış aracına mal yükleyin ya da depolar arasında mal taşıyın. Telefon uygulaması araç stokunu bir sonraki eşitlemede alır.')}
       extra={
         <Button type="primary" onClick={() => setOpen(true)} disabled={!warehouses.data}>
-          Yeni transfer
+          {t('Yeni yükleme / aktarma')}
         </Button>
       }
     >
@@ -96,7 +97,7 @@ export default function TransfersPage() {
         scroll={{ x: 'max-content' }}
       />
       <FormModal<FormValues>
-        title="Yeni transfer"
+        title={t('Yeni yükleme / aktarma')}
         open={open}
         onClose={() => setOpen(false)}
         initialValues={{ from_warehouse_id: main?.id, to_warehouse_id: van?.id, reason: 'ARAC_YUKLEME', lines: [{}] }}
@@ -123,20 +124,20 @@ function TransferFields() {
     <>
       <Row gutter={16}>
         <Col xs={24} sm={8}>
-          <Form.Item label="Çıkış deposu" name="from_warehouse_id" rules={[{ required: true }]}>
+          <Form.Item label={t('Çıkış deposu')} name="from_warehouse_id" rules={[{ required: true }]}>
             <Select options={warehouseOptions} onChange={() => form.setFieldValue('lines', [{}])} />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8}>
           <Form.Item
-            label="Giriş deposu"
+            label={t('Giriş deposu')}
             name="to_warehouse_id"
             dependencies={['from_warehouse_id']}
             rules={[
               { required: true },
               {
                 validator: async (_rule, value: number) => {
-                  if (value === form.getFieldValue('from_warehouse_id')) throw new Error('Çıkış ve giriş deposu aynı olamaz.')
+                  if (value === form.getFieldValue('from_warehouse_id')) throw new Error(t('Çıkış ve giriş deposu aynı olamaz.'))
                 },
               },
             ]}
@@ -145,19 +146,19 @@ function TransferFields() {
           </Form.Item>
         </Col>
         <Col xs={24} sm={8}>
-          <Form.Item label="Neden" name="reason" rules={[{ required: true }]}>
+          <Form.Item label={t('Neden')} name="reason" rules={[{ required: true }]}>
             <Select options={MANUAL_REASONS.map((r) => ({ value: r, label: TRANSFER_REASON[r] }))} />
           </Form.Item>
         </Col>
       </Row>
-      <Typography.Text type="secondary">Yalnız çıkış deposunda bakiyesi olan ve satışa açık lotlar listelenir.</Typography.Text>
+      <Typography.Text type="secondary">{t('Yalnız çıkış deposunda bakiyesi olan ve satışa açık lotlar listelenir.')}</Typography.Text>
       <Form.List name="lines">
         {(fields, { add, remove }) => (
           <>
             {fields.map((field) => (
               <Row gutter={8} key={field.key} align="top" style={{ marginTop: 8 }}>
                 <Col xs={24} sm={14}>
-                  <Form.Item label="Lot" name={[field.name, 'lot_no']} rules={[{ required: true, message: 'Lot seçin.' }]}>
+                  <Form.Item label={t('Lot')} name={[field.name, 'lot_no']} rules={[{ required: true, message: t('Lot seçin.') }]}>
                     <Select
                       loading={stock.isPending}
                       showSearch={{ optionFilterProp: 'label' }}
@@ -170,11 +171,11 @@ function TransferFields() {
                 </Col>
                 <Col xs={18} sm={7}>
                   <Form.Item
-                    label="Miktar"
+                    label={t('Miktar')}
                     name={[field.name, 'qty']}
                     dependencies={[['lines', field.name, 'lot_no']]}
                     rules={[
-                      decimalRule('Miktar', { maxFraction: 3 }),
+                      decimalRule(t('Miktar'), { maxFraction: 3 }),
                       {
                         validator: async (_rule, value: string | undefined) => {
                           const row = byLot.get(form.getFieldValue(['lines', field.name, 'lot_no']))
@@ -192,14 +193,14 @@ function TransferFields() {
                 <Col xs={6} sm={3}>
                   <Form.Item label=" ">
                     <Button disabled={fields.length === 1} onClick={() => remove(field.name)}>
-                      Sil
+                      {t('Sil')}
                     </Button>
                   </Form.Item>
                 </Col>
               </Row>
             ))}
             <Button size="small" onClick={() => add({})}>
-              Lot ekle
+              {t('Lot ekle')}
             </Button>
           </>
         )}

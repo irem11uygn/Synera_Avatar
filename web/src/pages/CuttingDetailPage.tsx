@@ -35,10 +35,11 @@ import { formatDateTime, formatDecimal, formatMoney, formatQty, formatUnitCost }
 import { ALLOCATION_METHOD, options, PURCHASE_COST_KIND, RECIPE_LINE_TYPE } from '../lib/labels'
 import { fromApiDecimal } from '../lib/rules'
 import { useDebounced } from '../lib/useDebounced'
+import { t } from '../lib/i18n'
 
 type Line = Cutting['lines'][number]
 
-const lineName = (line: Line) => line.product_name ?? 'Fire'
+const lineName = (line: Line) => line.product_name ?? t('Fire')
 
 /** Standart oran yüzde olarak: "0.2700" → "%27" (ondalık hesap, kayan nokta yok). */
 function percent(ratio: string): string {
@@ -52,7 +53,7 @@ export default function CuttingDetailPage({ id }: { id: number }) {
 
   if (cutting.isError) {
     return (
-      <Page title="Parçalama">
+      <Page title={t('Parçalama')}>
         <QueryError error={cutting.error} onRetry={() => cutting.refetch()} />
       </Page>
     )
@@ -61,27 +62,27 @@ export default function CuttingDetailPage({ id }: { id: number }) {
 
   const data = cutting.data
   return (
-    <Page title={`Parçalama ${data.cutting_no}`} back={{ to: '/parcalama', label: 'Parçalama' }}>
+    <Page title={t('Parçalama {no}', { no: data.cutting_no })} back={{ to: '/parcalama', label: t('Parçalama') }}>
       <Card size="small" style={{ marginBottom: 16 }}>
         <Descriptions
           size="small"
           column={{ xs: 1, sm: 2, lg: 3 }}
           items={[
-            { key: 'status', label: 'Durum', children: <CuttingStatusTag status={data.status} /> },
-            { key: 'recipe', label: 'Reçete', children: `${data.recipe_code} · ${data.recipe_name}` },
+            { key: 'status', label: t('Durum'), children: <CuttingStatusTag status={data.status} /> },
+            { key: 'recipe', label: t('Reçete'), children: `${data.recipe_code} · ${data.recipe_name}` },
             {
               key: 'lot',
-              label: 'Giriş lotu',
+              label: t('Giriş lotu'),
               children: (
                 <>
                   <Link to={`/lotlar/${data.input_lot_no}`}>{data.input_lot_no}</Link> · {data.input_product_name}
                 </>
               ),
             },
-            { key: 'qty', label: 'Giriş ağırlığı', children: formatQty(data.input_qty, 'KG') },
-            { key: 'cost', label: 'Toplam maliyet', children: formatMoney(data.total_cost) },
-            { key: 'cut', label: 'Açılış', children: formatDateTime(data.cut_at) },
-            ...(data.approved_at ? [{ key: 'approved', label: 'Onay', children: formatDateTime(data.approved_at) }] : []),
+            { key: 'qty', label: t('Giriş ağırlığı'), children: formatQty(data.input_qty, 'KG') },
+            { key: 'cost', label: t('Toplam maliyet'), children: formatMoney(data.total_cost) },
+            { key: 'cut', label: t('Açılış'), children: formatDateTime(data.cut_at) },
+            ...(data.approved_at ? [{ key: 'approved', label: t('Onay'), children: formatDateTime(data.approved_at) }] : []),
           ]}
         />
       </Card>
@@ -97,20 +98,20 @@ function InputCost({ cutting }: { cutting: Cutting }) {
   if (!cost) return null
   const partial = cutting.total_cost !== null && cutting.total_cost !== cost.lot_value
   return (
-    <Card size="small" title="Giriş maliyeti (alış kalemleri)" style={{ marginBottom: 16 }}>
+    <Card size="small" title={t('Giriş maliyeti (alış kalemleri)')} style={{ marginBottom: 16 }}>
       <Descriptions
         size="small"
         column={{ xs: 1, sm: 2, lg: 3 }}
         items={[
-          { key: 'doc', label: 'Alış belgesi', children: `${cost.doc_no} · ${cost.supplier_name}` },
+          { key: 'doc', label: t('Alış belgesi'), children: `${cost.doc_no} · ${cost.supplier_name}` },
           {
             key: 'computed',
-            label: 'Miktar × fiyat',
+            label: t('Miktar × fiyat'),
             children: `${formatQty(cost.qty, 'KG')} × ${formatUnitCost(cost.unit_price)} = ${formatMoney(cost.computed_amount)}`,
           },
           {
             key: 'invoice',
-            label: 'Fatura tutarı',
+            label: t('Fatura tutarı'),
             children:
               cost.invoice_amount === cost.computed_amount
                 ? formatMoney(cost.invoice_amount)
@@ -121,13 +122,15 @@ function InputCost({ cutting }: { cutting: Cutting }) {
             label: PURCHASE_COST_KIND[extra.kind],
             children: `${formatMoney(extra.amount)}${extra.note ? ` · ${extra.note}` : ''}`,
           })),
-          { key: 'value', label: 'Lot değeri', children: <strong>{formatMoney(cost.lot_value)}</strong> },
+          { key: 'value', label: t('Lot değeri'), children: <strong>{formatMoney(cost.lot_value)}</strong> },
         ]}
       />
       {partial && (
         <Typography.Text type="secondary">
-          Bu parçalama lotun {formatQty(cutting.input_qty, 'KG')}'ını kullanıyor; maliyet payı{' '}
-          {formatMoney(cutting.total_cost)}.
+          {t('Bu parçalama lotun {qty} kadarını kullanıyor; maliyet payı {cost}.', {
+            qty: formatQty(cutting.input_qty, 'KG'),
+            cost: formatMoney(cutting.total_cost),
+          })}
         </Typography.Text>
       )}
     </Card>
@@ -174,7 +177,7 @@ function Weighing({ cutting }: { cutting: Cutting }) {
 
   async function save(): Promise<boolean> {
     if (invalid.size) {
-      setError('Geçersiz ağırlıkları düzeltin (en çok 3 ondalık, binlik ayırıcı olmadan).')
+      setError(t('Geçersiz ağırlıkları düzeltin (en çok 3 ondalık, binlik ayırıcı olmadan).'))
       return false
     }
     await api<Cutting>(`/cuttings/${cutting.id}`, { method: 'PUT', body })
@@ -188,9 +191,9 @@ function Weighing({ cutting }: { cutting: Cutting }) {
       if (!(await save())) return
       if (action === 'approve') {
         const done = await api<Cutting>(`/cuttings/${cutting.id}/approve`, { method: 'POST' })
-        message.success(`${done.cutting_no} onaylandı: ${formatMoney(done.allocated_total)} parçalara dağıtıldı.`)
+        message.success(t('{no} onaylandı: {amount} parçalara dağıtıldı.', { no: done.cutting_no, amount: formatMoney(done.allocated_total) }))
       } else {
-        message.success('Tartım kaydedildi.')
+        message.success(t('Tartım kaydedildi.'))
       }
       await refreshBusinessData(queryClient)
     } catch (caught) {
@@ -202,7 +205,7 @@ function Weighing({ cutting }: { cutting: Cutting }) {
 
   const columns: TableColumnsType<Line> = [
     {
-      title: 'Kalem',
+      title: t('Kalem'),
       key: 'name',
       render: (_, line) => (
         <>
@@ -210,26 +213,26 @@ function Weighing({ cutting }: { cutting: Cutting }) {
         </>
       ),
     },
-    { title: 'Standart oran', dataIndex: 'standard_ratio', align: 'right', render: percent },
-    { title: 'Standart (referans)', dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+    { title: t('Standart oran'), dataIndex: 'standard_ratio', align: 'right', render: percent },
+    { title: t('Standart (referans)'), dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
     {
-      title: 'YZ tahmini (Model B)',
+      title: t('YZ tahmini (Model B)'),
       dataIndex: 'predicted_kg',
       align: 'right',
       render: (v: string | null) => formatQty(v, 'KG'),
     },
     {
-      title: 'Fiili ağırlık',
+      title: t('Fiili ağırlık'),
       key: 'actual',
       width: 160,
       render: (_, line) => (
         <Input
-          aria-label={`${lineName(line)} fiili ağırlık (kg)`}
+          aria-label={t('{name} fiili ağırlık (kg)', { name: lineName(line) })}
           inputMode="decimal"
           autoComplete="off"
           suffix="kg"
           status={invalid.has(line.recipe_line_id) ? 'error' : undefined}
-          placeholder={line.line_type === 'FIRE' ? 'yoksa 0' : undefined}
+          placeholder={line.line_type === 'FIRE' ? t('yoksa 0') : undefined}
           value={texts[line.recipe_line_id] ?? ''}
           onChange={(event) => setTexts((current) => ({ ...current, [line.recipe_line_id]: event.target.value }))}
         />
@@ -238,7 +241,7 @@ function Weighing({ cutting }: { cutting: Cutting }) {
     ...(method === 'DEGER'
       ? [
           {
-            title: 'Değer katsayısı',
+            title: t('Değer katsayısı'),
             dataIndex: 'value_per_kg',
             align: 'right' as const,
             render: (v: string | null, line: Line) => (line.bears_cost ? `${formatUnitCost(v)}/kg` : '—'),
@@ -246,13 +249,13 @@ function Weighing({ cutting }: { cutting: Cutting }) {
         ]
       : []),
     {
-      title: 'Maliyet payı',
+      title: t('Maliyet payı'),
       key: 'share',
       align: 'right',
       render: (_, line) => formatMoney(byLine.get(line.recipe_line_id)?.allocated_cost),
     },
     {
-      title: 'Birim maliyet',
+      title: t('Birim maliyet'),
       key: 'per_kg',
       align: 'right',
       render: (_, line) => {
@@ -265,7 +268,7 @@ function Weighing({ cutting }: { cutting: Cutting }) {
   return (
     <Card
       size="small"
-      title="Tartım ve maliyet dağıtımı"
+      title={t('Tartım ve maliyet dağıtımı')}
       extra={<Segmented<AllocationMethod> value={method} onChange={setMethod} options={options(ALLOCATION_METHOD)} />}
       style={{ marginBottom: 16 }}
     >
@@ -282,7 +285,7 @@ function Weighing({ cutting }: { cutting: Cutting }) {
         summary={() => (
           <Table.Summary.Row>
             <Table.Summary.Cell index={0} colSpan={2}>
-              <Typography.Text strong>Toplam</Typography.Text>
+              <Typography.Text strong>{t('Toplam')}</Typography.Text>
             </Table.Summary.Cell>
             <Table.Summary.Cell index={2} align="right">
               {formatQty(sum(cutting.lines.map((l) => l.standard_kg), 3), 'KG')}
@@ -309,23 +312,22 @@ function Weighing({ cutting }: { cutting: Cutting }) {
         </Typography.Paragraph>
       )}
       <Typography.Paragraph type="secondary" style={{ marginTop: 12 }}>
-        Fire maliyet almaz; toplam maliyet ({formatMoney(shown.total_cost)}) parçalara ve yan ürünlere dağıtılır, kuruş
-        farkı en büyük kalan yöntemiyle kapatılır. "Standart (referans)" sütunu reçetenin standart oranıdır; "YZ tahmini" Model B'nin parçalama açılırken kaydettiği beklentidir.
+        {t('Fire maliyet almaz; toplam maliyet ({cost}) parçalara ve yan ürünlere dağıtılır, kuruş farkı en büyük kalan yöntemiyle kapatılır. "Standart (referans)" sütunu reçetenin standart oranıdır; "YZ tahmini" Model B’nin parçalama açılırken kaydettiği beklentidir.', { cost: formatMoney(shown.total_cost) })}
       </Typography.Paragraph>
       <Flex gap="small" wrap>
         <Popconfirm
-          title="Parçalama onaylansın mı?"
-          description="Giriş lotu tüketilir, parça lotları açılır; onaydan sonra değiştirilemez."
-          okText="Onayla"
-          cancelText="Vazgeç"
+          title={t('Parçalama onaylansın mı?')}
+          description={t('Giriş lotu tüketilir, parça lotları açılır; onaydan sonra değiştirilemez.')}
+          okText={t('Onayla')}
+          cancelText={t('Vazgeç')}
           onConfirm={() => run('approve')}
         >
           <Button type="primary" loading={busy === 'approve'}>
-            Onayla
+            {t('Onayla')}
           </Button>
         </Popconfirm>
         <Button loading={busy === 'save'} onClick={() => run('save')}>
-          Tartımı kaydet
+          {t('Tartımı kaydet')}
         </Button>
       </Flex>
     </Card>
@@ -335,15 +337,20 @@ function Weighing({ cutting }: { cutting: Cutting }) {
 /** Ağırlık dengesi göstergesi (FR-205): giriş = parçalar + yan ürünler + fire, tolerans içinde. */
 function BalanceNotice({ cutting }: { cutting: Cutting }) {
   const b = cutting.balance
-  const numbers = `giriş ${formatQty(b.input_kg, 'KG')}, çıkışlar ${formatQty(b.outputs_kg, 'KG')}, fark ${formatQty(b.difference_kg, 'KG')} (tolerans ${formatQty(b.tolerance_kg, 'KG')})`
+  const numbers = t('giriş {input}, çıkışlar {outputs}, fark {diff} (tolerans {tol})', {
+    input: formatQty(b.input_kg, 'KG'),
+    outputs: formatQty(b.outputs_kg, 'KG'),
+    diff: formatQty(b.difference_kg, 'KG'),
+    tol: formatQty(b.tolerance_kg, 'KG'),
+  })
   if (b.missing_lines > 0) {
     return (
       <Alert
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
-        title={`${b.missing_lines} kalemin ağırlığı girilmedi (fire yoksa 0 yazın).`}
-        description={`Şu ana kadar: ${numbers}.`}
+        title={t('{n} kalemin ağırlığı girilmedi (fire yoksa 0 yazın).', { n: b.missing_lines })}
+        description={t('Şu ana kadar: {numbers}.', { numbers })}
         aria-live="polite"
       />
     )
@@ -353,8 +360,8 @@ function BalanceNotice({ cutting }: { cutting: Cutting }) {
       type={b.ok ? 'success' : 'error'}
       showIcon
       style={{ marginBottom: 16 }}
-      title={b.ok ? 'Ağırlık dengesi tutuyor.' : 'Ağırlık dengesi tutmuyor; onaylanamaz.'}
-      description={b.ok ? `Denge: ${numbers}.` : `${numbers}. Eksik fire veya yan ürünü girin.`}
+      title={b.ok ? t('Ağırlık dengesi tutuyor.') : t('Ağırlık dengesi tutmuyor; onaylanamaz.')}
+      description={b.ok ? t('Denge: {numbers}.', { numbers }) : t('{numbers}. Eksik fire veya yan ürünü girin.', { numbers })}
       aria-live="polite"
     />
   )
@@ -365,7 +372,7 @@ function Result({ cutting }: { cutting: Cutting }) {
   const fire = cutting.lines.filter((l) => l.line_type === 'FIRE' && l.actual_kg)
   const columns: TableColumnsType<Line> = [
     {
-      title: 'Kalem',
+      title: t('Kalem'),
       key: 'name',
       render: (_, line) => (
         <>
@@ -373,23 +380,23 @@ function Result({ cutting }: { cutting: Cutting }) {
         </>
       ),
     },
-    { title: 'Standart (referans)', dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+    { title: t('Standart (referans)'), dataIndex: 'standard_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
     {
-      title: 'YZ tahmini (Model B)',
+      title: t('YZ tahmini (Model B)'),
       dataIndex: 'predicted_kg',
       align: 'right',
       render: (v: string | null) => formatQty(v, 'KG'),
     },
-    { title: 'Fiili', dataIndex: 'actual_kg', align: 'right', render: (v: string | null) => formatQty(v, 'KG') },
-    { title: 'Maliyet payı', dataIndex: 'allocated_cost', align: 'right', render: formatMoney },
+    { title: t('Fiili'), dataIndex: 'actual_kg', align: 'right', render: (v: string | null) => formatQty(v, 'KG') },
+    { title: t('Maliyet payı'), dataIndex: 'allocated_cost', align: 'right', render: formatMoney },
     {
-      title: 'Birim maliyet',
+      title: t('Birim maliyet'),
       dataIndex: 'cost_per_kg',
       align: 'right',
       render: (v: string | null) => (v ? `${formatUnitCost(v)}/kg` : '—'),
     },
     {
-      title: 'Lot',
+      title: t('Lot'),
       dataIndex: 'output_lot_no',
       render: (lotNo: string | null) => (lotNo ? <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> : '—'),
     },
@@ -399,29 +406,29 @@ function Result({ cutting }: { cutting: Cutting }) {
       <Row gutter={16}>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Toplam maliyet" value={formatMoney(cutting.total_cost)} />
+            <Statistic title={t('Toplam maliyet')} value={formatMoney(cutting.total_cost)} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Dağıtılan" value={formatMoney(cutting.allocated_total)} />
+            <Statistic title={t('Dağıtılan')} value={formatMoney(cutting.allocated_total)} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Yöntem" value={ALLOCATION_METHOD[cutting.method]} />
+            <Statistic title={t('Yöntem')} value={ALLOCATION_METHOD[cutting.method]} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
             <Statistic
-              title="Fire"
-              value={fire.length ? formatQty(sum(fire.map((l) => l.actual_kg!), 3), 'KG') : '0 kg'}
+              title={t('Fire')}
+              value={fire.length ? formatQty(sum(fire.map((l) => l.actual_kg!), 3), 'KG') : t('0 kg')}
             />
           </Card>
         </Col>
       </Row>
-      <Card size="small" title="Dağıtım dökümü ve parça lotları">
+      <Card size="small" title={t('Dağıtım dökümü ve parça lotları')}>
         <Table<Line>
           rowKey="recipe_line_id"
           size="small"
@@ -432,7 +439,7 @@ function Result({ cutting }: { cutting: Cutting }) {
           summary={() => (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0} colSpan={3}>
-                <Typography.Text strong>Toplam</Typography.Text>
+                <Typography.Text strong>{t('Toplam')}</Typography.Text>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={3} align="right">
                 <Typography.Text strong>{formatQty(cutting.balance.outputs_kg, 'KG')}</Typography.Text>

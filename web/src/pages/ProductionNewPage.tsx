@@ -13,6 +13,7 @@ import { compare, divide, multiply, parseUserDecimal, sum } from '../lib/decimal
 import { formatDate, formatMoney, formatQty, formatUnitCost, unitLabel } from '../lib/format'
 import { navigate } from '../lib/router'
 import { decimalRule, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type InputValues = { lot_no?: string; qty?: string }
 type FormValues = {
@@ -66,7 +67,7 @@ export default function ProductionNewPage() {
     try {
       const order = await api<Order>('/production-orders', { method: 'POST', body })
       await refreshBusinessData(queryClient)
-      message.success(`${order.order_no} açıldı.`)
+      message.success(t('{no} açıldı.', { no: order.order_no }))
       navigate(`/uretim/${order.id}`)
     } catch (caught) {
       setError(errorMessage(caught))
@@ -76,7 +77,7 @@ export default function ProductionNewPage() {
   }
 
   return (
-    <Page title="Yeni fason üretim emri" back={{ to: '/uretim', label: 'Fason üretim' }}>
+    <Page title={t('Yeni fason üretim emri')} back={{ to: '/uretim', label: t('Fason üretim') }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues>
         form={form}
@@ -86,13 +87,13 @@ export default function ProductionNewPage() {
         initialValues={{ inputs: [{}] }}
         scrollToFirstError
       >
-        <Card title="Emir" size="small" style={{ marginBottom: 16 }}>
+        <Card title={t('Emir')} size="small" style={{ marginBottom: 16 }}>
           <Row gutter={16}>
             <Col xs={24} md={12}>
               <Form.Item
-                label="Fasoncu"
+                label={t('Fasoncu')}
                 name="subcontractor_id"
-                rules={[{ required: true, message: 'Fasoncuyu seçin.' }]}
+                rules={[{ required: true, message: t('Fasoncuyu seçin.') }]}
               >
                 <Select
                   loading={subcontractors.isPending}
@@ -101,7 +102,7 @@ export default function ProductionNewPage() {
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
-              <Form.Item label="Mamul" name="output_product_id" rules={[{ required: true, message: 'Mamul seçin.' }]}>
+              <Form.Item label={t('Mamul')} name="output_product_id" rules={[{ required: true, message: t('Mamul seçin.') }]}>
                 <Select
                   loading={finishedGoods.isPending}
                   options={finishedGoods.data
@@ -112,20 +113,20 @@ export default function ProductionNewPage() {
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item
-                label="Planlanan miktar"
+                label={t('Planlanan miktar')}
                 name="planned_qty"
                 dependencies={['output_product_id']}
-                rules={[decimalRule('Planlanan miktar', { maxFraction: 3, integer: product?.base_unit === 'ADET' })]}
+                rules={[decimalRule(t('Planlanan miktar'), { maxFraction: 3, integer: product?.base_unit === 'ADET' })]}
               >
                 <Input inputMode="decimal" autoComplete="off" suffix={<span>{product ? unitLabel(product.base_unit) : ''}</span>} />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item
-                label="Hizmet birim ücreti"
+                label={t('Hizmet birim ücreti')}
                 name="service_unit_price"
-                extra="Fasoncunun birim başına işçilik ücreti (hammadde bedeli içermez)."
-                rules={[decimalRule('Hizmet birim ücreti', { maxFraction: 4, required: false, allowZero: true })]}
+                extra={t('Fasoncunun birim başına işçilik ücreti (hammadde bedeli içermez).')}
+                rules={[decimalRule(t('Hizmet birim ücreti'), { maxFraction: 4, required: false, allowZero: true })]}
               >
                 <Input
                   inputMode="decimal"
@@ -140,23 +141,23 @@ export default function ProductionNewPage() {
               size="small"
               column={{ xs: 1, sm: 3 }}
               items={[
-                { key: 'vkp', label: 'Satış fiyatı', children: formatMoney(product.sale_price) },
+                { key: 'vkp', label: t('Satış fiyatı'), children: formatMoney(product.sale_price) },
                 {
                   key: 'weight',
-                  label: '1 adet',
+                  label: t('1 adet'),
                   children: product.unit_weight_kg ? formatQty(product.unit_weight_kg, 'KG') : '—',
                 },
                 {
                   key: 'shelf',
-                  label: 'Raf ömrü',
-                  children: product.shelf_life_days == null ? '—' : `${product.shelf_life_days} gün`,
+                  label: t('Raf ömrü'),
+                  children: product.shelf_life_days == null ? '—' : t('{n} gün', { n: product.shelf_life_days }),
                 },
               ]}
             />
           )}
         </Card>
 
-        <Card title="Kullanılacak hammadde lotları (ana depodan)" size="small" style={{ marginBottom: 16 }}>
+        <Card title={t('Kullanılacak hammadde lotları (ana depodan)')} size="small" style={{ marginBottom: 16 }}>
           <Form.List name="inputs">
             {(fields, { add, remove }) => (
               <>
@@ -166,16 +167,16 @@ export default function ProductionNewPage() {
                     <Row gutter={8} key={field.key} align="top">
                       <Col xs={24} md={14}>
                         <Form.Item
-                          label="Lot"
+                          label={t('Lot')}
                           name={[field.name, 'lot_no']}
                           rules={[
-                            { required: true, message: 'Lot seçin.' },
+                            { required: true, message: t('Lot seçin.') },
                             {
                               validator: async (_rule, lotNo: string | undefined) => {
                                 const chosen = (form.getFieldValue('inputs') as InputValues[]).filter(
                                   (input) => input?.lot_no === lotNo,
                                 )
-                                if (lotNo && chosen.length > 1) throw new Error('Bu lot emirde zaten var.')
+                                if (lotNo && chosen.length > 1) throw new Error(t('Bu lot emirde zaten var.'))
                               },
                             },
                           ]}
@@ -192,11 +193,11 @@ export default function ProductionNewPage() {
                       </Col>
                       <Col xs={18} md={7}>
                         <Form.Item
-                          label="Planlanan miktar"
+                          label={t('Planlanan miktar')}
                           name={[field.name, 'qty']}
                           dependencies={[['inputs', field.name, 'lot_no']]}
                           rules={[
-                            decimalRule('Miktar', { maxFraction: 3 }),
+                            decimalRule(t('Miktar'), { maxFraction: 3 }),
                             {
                               validator: async (_rule, value: string | undefined) => {
                                 const qty = parseUserDecimal(value ?? '', 3)
@@ -213,7 +214,7 @@ export default function ProductionNewPage() {
                       <Col xs={6} md={3}>
                         <Form.Item label=" ">
                           <Button disabled={fields.length === 1} onClick={() => remove(field.name)}>
-                            Sil
+                            {t('Sil')}
                           </Button>
                         </Form.Item>
                       </Col>
@@ -221,34 +222,34 @@ export default function ProductionNewPage() {
                   )
                 })}
                 <Button size="small" onClick={() => add({})}>
-                  Lot ekle
+                  {t('Lot ekle')}
                 </Button>
               </>
             )}
           </Form.List>
         </Card>
 
-        <Card title="Plana göre maliyet (ön izleme)" size="small" style={{ marginBottom: 16 }}>
+        <Card title={t('Plana göre maliyet (ön izleme)')} size="small" style={{ marginBottom: 16 }}>
           <Descriptions
             size="small"
             column={{ xs: 1, sm: 2, lg: 4 }}
             items={[
-              { key: 'raw', label: 'Hammadde', children: formatMoney(rawTotal) },
-              { key: 'service', label: 'Hizmet', children: formatMoney(serviceTotal) },
-              { key: 'total', label: 'Toplam', children: formatMoney(plannedTotal) },
-              { key: 'ekp', label: 'Planlanan birim maliyet', children: formatUnitCost(plannedEkp) },
+              { key: 'raw', label: t('Hammadde'), children: formatMoney(rawTotal) },
+              { key: 'service', label: t('Hizmet'), children: formatMoney(serviceTotal) },
+              { key: 'total', label: t('Toplam'), children: formatMoney(plannedTotal) },
+              { key: 'ekp', label: t('Planlanan birim maliyet'), children: formatUnitCost(plannedEkp) },
             ]}
           />
           <Typography.Text type="secondary">
-            Kesin birim maliyet, mamul kabulünde gerçekten tüketilen lotların değeri ve teslim alınan miktarla hesaplanır.
+            {t('Kesin birim maliyet, mamul kabulünde gerçekten tüketilen lotların değeri ve teslim alınan miktarla hesaplanır.')}
           </Typography.Text>
         </Card>
 
         <Flex gap="small">
           <Button type="primary" htmlType="submit" loading={saving}>
-            Emri oluştur
+            {t('Emri oluştur')}
           </Button>
-          <Button onClick={() => navigate('/uretim')}>Vazgeç</Button>
+          <Button onClick={() => navigate('/uretim')}>{t('Vazgeç')}</Button>
         </Flex>
       </Form>
     </Page>

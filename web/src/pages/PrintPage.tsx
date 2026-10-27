@@ -14,9 +14,10 @@ import { PAYMENT_METHOD, paymentLabel, SALE_CHANNEL } from '../lib/labels'
 import { matchPath } from '../lib/router'
 import { runDrill, type Drill } from '../lib/drill'
 import { DrillTables } from './MockRecallPage'
+import { t } from '../lib/i18n'
 
 /** Belgelerin üst bilgisindeki işletme adı; kurulumda işletmenin kendi adıyla değiştirilir. */
-const COMPANY = 'Synera Gıda — örnek işletme'
+const COMPANY = t('Synera Gıda — örnek işletme')
 
 function Barcode({ text, height = 46 }: { text: string; height?: number }) {
   let modules: string
@@ -41,11 +42,11 @@ function Toolbar({ children }: { children?: ReactNode }) {
   return (
     <div className="print-toolbar no-print">
       <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
-        Geri
+        {t('Geri')}
       </Button>
       {children}
       <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>
-        Yazdır
+        {t('Yazdır')}
       </Button>
     </div>
   )
@@ -89,7 +90,7 @@ function LabelPrint({ lotNo }: { lotNo: string }) {
       <Toolbar>
         <span>
           Adet:{' '}
-          <InputNumber min={1} max={60} value={copies} onChange={(value) => setCopies(value ?? 1)} aria-label="Etiket adedi" />
+          <InputNumber min={1} max={60} value={copies} onChange={(value) => setCopies(value ?? 1)} aria-label={t('Etiket adedi')} />
         </span>
       </Toolbar>
       <div className="label-sheet">
@@ -101,10 +102,10 @@ function LabelPrint({ lotNo }: { lotNo: string }) {
             </div>
             <div>
               <div>
-                Üretim / kabul: <b>{formatDate(data.produced_at)}</b>
+                {t('Üretim / kabul')}: <b>{formatDate(data.produced_at)}</b>
               </div>
               <div>
-                Son tüketim: <b>{formatDate(data.expiry_date)}</b>
+                {t('Son tüketim')}: <b>{formatDate(data.expiry_date)}</b>
               </div>
             </div>
             <div>
@@ -128,22 +129,22 @@ function SalePrint({ id }: { id: number }) {
     <>
       <Toolbar />
       <div className="print-sheet">
-        <Head title="Satış fişi / sevk irsaliyesi" number={data.sale_no} date={formatDateTime(data.sold_at)} />
+        <Head title={t('Satış fişi / sevk irsaliyesi')} number={data.sale_no} date={formatDateTime(data.sold_at)} />
         <p>
-          <b>Müşteri:</b> {data.customer_name}
+          <b>{t('Müşteri:')}</b> {data.customer_name}
           <br />
-          <b>Satış yeri:</b> {SALE_CHANNEL[data.channel]} · <b>Satıcı:</b> {data.seller_name || '—'}
+          <b>{t('Satış yeri:')}</b> {SALE_CHANNEL[data.channel]} · <b>{t('Satıcı:')}</b> {data.seller_name || '—'}
           <br />
-          <b>Ödeme:</b> {data.payment_method ? PAYMENT_METHOD[data.payment_method] : 'Belirtilmedi'}
+          <b>{t('Ödeme:')}</b> {data.payment_method ? PAYMENT_METHOD[data.payment_method] : t('Belirtilmedi')}
         </p>
         <table>
           <thead>
             <tr>
-              <th>Ürün</th>
-              <th>Lot</th>
-              <th className="num">Miktar</th>
-              <th className="num">Birim fiyat</th>
-              <th className="num">Tutar</th>
+              <th>{t('Ürün')}</th>
+              <th>{t('Lot')}</th>
+              <th className="num">{t('Miktar')}</th>
+              <th className="num">{t('Birim fiyat')}</th>
+              <th className="num">{t('Tutar')}</th>
             </tr>
           </thead>
           <tbody>
@@ -160,18 +161,18 @@ function SalePrint({ id }: { id: number }) {
           <tfoot>
             <tr>
               <th colSpan={4} className="num">
-                Toplam (KDV hariç)
+                {t('Toplam (KDV hariç)')}
               </th>
               <th className="num">{formatMoney(data.total_amount)}</th>
             </tr>
           </tfoot>
         </table>
         <p style={{ fontSize: 12 }}>
-          Lot numaraları ürün geri çağırmada müşteriye ulaşmak için kaydedilir. Bu belge mali fatura yerine geçmez.
+          {t('Lot numaraları ürün geri çağırmada müşteriye ulaşmak için kaydedilir. Bu belge mali fatura yerine geçmez.')}
         </p>
         <div className="print-signatures">
-          <div>Teslim eden</div>
-          <div>Teslim alan</div>
+          <div>{t('Teslim eden')}</div>
+          <div>{t('Teslim alan')}</div>
         </div>
       </div>
     </>
@@ -190,8 +191,8 @@ function RecallPrint({ id }: { id: number }) {
       <Toolbar />
       {customers.length === 0 && (
         <div className="print-sheet">
-          <Head title="Ürün geri çağırma bildirimi" number={data.recall_no} date={formatDateTime(data.started_at)} />
-          <p>Bu geri çağırmada mal hiçbir müşteriye satılmamış; bildirim gerekmez.</p>
+          <Head title={t('Ürün geri çağırma bildirimi')} number={data.recall_no} date={formatDateTime(data.started_at)} />
+          <p>{t('Bu geri çağırmada mal hiçbir müşteriye satılmamış; bildirim gerekmez.')}</p>
         </div>
       )}
       {customers.map(([customerId, name]) => {
@@ -199,25 +200,23 @@ function RecallPrint({ id }: { id: number }) {
         const contact = rows[0].contact
         return (
           <div className="print-sheet" key={customerId} style={{ breakAfter: 'page' }}>
-            <Head title="Ürün geri çağırma bildirimi" number={data.recall_no} date={formatDate(data.started_at)} />
+            <Head title={t('Ürün geri çağırma bildirimi')} number={data.recall_no} date={formatDate(data.started_at)} />
             <p>
-              <b>Sayın {contact.person ?? 'Yetkili'},</b>
+              <b>{t('Sayın {person},', { person: contact.person ?? t('Yetkili') })}</b>
               <br />
               {name}
               {contact.address ? `, ${contact.address}` : ''}
             </p>
             <p>
-              Size teslim ettiğimiz aşağıdaki ürünler <b>{data.reason}</b> nedeniyle geri çağrılmıştır. Lütfen bu
-              ürünleri <b>hemen satıştan kaldırın</b>, ayrı bir yerde muhafaza edin ve aşağıdaki numaradan bize
-              ulaşın. Ürünler tarafımızdan teslim alınacak; bedeli iade edilecek ya da yenisiyle değiştirilecektir.
+              {t('Size teslim ettiğimiz aşağıdaki ürünler "{reason}" nedeniyle geri çağrılmıştır. Lütfen bu ürünleri hemen satıştan kaldırın, ayrı bir yerde muhafaza edin ve bize ulaşın. Ürünler tarafımızdan teslim alınacak; bedeli iade edilecek ya da yenisiyle değiştirilecektir.', { reason: data.reason })}
             </p>
             <table>
               <thead>
                 <tr>
-                  <th>Ürün</th>
-                  <th>Lot no</th>
-                  <th>Teslim belgesi</th>
-                  <th className="num">Sizde olması gereken</th>
+                  <th>{t('Ürün')}</th>
+                  <th>{t('Lot no')}</th>
+                  <th>{t('Teslim belgesi')}</th>
+                  <th className="num">{t('Sizde olması gereken')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,12 +231,11 @@ function RecallPrint({ id }: { id: number }) {
               </tbody>
             </table>
             <p>
-              Ürünleri başka bir şubenize ya da müşterinize verdiyseniz, lütfen kime ve ne kadar verdiğinizi bize
-              bildirin; onlara da ulaşmamız gerekiyor.
+              {t('Ürünleri başka bir şubenize ya da müşterinize verdiyseniz, lütfen kime ve ne kadar verdiğinizi bize bildirin; onlara da ulaşmamız gerekiyor.')}
             </p>
             <div className="print-signatures">
-              <div>Kalite sorumlusu</div>
-              <div>Müşteri teslim alındı / tarih</div>
+              <div>{t('Kalite sorumlusu')}</div>
+              <div>{t('Müşteri teslim alındı / tarih')}</div>
             </div>
           </div>
         )
@@ -257,38 +255,38 @@ function DayEndPrint({ day }: { day: string }) {
   const warehouses = useQuery({ queryKey: ['warehouses'], queryFn: () => api<Warehouse[]>('/warehouses') })
   if (!report.data) return <Loading error={report.error} />
   const data = report.data
-  const place = warehouses.data?.find((w) => w.id === warehouseId)?.name ?? 'Mağaza ve araçlar'
+  const place = warehouses.data?.find((w) => w.id === warehouseId)?.name ?? t('Mağaza ve araçlar')
   return (
     <>
       <Toolbar />
       <div className="print-sheet">
-        <Head title="Gün sonu raporu" number={formatDate(day)} date={place} />
+        <Head title={t('Gün sonu raporu')} number={formatDate(day)} date={place} />
         <table>
           <tbody>
             <tr>
-              <th>Satış ({data.sale_count} belge)</th>
+              <th>{t('Satış ({n} belge)', { n: data.sale_count })}</th>
               <td className="num">{formatMoney(data.sales_amount)}</td>
             </tr>
             <tr>
-              <th>İade ({data.returns.length})</th>
+              <th>{t('İade ({n})', { n: data.returns.length })}</th>
               <td className="num">− {formatMoney(data.refund_amount)}</td>
             </tr>
             <tr>
-              <th>Net</th>
+              <th>{t('Net')}</th>
               <td className="num">
                 <b>{formatMoney(data.net_amount)}</b>
               </td>
             </tr>
           </tbody>
         </table>
-        <h3>Ödeme türüne göre</h3>
+        <h3>{t('Ödeme türüne göre')}</h3>
         <table>
           <thead>
             <tr>
-              <th>Ödeme</th>
-              <th className="num">Belge</th>
-              <th className="num">Tutar</th>
-              <th className="num">Sayılan</th>
+              <th>{t('Ödeme')}</th>
+              <th className="num">{t('Belge')}</th>
+              <th className="num">{t('Tutar')}</th>
+              <th className="num">{t('Sayılan')}</th>
             </tr>
           </thead>
           <tbody>
@@ -302,7 +300,7 @@ function DayEndPrint({ day }: { day: string }) {
             ))}
           </tbody>
         </table>
-        <h3>Satıcıya göre</h3>
+        <h3>{t('Satıcıya göre')}</h3>
         <table>
           <tbody>
             {data.by_seller.map((row) => (
@@ -314,15 +312,15 @@ function DayEndPrint({ day }: { day: string }) {
             ))}
           </tbody>
         </table>
-        <h3>Satışlar</h3>
+        <h3>{t('Satışlar')}</h3>
         <table>
           <thead>
             <tr>
-              <th>Saat</th>
-              <th>Belge</th>
-              <th>Müşteri</th>
-              <th>Ödeme</th>
-              <th className="num">Tutar</th>
+              <th>{t('Saat')}</th>
+              <th>{t('Belge')}</th>
+              <th>{t('Müşteri')}</th>
+              <th>{t('Ödeme')}</th>
+              <th className="num">{t('Tutar')}</th>
             </tr>
           </thead>
           <tbody>
@@ -339,7 +337,7 @@ function DayEndPrint({ day }: { day: string }) {
         </table>
         {data.stock_left.length > 0 && (
           <>
-            <h3>Araçta kalan mal</h3>
+            <h3>{t('Araçta kalan mal')}</h3>
             <table>
               <tbody>
                 {data.stock_left.map((row) => (
@@ -354,8 +352,8 @@ function DayEndPrint({ day }: { day: string }) {
           </>
         )}
         <div className="print-signatures">
-          <div>Teslim eden (kasa / satış elemanı)</div>
-          <div>Teslim alan (yönetici)</div>
+          <div>{t('Teslim eden (kasa / satış elemanı)')}</div>
+          <div>{t('Teslim alan (yönetici)')}</div>
         </div>
       </div>
     </>
@@ -372,25 +370,25 @@ function CountPrint({ id }: { id: number }) {
     <>
       <Toolbar />
       <div className="print-sheet">
-        <Head title="Sayım tutanağı" number={data.count_no} date={formatDateTime(data.created_at)} />
+        <Head title={t('Sayım tutanağı')} number={data.count_no} date={formatDateTime(data.created_at)} />
         <p>
-          <b>Yer:</b> {data.warehouse_code} · <b>Sayan:</b> {data.counted_by}
+          <b>{t('Yer:')}</b> {data.warehouse_code} · <b>{t('Sayan:')}</b> {data.counted_by}
           {data.note && (
             <>
               {' '}
-              · <b>Not:</b> {data.note}
+              · <b>{t('Not:')}</b> {data.note}
             </>
           )}
         </p>
         <table>
           <thead>
             <tr>
-              <th>Ürün</th>
-              <th>Lot</th>
-              <th className="num">Defterde</th>
-              <th className="num">Sayılan</th>
-              <th className="num">Fark</th>
-              <th className="num">Eksik maliyeti</th>
+              <th>{t('Ürün')}</th>
+              <th>{t('Lot')}</th>
+              <th className="num">{t('Sistemde')}</th>
+              <th className="num">{t('Sayılan')}</th>
+              <th className="num">{t('Fark')}</th>
+              <th className="num">{t('Eksik maliyeti')}</th>
             </tr>
           </thead>
           <tbody>
@@ -406,10 +404,10 @@ function CountPrint({ id }: { id: number }) {
             ))}
           </tbody>
         </table>
-        <p>Eksikler "Sayım farkı" firesi olarak stoktan düşülmüştür. Fazla çıkan miktar stoka eklenmemiştir.</p>
+        <p>{t('Eksikler "Sayım farkı" firesi olarak stoktan düşülmüştür. Fazla çıkan miktar stoka eklenmemiştir.')}</p>
         <div className="print-signatures">
-          <div>Sayan</div>
-          <div>Onaylayan</div>
+          <div>{t('Sayan')}</div>
+          <div>{t('Onaylayan')}</div>
         </div>
       </div>
     </>
@@ -431,17 +429,17 @@ function DrillPrint({ lotNo }: { lotNo: string }) {
     <>
       <Toolbar />
       <div className="print-sheet">
-        <Head title="Geri çağırma tatbikatı raporu" number={lotNo} date={formatDateTime(drill.at)} />
+        <Head title={t('Geri çağırma tatbikatı raporu')} number={lotNo} date={formatDateTime(drill.at)} />
         <p>
-          <b>Yapan:</b> {user.full_name} · <b>Bulma süresi:</b> {(measured / 1000).toFixed(2)} saniye (hedef 4 saat) ·{' '}
-          <b>Etkilenen lot:</b> {drill.forward.lots.length} · <b>Müşteri:</b>{' '}
+          <b>{t('Yapan:')}</b> {user.full_name} · <b>{t('Bulma süresi:')}</b> {(measured / 1000).toFixed(2)} saniye (hedef 4 saat) ·{' '}
+          <b>{t('Etkilenen lot:')}</b> {drill.forward.lots.length} · <b>{t('Müşteri:')}</b>{' '}
           {new Set(drill.forward.recipients.map((r) => r.customer_id)).size}
         </p>
-        <p>Tatbikatta hiçbir lot satışa kapatılmamıştır.</p>
+        <p>{t('Tatbikatta hiçbir lot satışa kapatılmamıştır.')}</p>
         <DrillTables drill={drill} />
         <div className="print-signatures">
-          <div>Kalite sorumlusu</div>
-          <div>İşletme yöneticisi</div>
+          <div>{t('Kalite sorumlusu')}</div>
+          <div>{t('İşletme yöneticisi')}</div>
         </div>
       </div>
     </>
@@ -455,7 +453,7 @@ function positiveId(raw: string): number | null {
 
 export default function PrintPage({ path }: { path: string }) {
   useEffect(() => {
-    document.title = 'Yazdır — Synera'
+    document.title = t('Yazdır — Synera')
   }, [])
   let params = matchPath('/yazdir/etiket/:lotNo', path)
   if (params) return <LabelPrint lotNo={params.lotNo} />
@@ -472,5 +470,5 @@ export default function PrintPage({ path }: { path: string }) {
     const id = match && positiveId(match.id)
     if (id) return <Component id={id} />
   }
-  return <Loading error={new Error('Yazdırılacak belge bulunamadı.')} />
+  return <Loading error={new Error(t('Yazdırılacak belge bulunamadı.'))} />
 }

@@ -2,23 +2,24 @@
 // kullanıcıya yapamayacağı işin düğmesini göstermemek için aynı kurallar tekrarlanır.
 
 import type { UserRole } from '../api/types'
+import { t } from './i18n'
 
 export const ROLE: Record<UserRole, string> = {
-  YONETICI: 'Yönetici',
-  DEPO: 'Depo sorumlusu',
-  URETIM: 'Üretim sorumlusu',
-  KALITE: 'Kalite sorumlusu',
-  MAGAZA: 'Mağaza / kasa',
-  SATIS: 'Satış elemanı (araç)',
+  YONETICI: t('Yönetici'),
+  DEPO: t('Depo sorumlusu'),
+  URETIM: t('Üretim sorumlusu'),
+  KALITE: t('Kalite sorumlusu'),
+  MAGAZA: t('Mağaza / kasa'),
+  SATIS: t('Satış elemanı (araç)'),
 }
 
 export const ROLE_HELP: Record<UserRole, string> = {
-  YONETICI: 'Her ekranı görür ve her işlemi yapar; kullanıcıları yönetir.',
-  DEPO: 'Mal kabul, stok, sayım, araca yükleme ve fire.',
-  URETIM: 'Fason üretim, parçalama ve yeniden işleme.',
-  KALITE: 'Lot izleme, geri çağırma, tatbikat ve uyarılar.',
-  MAGAZA: 'Mağaza satışı, iade ve gün sonu.',
-  SATIS: 'Yalnız telefon uygulaması: araçtan satış ve araç sayımı.',
+  YONETICI: t('Her ekranı görür ve her işlemi yapar; kullanıcıları yönetir.'),
+  DEPO: t('Mal kabul, stok, sayım, araca yükleme ve fire.'),
+  URETIM: t('Fason üretim, parçalama ve yeniden işleme.'),
+  KALITE: t('Lot izleme, geri çağırma, tatbikat ve uyarılar.'),
+  MAGAZA: t('Mağaza satışı, iade ve gün sonu.'),
+  SATIS: t('Yalnız telefon uygulaması: araçtan satış ve araç sayımı.'),
 }
 
 export type Action =

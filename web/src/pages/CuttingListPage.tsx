@@ -11,24 +11,25 @@ import { CuttingStatusTag } from '../components/StatusTags'
 import { formatDateTime, formatMoney, formatQty } from '../lib/format'
 import { ALLOCATION_METHOD } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 const COLUMNS: TableColumnsType<Cutting> = [
   {
-    title: 'Parçalama no',
+    title: t('Parçalama no'),
     dataIndex: 'cutting_no',
     render: (no: string, row) => <Link to={`/parcalama/${row.id}`}>{no}</Link>,
   },
-  { title: 'Durum', dataIndex: 'status', render: (status: CuttingStatus) => <CuttingStatusTag status={status} /> },
-  { title: 'Reçete', dataIndex: 'recipe_name' },
+  { title: t('Durum'), dataIndex: 'status', render: (status: CuttingStatus) => <CuttingStatusTag status={status} /> },
+  { title: t('Reçete'), dataIndex: 'recipe_name' },
   {
-    title: 'Giriş lotu',
+    title: t('Giriş lotu'),
     dataIndex: 'input_lot_no',
     render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link>,
   },
-  { title: 'Giriş', dataIndex: 'input_qty', align: 'right', render: (v: string) => formatQty(v, 'KG') },
-  { title: 'Yöntem', dataIndex: 'method', render: (m: AllocationMethod) => ALLOCATION_METHOD[m] },
-  { title: 'Toplam maliyet', dataIndex: 'total_cost', align: 'right', render: formatMoney },
-  { title: 'Tarih', dataIndex: 'cut_at', render: formatDateTime },
+  { title: t('Giriş'), dataIndex: 'input_qty', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+  { title: t('Yöntem'), dataIndex: 'method', render: (m: AllocationMethod) => ALLOCATION_METHOD[m] },
+  { title: t('Toplam maliyet'), dataIndex: 'total_cost', align: 'right', render: formatMoney },
+  { title: t('Tarih'), dataIndex: 'cut_at', render: formatDateTime },
 ]
 
 export default function CuttingListPage() {
@@ -36,11 +37,11 @@ export default function CuttingListPage() {
 
   return (
     <Page
-      title="Parçalama"
-      description="Bütün karkas parçalara ayrılır; maliyet parçalara dağıtılır. Tartım girilip onaylanınca parçalar stoka girer."
+      title={t('Parçalama')}
+      description={t('Bütün karkas parçalara ayrılır; maliyet parçalara dağıtılır. Tartım girilip onaylanınca parçalar stoka girer.')}
       extra={
         <Button type="primary" onClick={() => navigate('/parcalama/yeni')}>
-          Yeni parçalama
+          {t('Yeni parçalama')}
         </Button>
       }
     >
@@ -53,7 +54,7 @@ export default function CuttingListPage() {
         dataSource={cuttings.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'Henüz parçalama yok.' }}
+        locale={{ emptyText: t('Henüz parçalama yok.') }}
       />
     </Page>
   )

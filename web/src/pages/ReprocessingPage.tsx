@@ -13,6 +13,7 @@ import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { formatDate, formatDateTime, formatMoney, formatQty, formatUnitCost } from '../lib/format'
 import { decimalRule, textOrNull, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type Values = {
   inputs: { lot_no?: string; qty?: string }[]
@@ -41,17 +42,16 @@ function NewReprocessModal({ open, onClose }: { open: boolean; onClose: () => vo
   })
   return (
     <FormModal<Values>
-      title="Yeni yeniden işleme"
+      title={t('Yeni yeniden işleme')}
       open={open}
       onClose={onClose}
       width={640}
       initialValues={{ inputs: [{}], extra_cost: '0' }}
       onSubmit={(values) => mutation.mutateAsync(values)}
-      okText="İşle ve yeni lotu aç"
+      okText={t('İşle ve yeni lotu aç')}
     >
       <Typography.Paragraph type="secondary">
-        Girdiler ana depodan tüketilir. Satışa kapalı lot kullanılamaz. Yeni lot girdilerine miktarlarıyla bağlanır; izleme
-        ekranında görünür.
+        {t('Girdiler ana depodan tüketilir. Satışa kapalı lot kullanılamaz. Yeni lot girdilerine miktarlarıyla bağlanır; izleme ekranında görünür.')}
       </Typography.Paragraph>
       <Form.List name="inputs">
         {(fields, { add, remove }) => (
@@ -60,28 +60,28 @@ function NewReprocessModal({ open, onClose }: { open: boolean; onClose: () => vo
               <Space key={field.key} align="start" wrap>
                 <Form.Item
                   name={[field.name, 'lot_no']}
-                  label="Girdi lotu"
-                  rules={[{ required: true, message: 'Lot numarasını yazın.' }]}
+                  label={t('Girdi lotu')}
+                  rules={[{ required: true, message: t('Lot numarasını yazın.') }]}
                 >
                   <Input placeholder="SUC-2026-045" style={{ width: 200 }} />
                 </Form.Item>
-                <Form.Item name={[field.name, 'qty']} label="Miktar" rules={[decimalRule('Miktar', { maxFraction: 3 })]}>
+                <Form.Item name={[field.name, 'qty']} label={t('Miktar')} rules={[decimalRule(t('Miktar'), { maxFraction: 3 })]}>
                   <Input inputMode="decimal" style={{ width: 120 }} />
                 </Form.Item>
                 {fields.length > 1 && (
                   <Button style={{ marginTop: 30 }} onClick={() => remove(field.name)}>
-                    Sil
+                    {t('Sil')}
                   </Button>
                 )}
               </Space>
             ))}
             <Button onClick={() => add({})} style={{ marginBottom: 16 }}>
-              Girdi ekle
+              {t('Girdi ekle')}
             </Button>
           </>
         )}
       </Form.List>
-      <Form.Item name="output_product_id" label="Çıktı ürünü" rules={[{ required: true, message: 'Ürünü seçin.' }]}>
+      <Form.Item name="output_product_id" label={t('Çıktı ürünü')} rules={[{ required: true, message: t('Ürünü seçin.') }]}>
         <Select
           showSearch
           optionFilterProp="label"
@@ -89,20 +89,20 @@ function NewReprocessModal({ open, onClose }: { open: boolean; onClose: () => vo
         />
       </Form.Item>
       <Space wrap>
-        <Form.Item name="output_qty" label="Çıktı miktarı" rules={[decimalRule('Çıktı miktarı', { maxFraction: 3 })]}>
+        <Form.Item name="output_qty" label={t('Çıktı miktarı')} rules={[decimalRule(t('Çıktı miktarı'), { maxFraction: 3 })]}>
           <Input inputMode="decimal" style={{ width: 160 }} />
         </Form.Item>
         <Form.Item
           name="extra_cost"
-          label="Ek maliyet (€)"
-          rules={[decimalRule('Ek maliyet', { maxFraction: 2, allowZero: true, required: false })]}
-          extra="İşçilik, ambalaj"
+          label={t('Ek maliyet (€)')}
+          rules={[decimalRule(t('Ek maliyet'), { maxFraction: 2, allowZero: true, required: false })]}
+          extra={t('İşçilik, ambalaj')}
         >
           <Input inputMode="decimal" style={{ width: 160 }} />
         </Form.Item>
       </Space>
-      <Form.Item name="note" label="Açıklama">
-        <Input maxLength={500} placeholder="İade gelen paketler yeniden etiketlendi" />
+      <Form.Item name="note" label={t('Açıklama')}>
+        <Input maxLength={500} placeholder={t('İade gelen paketler yeniden etiketlendi')} />
       </Form.Item>
     </FormModal>
   )
@@ -113,11 +113,11 @@ export default function ReprocessingPage() {
   const [open, setOpen] = useState(false)
   return (
     <Page
-      title="Yeniden işleme"
-      description="Elimizdeki ürünlerden yeni ürün yapmak (ör. parçalardan kıyma). Yeni lot, kullanılan lotlara bağlanır; izleme kopmaz."
+      title={t('Yeniden işleme')}
+      description={t('Elimizdeki ürünlerden yeni ürün yapmak (ör. parçalardan kıyma). Yeni lot, kullanılan lotlara bağlanır; izleme kopmaz.')}
       extra={
         <Button type="primary" onClick={() => setOpen(true)}>
-          Yeni yeniden işleme
+          {t('Yeni yeniden işleme')}
         </Button>
       }
     >
@@ -130,12 +130,12 @@ export default function ReprocessingPage() {
           dataSource={records.data}
           pagination={false}
           scroll={{ x: 'max-content' }}
-          locale={{ emptyText: 'Henüz yeniden işleme yok. Örnek: iade gelen sucuğun yeniden paketlenmesi.' }}
+          locale={{ emptyText: t('Henüz yeniden işleme yok. Örnek: iade gelen sucuğun yeniden paketlenmesi.') }}
           columns={[
-            { title: 'Belge', dataIndex: 'order_no' },
-            { title: 'Zaman', dataIndex: 'completed_at', render: formatDateTime },
+            { title: t('Belge'), dataIndex: 'order_no' },
+            { title: t('Zaman'), dataIndex: 'completed_at', render: formatDateTime },
             {
-              title: 'Girdiler',
+              title: t('Girdiler'),
               key: 'inputs',
               render: (_, r) =>
                 r.inputs.map((i) => (
@@ -146,17 +146,17 @@ export default function ReprocessingPage() {
                 )),
             },
             {
-              title: 'Yeni lot',
+              title: t('Yeni lot'),
               dataIndex: 'output_lot_no',
               render: (no: string | null) => (no ? <Link to={`/lotlar/${no}`}>{no}</Link> : '—'),
             },
-            { title: 'Ürün', dataIndex: 'output_product_name' },
-            { title: 'Miktar', dataIndex: 'output_qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
-            { title: 'Ek maliyet', dataIndex: 'extra_cost', align: 'right', render: formatMoney },
-            { title: 'Lot değeri', dataIndex: 'total_value', align: 'right', render: formatMoney },
-            { title: 'Birim maliyet', dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
+            { title: t('Ürün'), dataIndex: 'output_product_name' },
+            { title: t('Miktar'), dataIndex: 'output_qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
+            { title: t('Ek maliyet'), dataIndex: 'extra_cost', align: 'right', render: formatMoney },
+            { title: t('Lot değeri'), dataIndex: 'total_value', align: 'right', render: formatMoney },
+            { title: t('Birim maliyet'), dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
             { title: 'SKT', dataIndex: 'expiry_date', render: formatDate },
-            { title: 'Açıklama', dataIndex: 'note', render: (v: string | null) => v ?? '—' },
+            { title: t('Açıklama'), dataIndex: 'note', render: (v: string | null) => v ?? '—' },
           ]}
         />
       </Card>

@@ -11,17 +11,18 @@ import { QueryError } from '../components/QueryError'
 import { formatDate, formatMoney, formatQty, formatUnitCost } from '../lib/format'
 import { PURCHASE_COST_KIND } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 type Line = Purchase['lines'][number]
 
 const LINE_COLUMNS: TableColumnsType<Line> = [
-  { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-  { title: 'Ürün', dataIndex: 'product_name' },
-  { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
-  { title: 'Birim fiyat', dataIndex: 'unit_price', align: 'right', render: formatUnitCost },
-  { title: 'Miktar × fiyat', dataIndex: 'computed_amount', align: 'right', render: formatMoney },
+  { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+  { title: t('Ürün'), dataIndex: 'product_name' },
+  { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
+  { title: t('Birim fiyat'), dataIndex: 'unit_price', align: 'right', render: formatUnitCost },
+  { title: t('Miktar × fiyat'), dataIndex: 'computed_amount', align: 'right', render: formatMoney },
   {
-    title: 'Fatura tutarı',
+    title: t('Fatura tutarı'),
     dataIndex: 'invoice_amount',
     align: 'right',
     render: (value: string, row) =>
@@ -29,30 +30,30 @@ const LINE_COLUMNS: TableColumnsType<Line> = [
         formatMoney(value)
       ) : (
         <span>
-          {formatMoney(value)} <Tag color="orange">fark</Tag>
+          {formatMoney(value)} <Tag color="orange">{t('fark')}</Tag>
         </span>
       ),
   },
   {
-    title: 'Ek maliyetler',
+    title: t('Ek maliyetler'),
     dataIndex: 'extra_costs',
     render: (costs: Line['extra_costs']) =>
       costs.length === 0
         ? '—'
         : costs.map((c) => `${PURCHASE_COST_KIND[c.kind]} ${formatMoney(c.amount)}`).join(', '),
   },
-  { title: 'Lot değeri', dataIndex: 'lot_value', align: 'right', render: formatMoney },
+  { title: t('Lot değeri'), dataIndex: 'lot_value', align: 'right', render: formatMoney },
   { title: 'SKT', dataIndex: 'expiry_date', render: formatDate },
-  { title: 'Açıklama', dataIndex: 'discrepancy_note', render: (v: string | null) => v ?? '—' },
+  { title: t('Açıklama'), dataIndex: 'discrepancy_note', render: (v: string | null) => v ?? '—' },
 ]
 
 const COLUMNS: TableColumnsType<Purchase> = [
-  { title: 'Belge no', dataIndex: 'doc_no' },
-  { title: 'Tarih', dataIndex: 'doc_date', render: formatDate },
-  { title: 'Tedarikçi', dataIndex: 'supplier_name' },
-  { title: 'Lot sayısı', key: 'lines', align: 'right', render: (_, row) => row.lines.length },
-  { title: 'Toplam değer', dataIndex: 'total_value', align: 'right', render: formatMoney },
-  { title: 'Not', dataIndex: 'note', render: (v: string | null) => v ?? '—' },
+  { title: t('Belge no'), dataIndex: 'doc_no' },
+  { title: t('Tarih'), dataIndex: 'doc_date', render: formatDate },
+  { title: t('Tedarikçi'), dataIndex: 'supplier_name' },
+  { title: t('Lot sayısı'), key: 'lines', align: 'right', render: (_, row) => row.lines.length },
+  { title: t('Toplam değer'), dataIndex: 'total_value', align: 'right', render: formatMoney },
+  { title: t('Not'), dataIndex: 'note', render: (v: string | null) => v ?? '—' },
 ]
 
 export default function PurchasesPage() {
@@ -60,11 +61,11 @@ export default function PurchasesPage() {
 
   return (
     <Page
-      title="Mal kabul"
-      description="Tedarikçiden gelen malın girişi. Her teslimat yeni bir lot numarası alır; nakliye ve kesim gibi ek masraflar maliyete eklenir."
+      title={t('Mal kabul')}
+      description={t('Tedarikçiden gelen malın girişi. Her teslimat yeni bir lot numarası alır; nakliye ve kesim gibi ek masraflar maliyete eklenir.')}
       extra={
         <Button type="primary" onClick={() => navigate('/alislar/yeni')}>
-          Yeni alış
+          {t('Yeni alış')}
         </Button>
       }
     >
@@ -91,7 +92,7 @@ export default function PurchasesPage() {
         }}
       />
       <Typography.Paragraph type="secondary" style={{ marginTop: 12 }}>
-        Satırı açınca alışın lotları, fatura farkları ve ek maliyetler görünür.
+        {t('Satırı açınca alışın lotları, fatura farkları ve ek maliyetler görünür.')}
       </Typography.Paragraph>
     </Page>
   )

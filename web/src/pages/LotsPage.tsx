@@ -12,18 +12,19 @@ import { QueryError } from '../components/QueryError'
 import { LotStatusTag } from '../components/StatusTags'
 import { formatDate, formatMoney, formatQty, formatUnitCost } from '../lib/format'
 import { LOT_ORIGIN } from '../lib/labels'
+import { t } from '../lib/i18n'
 
 const COLUMNS: TableColumnsType<Lot> = [
-  { title: 'Lot no', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-  { title: 'Ürün', dataIndex: 'product_name' },
-  { title: 'Köken', dataIndex: 'origin', render: (origin: LotOrigin) => LOT_ORIGIN[origin] },
-  { title: 'Tedarikçi', dataIndex: 'supplier_name', render: (v: string | null) => v ?? '—' },
-  { title: 'Durum', dataIndex: 'status', render: (status: LotStatus) => <LotStatusTag status={status} /> },
-  { title: 'Başlangıç', dataIndex: 'initial_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
-  { title: 'Kalan', dataIndex: 'remaining_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
-  { title: 'Kalan değer', dataIndex: 'remaining_value', align: 'right', render: formatMoney },
-  { title: 'Birim maliyet', dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
-  { title: 'Üretim', dataIndex: 'produced_at', render: formatDate },
+  { title: t('Lot no'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+  { title: t('Ürün'), dataIndex: 'product_name' },
+  { title: t('Köken'), dataIndex: 'origin', render: (origin: LotOrigin) => LOT_ORIGIN[origin] },
+  { title: t('Tedarikçi'), dataIndex: 'supplier_name', render: (v: string | null) => v ?? '—' },
+  { title: t('Durum'), dataIndex: 'status', render: (status: LotStatus) => <LotStatusTag status={status} /> },
+  { title: t('Başlangıç'), dataIndex: 'initial_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+  { title: t('Kalan'), dataIndex: 'remaining_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+  { title: t('Kalan değer'), dataIndex: 'remaining_value', align: 'right', render: formatMoney },
+  { title: t('Birim maliyet'), dataIndex: 'unit_cost', align: 'right', render: formatUnitCost },
+  { title: t('Üretim'), dataIndex: 'produced_at', render: formatDate },
   { title: 'SKT', dataIndex: 'expiry_date', render: formatDate },
 ]
 
@@ -39,14 +40,14 @@ export default function LotsPage() {
 
   return (
     <Page
-      title="Lotlar (partiler)"
-      description="Her mal girişi bir lot numarası alır. Lot kartında nereden geldiği, nereye gittiği ve bütün hareketleri görünür."
+      title={t('Lotlar (partiler)')}
+      description={t('Her mal girişi bir lot numarası alır. Lot kartında nereden geldiği, nereye gittiği ve bütün hareketleri görünür.')}
     >
       {lots.isError && <QueryError error={lots.error} onRetry={() => lots.refetch()} />}
       <Space wrap style={{ marginBottom: 16 }}>
         <Input.Search
-          placeholder="Lot no ara (ör. ET-2026)"
-          aria-label="Lot no ara"
+          placeholder={t('Lot no ara (ör. ET-2026)')}
+          aria-label={t('Lot no ara')}
           allowClear
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -59,9 +60,9 @@ export default function LotsPage() {
           value={status}
           onChange={setStatus}
           options={[
-            { value: 'all', label: 'Tümü' },
-            { value: 'AKTIF', label: 'Aktif' },
-            { value: 'BLOKE', label: 'Bloke' },
+            { value: 'all', label: t('Tümü') },
+            { value: 'AKTIF', label: t('Satışa açık') },
+            { value: 'BLOKE', label: t('Satışa kapalı') },
           ]}
         />
       </Space>

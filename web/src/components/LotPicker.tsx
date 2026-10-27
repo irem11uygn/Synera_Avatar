@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AutoComplete, Input } from 'antd'
 import { api } from '../api/client'
 import type { Lot } from '../api/types'
+import { t } from '../lib/i18n'
 
 /** Lot numarası girişi: yazdıkça kayıtlı lotlardan öneri (bloke olanlar işaretli). */
 export function LotPicker({
@@ -20,11 +21,11 @@ export function LotPicker({
     .slice(0, 12)
     .map((lot) => ({
       value: lot.lot_no,
-      label: `${lot.lot_no} · ${lot.product_name}${lot.status === 'BLOKE' ? ' · satışa kapalı' : ''}`,
+      label: `${lot.lot_no} · ${lot.product_name}${lot.status === 'BLOKE' ? ` · ${t('satışa kapalı')}` : ''}`,
     }))
   return (
     <AutoComplete value={value} options={options} onChange={onChange} onSelect={(v: string) => onPick?.(v)} style={{ minWidth: 260 }}>
-      <Input aria-label="Lot numarası" placeholder="ET-2026-001" allowClear />
+      <Input aria-label={t('Lot numarası')} placeholder="ET-2026-001" allowClear />
     </AutoComplete>
   )
 }

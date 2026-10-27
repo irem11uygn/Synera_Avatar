@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Alert, Descriptions, Spin, Tag } from 'antd'
 import { fetchHealth } from '../api/health'
+import { t } from '../lib/i18n'
 
 function StatusTag({ ok }: { ok: boolean }) {
-  return <Tag color={ok ? 'success' : 'error'}>{ok ? 'Çalışıyor' : 'Ulaşılamıyor'}</Tag>
+  return <Tag color={ok ? 'success' : 'error'}>{ok ? t('Çalışıyor') : t('Ulaşılamıyor')}</Tag>
 }
 
 export function SystemStatus() {
@@ -14,7 +15,7 @@ export function SystemStatus() {
   })
 
   if (isPending) return <Spin />
-  if (error) return <Alert type="error" showIcon title="API'ye ulaşılamadı" description={error.message} />
+  if (error) return <Alert type="error" showIcon title={t("API'ye ulaşılamadı")} description={error.message} />
 
   return (
     <Descriptions
@@ -23,8 +24,8 @@ export function SystemStatus() {
       bordered
       items={[
         { key: 'api', label: 'API', children: <StatusTag ok /> },
-        { key: 'db', label: 'Veritabanı (MySQL)', children: <StatusTag ok={data.database === 'ok'} /> },
-        { key: 'version', label: 'Sürüm', children: data.version },
+        { key: 'db', label: t('Veritabanı (MySQL)'), children: <StatusTag ok={data.database === 'ok'} /> },
+        { key: 'version', label: t('Sürüm'), children: data.version },
       ]}
     />
   )

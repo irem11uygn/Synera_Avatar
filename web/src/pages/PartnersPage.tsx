@@ -12,10 +12,11 @@ import { FormModal } from '../components/FormModal'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { textOrNull } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type Role = 'supplier' | 'customer' | 'subcontractor'
 
-const ROLE_LABEL: Record<Role, string> = { supplier: 'Tedarikçi', customer: 'Müşteri', subcontractor: 'Fasoncu' }
+const ROLE_LABEL: Record<Role, string> = { supplier: t('Tedarikçi'), customer: t('Müşteri'), subcontractor: t('Fasoncu') }
 
 type FormValues = {
   code: string
@@ -83,17 +84,17 @@ export default function PartnersPage() {
   }
 
   const columns: TableColumnsType<Partner> = [
-    { title: 'Kod', dataIndex: 'code' },
+    { title: t('Kod'), dataIndex: 'code' },
     {
-      title: 'Ad',
+      title: t('Ad'),
       dataIndex: 'name',
       render: (name: string, row) => {
         const parent = row.parent_id ? byId.get(row.parent_id) : undefined
-        return parent ? `${name} (${parent.name} şubesi)` : name
+        return parent ? t('{name} ({parent} şubesi)', { name, parent: parent.name }) : name
       },
     },
     {
-      title: 'Rol',
+      title: t('Rol'),
       key: 'roles',
       render: (_, row) => (
         <Space size={4} wrap>
@@ -103,17 +104,17 @@ export default function PartnersPage() {
         </Space>
       ),
     },
-    { title: 'Yetkili', dataIndex: 'contact_person', render: (v: string | null) => v ?? '—' },
-    { title: 'Telefon', dataIndex: 'phone', render: (v: string | null) => v ?? '—' },
+    { title: t('Yetkili'), dataIndex: 'contact_person', render: (v: string | null) => v ?? '—' },
+    { title: t('Telefon'), dataIndex: 'phone', render: (v: string | null) => v ?? '—' },
     { title: 'E-posta', dataIndex: 'email', render: (v: string | null) => v ?? '—' },
-    { title: 'Adres', dataIndex: 'address', render: (v: string | null) => v ?? '—' },
+    { title: t('Adres'), dataIndex: 'address', render: (v: string | null) => v ?? '—' },
     {
       title: '',
       key: 'actions',
       fixed: 'right',
       render: (_, row) => (
         <Button size="small" onClick={() => setEditing(row)}>
-          Düzenle
+          {t('Düzenle')}
         </Button>
       ),
     },
@@ -121,11 +122,11 @@ export default function PartnersPage() {
 
   return (
     <Page
-      title="Müşteri ve tedarikçiler"
-      description="Müşteri, tedarikçi ve fasoncu firmaların iletişim bilgileri. Geri çağırmada müşteriye bu bilgilerle ulaşılır."
+      title={t('Müşteri ve tedarikçiler')}
+      description={t('Müşteri, tedarikçi ve fasoncu firmaların iletişim bilgileri. Geri çağırmada müşteriye bu bilgilerle ulaşılır.')}
       extra={
         <Button type="primary" onClick={() => setEditing('new')}>
-          Yeni firma
+          {t('Yeni firma')}
         </Button>
       }
     >
@@ -134,10 +135,10 @@ export default function PartnersPage() {
         value={role}
         onChange={setRole}
         options={[
-          { value: 'all', label: 'Tümü' },
-          { value: 'supplier', label: 'Tedarikçiler' },
-          { value: 'customer', label: 'Müşteriler' },
-          { value: 'subcontractor', label: 'Fasoncular' },
+          { value: 'all', label: t('Tümü') },
+          { value: 'supplier', label: t('Tedarikçiler') },
+          { value: 'customer', label: t('Müşteriler') },
+          { value: 'subcontractor', label: t('Fasoncular') },
         ]}
         style={{ marginBottom: 16 }}
       />
@@ -151,7 +152,7 @@ export default function PartnersPage() {
         scroll={{ x: 'max-content' }}
       />
       <FormModal<FormValues>
-        title={editing === 'new' ? 'Yeni firma' : `Firmayı düzenle: ${editing?.code ?? ''}`}
+        title={editing === 'new' ? t('Yeni firma') : t('Firmayı düzenle: {code}', { code: editing?.code ?? '' })}
         open={editing !== null}
         onClose={() => setEditing(null)}
         initialValues={editing && editing !== 'new' ? toFormValues(editing) : { roles: [] }}
@@ -160,21 +161,21 @@ export default function PartnersPage() {
       >
         <Row gutter={16}>
           <Col xs={24} sm={8}>
-            <Form.Item label="Kod" name="code" rules={[{ required: true, whitespace: true, message: 'Kod gerekli.' }]}>
+            <Form.Item label={t('Kod')} name="code" rules={[{ required: true, whitespace: true, message: t('Kod gerekli.') }]}>
               <Input maxLength={30} autoComplete="off" spellCheck={false} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={16}>
-            <Form.Item label="Ad" name="name" rules={[{ required: true, whitespace: true, message: 'Ad gerekli.' }]}>
+            <Form.Item label={t('Ad')} name="name" rules={[{ required: true, whitespace: true, message: t('Ad gerekli.') }]}>
               <Input maxLength={150} autoComplete="off" />
             </Form.Item>
           </Col>
           <Col span={24}>
             <Form.Item
-              label="Rol"
+              label={t('Rol')}
               name="roles"
-              extra="Fasoncu seçilince ona ait bir fasoncu deposu otomatik açılır; gönderilen hammadde orada izlenir."
-              rules={[{ required: true, type: 'array', min: 1, message: 'En az bir rol seçin.' }]}
+              extra={t('Fasoncu seçilince ona ait bir fasoncu deposu otomatik açılır; gönderilen hammadde orada izlenir.')}
+              rules={[{ required: true, type: 'array', min: 1, message: t('En az bir rol seçin.') }]}
             >
               <Checkbox.Group
                 options={(Object.keys(ROLE_LABEL) as Role[]).map((r) => ({ value: r, label: ROLE_LABEL[r] }))}
@@ -182,7 +183,7 @@ export default function PartnersPage() {
             </Form.Item>
           </Col>
           <Col span={24}>
-            <Form.Item label="Ana firma (bu firma bir şubeyse)" name="parent_id">
+            <Form.Item label={t('Ana firma (bu firma bir şubeyse)')} name="parent_id">
               <Select
                 allowClear
                 showSearch={{ optionFilterProp: 'label' }}
@@ -193,22 +194,22 @@ export default function PartnersPage() {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item label="Yetkili kişi" name="contact_person">
+            <Form.Item label={t('Yetkili kişi')} name="contact_person">
               <Input maxLength={100} autoComplete="off" />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item label="Telefon" name="phone">
+            <Form.Item label={t('Telefon')} name="phone">
               <Input type="tel" maxLength={30} autoComplete="off" />
             </Form.Item>
           </Col>
           <Col span={24}>
-            <Form.Item label="E-posta" name="email" rules={[{ type: 'email', message: 'Geçerli bir e-posta yazın.' }]}>
+            <Form.Item label="E-posta" name="email" rules={[{ type: 'email', message: t('Geçerli bir e-posta yazın.') }]}>
               <Input type="email" maxLength={120} autoComplete="off" spellCheck={false} />
             </Form.Item>
           </Col>
           <Col span={24}>
-            <Form.Item label="Adres" name="address">
+            <Form.Item label={t('Adres')} name="address">
               <Input.TextArea maxLength={255} rows={2} autoComplete="off" />
             </Form.Item>
           </Col>

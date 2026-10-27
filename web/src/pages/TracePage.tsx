@@ -37,6 +37,7 @@ import { formatDate, formatQty } from '../lib/format'
 import { LINK_PROCESS, WAREHOUSE_KIND } from '../lib/labels'
 import { tracePath } from '../lib/paths'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 type Direction = 'forward' | 'backward'
 
@@ -62,25 +63,27 @@ function RecallButton({ trace }: { trace: Trace }) {
       navigate(`/geri-cagirma/${recall.id}`)
     },
   })
-  if (trace.source.status === 'BLOKE') return <Tag color="red">Bu lot zaten satışa kapalı</Tag>
+  if (trace.source.status === 'BLOKE') return <Tag color="red">{t('Bu lot zaten satışa kapalı')}</Tag>
   return (
     <>
       <Button danger type="primary" onClick={() => setOpen(true)}>
-        Geri çağırma başlat
+        {t('Geri çağırma başlat')}
       </Button>
       <FormModal<{ reason: string }>
-        title={`${trace.source.lot_no} için geri çağırma`}
+        title={t('{lot} için geri çağırma', { lot: trace.source.lot_no })}
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={(values) => start.mutateAsync(values)}
-        okText="Başlat ve satışa kapat"
+        okText={t('Başlat ve satışa kapat')}
       >
         <Typography.Paragraph>
-          {trace.source.lot_no} ve ondan türeyen <strong>{trace.lots.length - 1}</strong> lot tek işlemde
-          satışa kapatılır: mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz.
+          {t('{lot} ve ondan yapılan {n} lot tek işlemde satışa kapatılır: mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz.', {
+            lot: trace.source.lot_no,
+            n: trace.lots.length - 1,
+          })}
         </Typography.Paragraph>
-        <Form.Item name="reason" label="Neden" rules={[{ required: true, message: 'Nedeni yazın.' }]}>
-          <Input.TextArea rows={3} maxLength={500} placeholder="Tedarikçi laboratuvar sonucu: uygunsuz" />
+        <Form.Item name="reason" label={t('Neden')} rules={[{ required: true, message: t('Nedeni yazın.') }]}>
+          <Input.TextArea rows={3} maxLength={500} placeholder={t('Tedarikçi laboratuvar sonucu: uygunsuz')} />
         </Form.Item>
       </FormModal>
     </>
@@ -90,23 +93,23 @@ function RecallButton({ trace }: { trace: Trace }) {
 function ForwardDetails({ trace }: { trace: Trace }) {
   return (
     <>
-      <Card size="small" title="Elimizdeki stok (ana depo, araçlar, fasoncu)" style={{ marginBottom: 16 }}>
+      <Card size="small" title={t('Elimizdeki stok (ana depo, araçlar, fasoncu)')} style={{ marginBottom: 16 }}>
         <Table
           rowKey={(row) => `${row.lot_no}-${row.warehouse_code}`}
           size="small"
           pagination={false}
           dataSource={trace.stock}
-          locale={{ emptyText: 'Bu zincirden bizde stok kalmadı.' }}
+          locale={{ emptyText: t('Bu zincirden bizde stok kalmadı.') }}
           columns={[
-            { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-            { title: 'Ürün', dataIndex: 'product_name' },
-            { title: 'Depo', dataIndex: 'warehouse_name' },
-            { title: 'Depo türü', dataIndex: 'warehouse_kind', render: (k: keyof typeof WAREHOUSE_KIND) => WAREHOUSE_KIND[k] },
-            { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
+            { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+            { title: t('Ürün'), dataIndex: 'product_name' },
+            { title: t('Depo'), dataIndex: 'warehouse_name' },
+            { title: t('Depo türü'), dataIndex: 'warehouse_kind', render: (k: keyof typeof WAREHOUSE_KIND) => WAREHOUSE_KIND[k] },
+            { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
           ]}
         />
       </Card>
-      <Card size="small" title="Alıcılar (satış kayıtlarından)">
+      <Card size="small" title={t('Alıcılar (satış kayıtlarından)')}>
         <Table<Recipient>
           rowKey={(r) => `${r.customer_id}-${r.lot_no}`}
           size="small"
@@ -114,7 +117,7 @@ function ForwardDetails({ trace }: { trace: Trace }) {
           scroll={{ x: 'max-content' }}
           dataSource={trace.recipients}
           columns={RECIPIENT_COLUMNS}
-          locale={{ emptyText: 'Bu zincirden henüz satış yapılmadı.' }}
+          locale={{ emptyText: t('Bu zincirden henüz satış yapılmadı.') }}
         />
       </Card>
     </>
@@ -125,38 +128,38 @@ function BackwardDetails({ trace }: { trace: Trace }) {
   return (
     <Row gutter={16}>
       <Col xs={24} xl={14}>
-        <Card size="small" title="Hammadde lotları ve tedarikçiler" style={{ marginBottom: 16 }}>
+        <Card size="small" title={t('Hammadde lotları ve tedarikçiler')} style={{ marginBottom: 16 }}>
           <Table
             rowKey="lot_no"
             size="small"
             pagination={false}
             scroll={{ x: 'max-content' }}
             dataSource={trace.suppliers}
-            locale={{ emptyText: 'Alışla gelen kaynak lot yok.' }}
+            locale={{ emptyText: t('Alışla gelen kaynak lot yok.') }}
             columns={[
-              { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-              { title: 'Tedarikçi', dataIndex: 'supplier' },
-              { title: 'İletişim', key: 'contact', render: (_, r) => <ContactInfo contact={r.contact} /> },
-              { title: 'Alış belgesi', dataIndex: 'purchase_doc_no' },
-              { title: 'Tarih', dataIndex: 'purchase_date', render: formatDate },
-              { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
+              { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+              { title: t('Tedarikçi'), dataIndex: 'supplier' },
+              { title: t('İletişim'), key: 'contact', render: (_, r) => <ContactInfo contact={r.contact} /> },
+              { title: t('Alış belgesi'), dataIndex: 'purchase_doc_no' },
+              { title: t('Tarih'), dataIndex: 'purchase_date', render: formatDate },
+              { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
             ]}
           />
         </Card>
       </Col>
       <Col xs={24} xl={10}>
-        <Card size="small" title="Üretim emirleri ve parçalamalar" style={{ marginBottom: 16 }}>
+        <Card size="small" title={t('Üretim emirleri ve parçalamalar')} style={{ marginBottom: 16 }}>
           <Table
             rowKey={(row) => `${row.process}-${row.doc_no}`}
             size="small"
             pagination={false}
             dataSource={trace.processes}
-            locale={{ emptyText: 'Lot alışla geldi; işlem yok.' }}
+            locale={{ emptyText: t('Lot alışla geldi; işlem yok.') }}
             columns={[
-              { title: 'Süreç', dataIndex: 'process', render: (p: keyof typeof LINK_PROCESS) => LINK_PROCESS[p] },
-              { title: 'Belge', dataIndex: 'doc_no' },
-              { title: 'Girdi lotları', dataIndex: 'input_lots', render: (lots: string[]) => lots.join(', ') },
-              { title: 'Çıktı lotları', dataIndex: 'output_lots', render: (lots: string[]) => lots.join(', ') },
+              { title: t('Süreç'), dataIndex: 'process', render: (p: keyof typeof LINK_PROCESS) => LINK_PROCESS[p] },
+              { title: t('Belge'), dataIndex: 'doc_no' },
+              { title: t('Girdi lotları'), dataIndex: 'input_lots', render: (lots: string[]) => lots.join(', ') },
+              { title: t('Çıktı lotları'), dataIndex: 'output_lots', render: (lots: string[]) => lots.join(', ') },
             ]}
           />
         </Card>
@@ -184,7 +187,7 @@ function TraceResult({ lotNo, direction }: { lotNo: string; direction: Direction
             </Typography.Text>
             <span>{data.source.product_name}</span>
             <LotStatusTag status={data.source.status} />
-            {data.source.supplier_name && <span>Tedarikçi: {data.source.supplier_name}</span>}
+            {data.source.supplier_name && <span>{t('Tedarikçi: {name}', { name: data.source.supplier_name })}</span>}
           </Space>
           {forward && <RecallButton trace={data} />}
         </Space>
@@ -194,38 +197,37 @@ function TraceResult({ lotNo, direction }: { lotNo: string; direction: Direction
         {forward ? (
           <>
             <Col xs={12} lg={6}>
-              <Stat label="Etkilenen lot" value={data.lots.length} hint="Kaynak + türevler" />
+              <Stat label={t('Etkilenen lot')} value={data.lots.length} hint={t('Kaynak + türevler')} />
             </Col>
             <Col xs={12} lg={6}>
-              <Stat label="Bizdeki stok" value={totalsByUnit(data.stock)} tone="warning" />
+              <Stat label={t('Bizdeki stok')} value={totalsByUnit(data.stock)} tone="warning" />
             </Col>
             <Col xs={12} lg={6}>
-              <Stat label="Alıcı" value={new Set(data.recipients.map((r) => r.customer_id)).size} tone="success" />
+              <Stat label={t('Alıcı')} value={new Set(data.recipients.map((r) => r.customer_id)).size} tone="success" />
             </Col>
             <Col xs={12} lg={6}>
-              <Stat label="Müşterilerde" value={totalsByUnit(data.recipients)} tone="danger" />
+              <Stat label={t('Müşterilerde')} value={totalsByUnit(data.recipients)} tone="danger" />
             </Col>
           </>
         ) : (
           <>
             <Col xs={12} lg={8}>
-              <Stat label="Kaynak lot" value={data.lots.length - 1} />
+              <Stat label={t('Kaynak lot')} value={data.lots.length - 1} />
             </Col>
             <Col xs={12} lg={8}>
-              <Stat label="Tedarikçi" value={new Set(data.suppliers.map((s) => s.supplier)).size} tone="success" />
+              <Stat label={t('Tedarikçi')} value={new Set(data.suppliers.map((s) => s.supplier)).size} tone="success" />
             </Col>
             <Col xs={24} lg={8}>
-              <Stat label="Üretim / parçalama" value={data.processes.length} tone="warning" />
+              <Stat label={t('Üretim / parçalama')} value={data.processes.length} tone="warning" />
             </Col>
           </>
         )}
       </Row>
 
-      <Card size="small" title="Lot zinciri" style={{ marginBottom: 16 }}>
+      <Card size="small" title={t('Lot zinciri')} style={{ marginBottom: 16 }}>
         <TraceFlow lots={data.lots} links={data.links} recipients={data.recipients} direction={direction} />
         <Typography.Text type="secondary">
-          Şema yalnız kayıtlardan çizilir (lot bağları, satış satırları); tahmin kullanılmaz. Bir bloğa tıklayınca lot
-          ayrıntısı açılır.
+          {t('Şema yalnız kayıtlardan çizilir (lot bağları, satış satırları); tahmin kullanılmaz. Bir bloğa tıklayınca lot ayrıntısı açılır.')}
         </Typography.Text>
       </Card>
 
@@ -240,8 +242,8 @@ export default function TracePage({ lotNo, direction = 'forward' }: { lotNo?: st
 
   return (
     <Page
-      title="Lot izleme"
-      description="Bir lot numarası yazın: ileri izlemede o maldan ne yapıldığını ve hangi müşterilere gittiğini, geri izlemede hangi hammaddeden ve tedarikçiden geldiğini görürsünüz."
+      title={t('Lot izleme')}
+      description={t('Bir lot numarası yazın: ileri izlemede o maldan ne yapıldığını ve hangi müşterilere gittiğini, geri izlemede hangi hammaddeden ve tedarikçiden geldiğini görürsünüz.')}
     >
       <Card size="small" style={{ marginBottom: 16 }}>
         <Space wrap>
@@ -250,12 +252,12 @@ export default function TracePage({ lotNo, direction = 'forward' }: { lotNo?: st
             value={direction}
             onChange={(dir) => (lotNo ? go(lotNo, dir) : undefined)}
             options={[
-              { value: 'forward', label: 'İleri izle', title: 'Nereye gitti? Türev lotlar ve alıcılar' },
-              { value: 'backward', label: 'Geri izle', title: 'Neyden yapıldı? Kaynak lotlar ve tedarikçiler' },
+              { value: 'forward', label: t('İleri izle'), title: t('Nereye gitti? Türev lotlar ve alıcılar') },
+              { value: 'backward', label: t('Geri izle'), title: t('Neyden yapıldı? Kaynak lotlar ve tedarikçiler') },
             ]}
           />
           <Button type="primary" onClick={() => go(text)}>
-            İzle
+            {t('İzle')}
           </Button>
         </Space>
       </Card>
@@ -263,7 +265,7 @@ export default function TracePage({ lotNo, direction = 'forward' }: { lotNo?: st
         <TraceResult key={`${direction}-${lotNo}`} lotNo={lotNo} direction={direction} />
       ) : (
         <Card size="small">
-          <Empty description="Bir lot numarası yazın ya da şartname senaryosuyla başlayın.">
+          <Empty description={t('Bir lot numarası yazın ya da örnek senaryoyla başlayın.')}>
             <Space wrap>
               <Button onClick={() => go('ET-2026-001', 'forward')}>ET-2026-001 ileri izle</Button>
               <Button onClick={() => go('SUC-2026-045', 'backward')}>SUC-2026-045 geri izle</Button>

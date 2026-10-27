@@ -30,6 +30,7 @@ import { Stat } from '../components/Stat'
 import { formatDate, formatMoney } from '../lib/format'
 import { ROLE } from '../lib/roles'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 type Tone = 'danger' | 'warning' | 'info' | 'success'
 type Todo = { tone: Tone; icon: ReactNode; title: string; sub: string; to: string; action: string; roles: UserRole[] }
@@ -42,80 +43,80 @@ function todos(data: Dashboard): Todo[] {
     list.push({
       tone: 'danger',
       icon: <AlertOutlined />,
-      title: `${data.unread_alerts} okunmamış uyarı`,
-      sub: 'Satışa kapalı ya da son kullanma tarihi geçmiş lot telefondan satılmış olabilir.',
+      title: t('{n} okunmamış uyarı', { n: data.unread_alerts }),
+      sub: t('Satışa kapalı ya da son kullanma tarihi geçmiş lot telefondan satılmış olabilir.'),
       to: '/uyarilar',
-      action: 'Uyarıları gör',
+      action: t('Uyarıları gör'),
       roles: ['YONETICI', 'KALITE'],
     })
   if (data.open_recalls.length > 0)
     list.push({
       tone: 'danger',
       icon: <SafetyCertificateOutlined />,
-      title: `${data.open_recalls.length} açık geri çağırma`,
-      sub: `${data.open_recalls.map((r) => r.lot_no).join(', ')} — müşterilere haber verildi mi, mal toplandı mı?`,
+      title: t('{n} açık geri çağırma', { n: data.open_recalls.length }),
+      sub: t('{lots} — müşterilere haber verildi mi, mal toplandı mı?', { lots: data.open_recalls.map((r) => r.lot_no).join(', ') }),
       to: '/geri-cagirma',
-      action: 'Geri çağırmalar',
+      action: t('Geri çağırmalar'),
       roles: ['YONETICI', 'KALITE'],
     })
   if (expired.length > 0)
     list.push({
       tone: 'danger',
       icon: <ClockCircleOutlined />,
-      title: `${expired.length} lotun son kullanma tarihi geçti`,
-      sub: 'Bu mallar satılamaz. Rafından ayırın ve fire/imha kaydı girin.',
+      title: t('{n} lotun son kullanma tarihi geçti', { n: expired.length }),
+      sub: t('Bu mallar satılamaz. Rafından ayırın ve fire/imha kaydı girin.'),
       to: '/son-kullanma',
-      action: 'Listeyi aç',
+      action: t('Listeyi aç'),
       roles: ['YONETICI', 'DEPO', 'MAGAZA', 'KALITE'],
     })
   if (soon.length > 0)
     list.push({
       tone: 'warning',
       icon: <ClockCircleOutlined />,
-      title: `${soon.length} lot ${data.expiry_warning_days} gün içinde dolacak`,
-      sub: 'Önce bunları satın (ilk dolan ilk çıkar).',
+      title: t('{n} lot {days} gün içinde dolacak', { n: soon.length, days: data.expiry_warning_days }),
+      sub: t('Önce bunları satın (ilk dolan ilk çıkar).'),
       to: '/son-kullanma',
-      action: 'Listeyi aç',
+      action: t('Listeyi aç'),
       roles: ['YONETICI', 'DEPO', 'MAGAZA'],
     })
   if (data.low_stock.length > 0)
     list.push({
       tone: 'warning',
       icon: <WarningOutlined />,
-      title: `${data.low_stock.length} üründe stok azaldı`,
+      title: t('{n} üründe stok azaldı', { n: data.low_stock.length }),
       sub: data.low_stock.map((p) => p.product_name).join(', '),
       to: '/stok',
-      action: 'Stoka bak',
+      action: t('Stoka bak'),
       roles: ['YONETICI', 'DEPO', 'URETIM'],
     })
   if (data.shipped_orders > 0)
     list.push({
       tone: 'info',
       icon: <ToolOutlined />,
-      title: `${data.shipped_orders} fason üretim teslim alınmayı bekliyor`,
-      sub: 'Fasoncudan gelen ürünü ve faturayı girince birim maliyet hesaplanır.',
+      title: t('{n} fason üretim teslim alınmayı bekliyor', { n: data.shipped_orders }),
+      sub: t('Fasoncudan gelen ürünü ve faturayı girince birim maliyet hesaplanır.'),
       to: '/uretim',
-      action: 'Emirleri aç',
+      action: t('Emirleri aç'),
       roles: ['YONETICI', 'URETIM'],
     })
   if (data.draft_orders > 0)
     list.push({
       tone: 'info',
       icon: <ToolOutlined />,
-      title: `${data.draft_orders} fason üretim emri gönderilmedi`,
-      sub: 'Hammaddeyi fasoncuya sevk edin ya da emri iptal edin.',
+      title: t('{n} fason üretim emri gönderilmedi', { n: data.draft_orders }),
+      sub: t('Hammaddeyi fasoncuya sevk edin ya da emri iptal edin.'),
       to: '/uretim',
-      action: 'Emirleri aç',
+      action: t('Emirleri aç'),
       roles: ['YONETICI', 'URETIM'],
     })
   if (data.draft_cuttings > 0)
     list.push({
       tone: 'info',
       icon: <ScissorOutlined />,
-      title: `${data.draft_cuttings} parçalama onay bekliyor`,
-      sub: 'Tartılan parçaları girip onaylayınca parçalar stoka girer.',
+      title: t('{n} parçalama onay bekliyor', { n: data.draft_cuttings }),
+      sub: t('Tartılan parçaları girip onaylayınca parçalar stoka girer.'),
       to: '/parcalama',
-      action: 'Parçalamaları aç',
+      action: t('Parçalamaları aç'),
       roles: ['YONETICI', 'URETIM'],
     })
   return list
@@ -124,25 +125,25 @@ function todos(data: Dashboard): Todo[] {
 type Quick = { label: string; icon: ReactNode; to: string; roles: UserRole[] }
 
 const QUICK: Quick[] = [
-  { label: 'Mağaza satışı', icon: <ShoppingCartOutlined />, to: '/magaza-satisi', roles: ['YONETICI', 'MAGAZA'] },
-  { label: 'İade al', icon: <RollbackOutlined />, to: '/satislar', roles: ['YONETICI', 'MAGAZA'] },
-  { label: 'Gün sonu', icon: <CalculatorOutlined />, to: '/gun-sonu', roles: ['YONETICI', 'MAGAZA'] },
-  { label: 'Mal kabul', icon: <InboxOutlined />, to: '/alislar/yeni', roles: ['YONETICI', 'DEPO'] },
-  { label: 'Araca yükleme', icon: <CarOutlined />, to: '/transferler', roles: ['YONETICI', 'DEPO'] },
-  { label: 'Sayım yap', icon: <AppstoreOutlined />, to: '/sayim', roles: ['YONETICI', 'DEPO'] },
-  { label: 'Yeni fason üretim', icon: <ToolOutlined />, to: '/uretim/yeni', roles: ['YONETICI', 'URETIM'] },
-  { label: 'Yeni parçalama', icon: <ScissorOutlined />, to: '/parcalama/yeni', roles: ['YONETICI', 'URETIM'] },
-  { label: 'Yeniden işleme', icon: <ReloadOutlined />, to: '/yeniden-isleme', roles: ['URETIM'] },
-  { label: 'Lot izle', icon: <NodeIndexOutlined />, to: '/izleme', roles: ['YONETICI', 'KALITE', 'DEPO', 'URETIM', 'MAGAZA'] },
-  { label: 'Geri çağırma', icon: <SafetyCertificateOutlined />, to: '/geri-cagirma', roles: ['KALITE'] },
-  { label: 'Tatbikat yap', icon: <FileSearchOutlined />, to: '/tatbikat', roles: ['KALITE'] },
+  { label: t('Mağaza satışı'), icon: <ShoppingCartOutlined />, to: '/magaza-satisi', roles: ['YONETICI', 'MAGAZA'] },
+  { label: t('İade al'), icon: <RollbackOutlined />, to: '/satislar', roles: ['YONETICI', 'MAGAZA'] },
+  { label: t('Gün sonu'), icon: <CalculatorOutlined />, to: '/gun-sonu', roles: ['YONETICI', 'MAGAZA'] },
+  { label: t('Mal kabul'), icon: <InboxOutlined />, to: '/alislar/yeni', roles: ['YONETICI', 'DEPO'] },
+  { label: t('Araca yükleme'), icon: <CarOutlined />, to: '/transferler', roles: ['YONETICI', 'DEPO'] },
+  { label: t('Sayım yap'), icon: <AppstoreOutlined />, to: '/sayim', roles: ['YONETICI', 'DEPO'] },
+  { label: t('Yeni fason üretim'), icon: <ToolOutlined />, to: '/uretim/yeni', roles: ['YONETICI', 'URETIM'] },
+  { label: t('Yeni parçalama'), icon: <ScissorOutlined />, to: '/parcalama/yeni', roles: ['YONETICI', 'URETIM'] },
+  { label: t('Yeniden işleme'), icon: <ReloadOutlined />, to: '/yeniden-isleme', roles: ['URETIM'] },
+  { label: t('Lot izle'), icon: <NodeIndexOutlined />, to: '/izleme', roles: ['YONETICI', 'KALITE', 'DEPO', 'URETIM', 'MAGAZA'] },
+  { label: t('Geri çağırma'), icon: <SafetyCertificateOutlined />, to: '/geri-cagirma', roles: ['KALITE'] },
+  { label: t('Tatbikat yap'), icon: <FileSearchOutlined />, to: '/tatbikat', roles: ['KALITE'] },
 ]
 
 function greeting(): string {
   const hour = new Date().getHours()
-  if (hour < 11) return 'Günaydın'
-  if (hour < 18) return 'İyi çalışmalar'
-  return 'İyi akşamlar'
+  if (hour < 11) return t('Günaydın')
+  if (hour < 18) return t('İyi çalışmalar')
+  return t('İyi akşamlar')
 }
 
 export default function HomePage() {
@@ -165,7 +166,7 @@ export default function HomePage() {
       {dashboard.isError && <QueryError error={dashboard.error} onRetry={() => dashboard.refetch()} />}
 
       <div className="section-title" style={{ marginTop: 0 }}>
-        Bugün yapılacaklar
+        {t('Bugün yapılacaklar')}
       </div>
       {dashboard.isPending && <Skeleton active paragraph={{ rows: 3 }} />}
       {data && mine.length === 0 && (
@@ -174,8 +175,8 @@ export default function HomePage() {
             <CheckCircleOutlined />
           </span>
           <div className="todo-text">
-            <div className="todo-title">Acil bir iş yok</div>
-            <div className="todo-sub">Bekleyen uyarı, dolan lot ya da yarım kalmış belge görünmüyor.</div>
+            <div className="todo-title">{t('Acil bir iş yok')}</div>
+            <div className="todo-sub">{t('Bekleyen uyarı, dolan lot ya da yarım kalmış belge görünmüyor.')}</div>
           </div>
         </div>
       )}
@@ -194,7 +195,7 @@ export default function HomePage() {
 
       {quick.length > 0 && (
         <>
-          <div className="section-title">Hızlı işlemler</div>
+          <div className="section-title">{t('Hızlı işlemler')}</div>
           <div className="quick-actions">
             {quick.map((q) => (
               <button key={q.to} type="button" className="quick-action" onClick={() => navigate(q.to)}>
@@ -208,14 +209,14 @@ export default function HomePage() {
 
       {data && (
         <>
-          <div className="section-title">Özet</div>
+          <div className="section-title">{t('Özet')}</div>
           <Row gutter={[12, 12]}>
             {(role === 'YONETICI' || role === 'MAGAZA') && (
               <Col xs={12} lg={6}>
                 <Stat
-                  label="Bugünkü satış"
+                  label={t('Bugünkü satış')}
                   value={formatMoney(data.today_sales_amount)}
-                  hint={`${data.today_sale_count} satış belgesi`}
+                  hint={t('{n} satış belgesi', { n: data.today_sale_count })}
                   tone="success"
                   onClick={() => navigate('/gun-sonu')}
                 />
@@ -224,9 +225,9 @@ export default function HomePage() {
             {(role === 'YONETICI' || role === 'DEPO') && (
               <Col xs={12} lg={6}>
                 <Stat
-                  label="Elimizdeki stokun değeri"
+                  label={t('Elimizdeki stokun değeri')}
                   value={formatMoney(data.stock_value)}
-                  hint="Maliyet fiyatıyla"
+                  hint={t('Maliyet fiyatıyla')}
                   tone="brand"
                   onClick={() => navigate('/stok')}
                 />
@@ -234,18 +235,18 @@ export default function HomePage() {
             )}
             <Col xs={12} lg={6}>
               <Stat
-                label="Dolmak üzere / dolmuş lot"
+                label={t('Dolmak üzere / dolmuş lot')}
                 value={data.expiring.length}
-                hint={`${data.expiry_warning_days} gün içinde ya da geçmiş`}
+                hint={t('{n} gün içinde ya da geçmiş', { n: data.expiry_warning_days })}
                 tone={data.expiring.length ? 'warning' : 'neutral'}
                 onClick={() => navigate('/son-kullanma')}
               />
             </Col>
             <Col xs={12} lg={6}>
               <Stat
-                label="Açık geri çağırma"
+                label={t('Açık geri çağırma')}
                 value={data.open_recalls.length}
-                hint="Satışa kapalı lotlar"
+                hint={t('Satışa kapalı lotlar')}
                 tone={data.open_recalls.length ? 'danger' : 'neutral'}
                 onClick={() => navigate(role === 'YONETICI' || role === 'KALITE' ? '/geri-cagirma' : '/izleme')}
               />

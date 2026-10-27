@@ -14,6 +14,7 @@ import { sum } from '../lib/decimal'
 import { formatDate, formatDateTime, formatMoney, formatQty, todayIso } from '../lib/format'
 import { PAYMENT_METHOD, paymentLabel, SALE_CHANNEL } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 export default function DayEndPage() {
   const { user } = useSession()
@@ -27,14 +28,14 @@ export default function DayEndPage() {
 
   return (
     <Page
-      title="Gün sonu"
-      description="Günün satışları, iadeleri ve ödeme türüne göre toplamlar. Kasayı sayarken ve araç dönünce kullanın."
+      title={t('Gün sonu')}
+      description={t('Günün satışları, iadeleri ve ödeme türüne göre toplamlar. Kasayı sayarken ve araç dönünce kullanın.')}
       extra={
         <Button
           icon={<PrinterOutlined />}
           onClick={() => navigate(`/yazdir/gun-sonu/${day}${warehouseId ? `?depo=${warehouseId}` : ''}`)}
         >
-          Yazdır
+          {t('Yazdır')}
         </Button>
       }
     >
@@ -42,13 +43,13 @@ export default function DayEndPage() {
         <Row gutter={[12, 12]}>
           <Col xs={24} sm={12} md={8}>
             <label className="muted" htmlFor="gun">
-              Gün
+              {t('Gün')}
             </label>
             <Input id="gun" type="date" value={day} max={todayIso()} onChange={(e) => e.target.value && setDay(e.target.value)} />
           </Col>
           <Col xs={24} sm={12} md={8}>
             <label className="muted" htmlFor="yer">
-              Satış yeri
+              {t('Satış yeri')}
             </label>
             <Select
               id="yer"
@@ -56,8 +57,8 @@ export default function DayEndPage() {
               value={warehouseId ?? 0}
               onChange={(value: number) => setWarehouseId(value || undefined)}
               options={[
-                { value: 0, label: 'Hepsi (mağaza + araçlar)' },
-                ...places.map((w) => ({ value: w.id, label: w.kind === 'ANA' ? 'Mağaza (ana depo)' : w.name })),
+                { value: 0, label: t('Hepsi (mağaza + araçlar)') },
+                ...places.map((w) => ({ value: w.id, label: w.kind === 'ANA' ? t('Mağaza (ana depo)') : w.name })),
               ]}
             />
           </Col>
@@ -70,26 +71,26 @@ export default function DayEndPage() {
         <>
           <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
             <Col xs={12} lg={6}>
-              <Stat label="Satış" value={formatMoney(data.sales_amount)} hint={`${data.sale_count} belge`} tone="success" />
+              <Stat label={t('Satış')} value={formatMoney(data.sales_amount)} hint={`${data.sale_count} belge`} tone="success" />
             </Col>
             <Col xs={12} lg={6}>
-              <Stat label="İade" value={formatMoney(data.refund_amount)} hint={`${data.returns.length} iade`} tone="warning" />
+              <Stat label={t('İade')} value={formatMoney(data.refund_amount)} hint={`${data.returns.length} iade`} tone="warning" />
             </Col>
             <Col xs={12} lg={6}>
-              <Stat label="Net" value={formatMoney(data.net_amount)} hint="Satış − iade" tone="brand" />
+              <Stat label={t('Net')} value={formatMoney(data.net_amount)} hint={t('Satış − iade')} tone="brand" />
             </Col>
             <Col xs={12} lg={6}>
-              <Stat label="Kasadaki nakit satış" value={formatMoney(cash)} hint="Nakit iade verdiyseniz düşün" />
+              <Stat label={t('Kasadaki nakit satış')} value={formatMoney(cash)} hint={t('Nakit iade verdiyseniz düşün')} />
             </Col>
           </Row>
           {user.role === 'YONETICI' && (
             <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
               <Col xs={12} lg={6}>
-                <Stat label="Satılan malın maliyeti" value={formatMoney(data.cost_amount)} />
+                <Stat label={t('Satılan malın maliyeti')} value={formatMoney(data.cost_amount)} />
               </Col>
               <Col xs={12} lg={6}>
                 <Stat
-                  label="Brüt kâr"
+                  label={t('Brüt kâr')}
                   value={formatMoney(sum([data.sales_amount, `-${data.cost_amount}`], 2))}
                   tone="success"
                 />
@@ -99,63 +100,63 @@ export default function DayEndPage() {
 
           <Row gutter={[16, 16]}>
             <Col xs={24} lg={12}>
-              <Card title="Ödeme türüne göre" size="small">
+              <Card title={t('Ödeme türüne göre')} size="small">
                 <Table
                   rowKey="key"
                   size="small"
                   pagination={false}
                   dataSource={data.by_payment}
-                  locale={{ emptyText: 'Bu gün satış yok.' }}
+                  locale={{ emptyText: t('Bu gün satış yok.') }}
                   columns={[
-                    { title: 'Ödeme', dataIndex: 'key', render: paymentLabel },
-                    { title: 'Belge', dataIndex: 'sale_count', align: 'right' },
-                    { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
+                    { title: t('Ödeme'), dataIndex: 'key', render: paymentLabel },
+                    { title: t('Belge'), dataIndex: 'sale_count', align: 'right' },
+                    { title: t('Tutar'), dataIndex: 'amount', align: 'right', render: formatMoney },
                   ]}
                 />
               </Card>
             </Col>
             <Col xs={24} lg={12}>
-              <Card title="Satıcıya göre" size="small">
+              <Card title={t('Satıcıya göre')} size="small">
                 <Table
                   rowKey="key"
                   size="small"
                   pagination={false}
                   dataSource={data.by_seller}
-                  locale={{ emptyText: 'Bu gün satış yok.' }}
+                  locale={{ emptyText: t('Bu gün satış yok.') }}
                   columns={[
-                    { title: 'Satıcı', dataIndex: 'key' },
-                    { title: 'Belge', dataIndex: 'sale_count', align: 'right' },
-                    { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
+                    { title: t('Satıcı'), dataIndex: 'key' },
+                    { title: t('Belge'), dataIndex: 'sale_count', align: 'right' },
+                    { title: t('Tutar'), dataIndex: 'amount', align: 'right', render: formatMoney },
                   ]}
                 />
               </Card>
             </Col>
           </Row>
 
-          <div className="section-title">Satışlar ({data.sales.length})</div>
+          <div className="section-title">{t('Satışlar ({n})', { n: data.sales.length })}</div>
           <Table<DaySale>
             rowKey="id"
             dataSource={data.sales}
             pagination={{ pageSize: 20, hideOnSinglePage: true }}
             scroll={{ x: 'max-content' }}
-            locale={{ emptyText: `${formatDate(day)} günü satış yok.` }}
+            locale={{ emptyText: t('{day} günü satış yok.', { day: formatDate(day) }) }}
             columns={[
-              { title: 'Saat', dataIndex: 'sold_at', render: (v: string) => formatDateTime(v).slice(-5) },
-              { title: 'Belge', dataIndex: 'sale_no' },
-              { title: 'Müşteri', dataIndex: 'customer_name' },
-              { title: 'Satıcı', dataIndex: 'seller_name', responsive: ['md'] },
-              { title: 'Yer', dataIndex: 'channel', render: (c: DaySale['channel']) => SALE_CHANNEL[c], responsive: ['lg'] },
+              { title: t('Saat'), dataIndex: 'sold_at', render: (v: string) => formatDateTime(v).slice(-5) },
+              { title: t('Belge'), dataIndex: 'sale_no' },
+              { title: t('Müşteri'), dataIndex: 'customer_name' },
+              { title: t('Satıcı'), dataIndex: 'seller_name', responsive: ['md'] },
+              { title: t('Yer'), dataIndex: 'channel', render: (c: DaySale['channel']) => SALE_CHANNEL[c], responsive: ['lg'] },
               {
-                title: 'Ödeme',
+                title: t('Ödeme'),
                 dataIndex: 'payment_method',
-                render: (p: PaymentMethod | null) => (p ? PAYMENT_METHOD[p] : <Tag>Belirtilmedi</Tag>),
+                render: (p: PaymentMethod | null) => (p ? PAYMENT_METHOD[p] : <Tag>{t('Belirtilmedi')}</Tag>),
               },
-              { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
+              { title: t('Tutar'), dataIndex: 'amount', align: 'right', render: formatMoney },
               {
                 title: '',
                 render: (_, sale) => (
                   <Button size="small" icon={<PrinterOutlined />} onClick={() => navigate(`/yazdir/satis/${sale.id}`)}>
-                    Fiş
+                    {t('Fiş')}
                   </Button>
                 ),
               },
@@ -164,19 +165,19 @@ export default function DayEndPage() {
 
           {data.returns.length > 0 && (
             <>
-              <div className="section-title">İadeler ({data.returns.length})</div>
+              <div className="section-title">{t('İadeler ({n})', { n: data.returns.length })}</div>
               <Table
                 rowKey="return_no"
                 dataSource={data.returns}
                 pagination={false}
                 scroll={{ x: 'max-content' }}
                 columns={[
-                  { title: 'İade', dataIndex: 'return_no' },
-                  { title: 'Satış', dataIndex: 'sale_no' },
-                  { title: 'Müşteri', dataIndex: 'customer_name' },
-                  { title: 'Lot', dataIndex: 'lot_no' },
-                  { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
-                  { title: 'Geri ödenecek', dataIndex: 'refund_amount', align: 'right', render: formatMoney },
+                  { title: t('İade'), dataIndex: 'return_no' },
+                  { title: t('Satış'), dataIndex: 'sale_no' },
+                  { title: t('Müşteri'), dataIndex: 'customer_name' },
+                  { title: t('Lot'), dataIndex: 'lot_no' },
+                  { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string) => formatQty(v) },
+                  { title: t('Geri ödenecek'), dataIndex: 'refund_amount', align: 'right', render: formatMoney },
                 ]}
               />
             </>
@@ -184,18 +185,18 @@ export default function DayEndPage() {
 
           {data.stock_left.length > 0 && (
             <>
-              <div className="section-title">Araçta kalan mal</div>
+              <div className="section-title">{t('Araçta kalan mal')}</div>
               <Table
                 rowKey="lot_no"
                 dataSource={data.stock_left}
                 pagination={false}
                 scroll={{ x: 'max-content' }}
                 columns={[
-                  { title: 'Ürün', dataIndex: 'product_name' },
-                  { title: 'Lot', dataIndex: 'lot_no' },
-                  { title: 'Son kullanma', dataIndex: 'expiry_date', render: formatDate },
+                  { title: t('Ürün'), dataIndex: 'product_name' },
+                  { title: t('Lot'), dataIndex: 'lot_no' },
+                  { title: t('Son kullanma'), dataIndex: 'expiry_date', render: formatDate },
                   {
-                    title: 'Miktar',
+                    title: t('Miktar'),
                     align: 'right',
                     render: (_, row) => formatQty(row.qty, row.base_unit),
                   },

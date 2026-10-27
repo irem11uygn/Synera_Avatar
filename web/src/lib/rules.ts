@@ -3,6 +3,7 @@
 
 import type { FormRule } from 'antd'
 import { compare, parseUserDecimal } from './decimal'
+import { t } from './i18n'
 
 type DecimalOptions = { maxFraction: number; required?: boolean; allowZero?: boolean; integer?: boolean }
 
@@ -22,11 +23,11 @@ export function decimalRule(
       if (parsed === null) {
         throw new Error(
           integer
-            ? `${label} tam sayı olmalı.`
-            : `${label}: geçerli bir sayı yazın (en çok ${maxFraction} ondalık, binlik ayırıcı olmadan).`,
+            ? t('{label} tam sayı olmalı.', { label })
+            : t('{label}: geçerli bir sayı yazın (en çok {n} ondalık, binlik ayırıcı olmadan).', { label, n: maxFraction }),
         )
       }
-      if (!allowZero && compare(parsed, '0') === 0) throw new Error(`${label} sıfırdan büyük olmalı.`)
+      if (!allowZero && compare(parsed, '0') === 0) throw new Error(t('{label} sıfırdan büyük olmalı.', { label }))
     },
   }
 }
@@ -35,7 +36,7 @@ export function decimalRule(
 export function toApiDecimal(value: string | null | undefined, maxFraction: number): string | null {
   if (value == null || !value.trim()) return null
   const parsed = parseUserDecimal(value, maxFraction)
-  if (parsed === null) throw new Error(`Geçersiz sayı: ${value}`)
+  if (parsed === null) throw new Error(t('Geçersiz sayı: {value}', { value }))
   return parsed
 }
 

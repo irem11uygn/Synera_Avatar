@@ -5,10 +5,11 @@ import type { User } from '../api/types'
 import { useSession } from '../auth/context'
 import { Page } from '../components/Page'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 type Values = { current_password: string; new_password: string; repeat: string }
 
-const RULE = 'En az 8 karakter; harf ve rakam birlikte.'
+const RULE = t('En az 8 karakter; harf ve rakam birlikte.')
 
 function PasswordForm({ onDone }: { onDone: () => void }) {
   const { setUser } = useSession()
@@ -35,15 +36,15 @@ function PasswordForm({ onDone }: { onDone: () => void }) {
   return (
     <Form<Values> layout="vertical" onFinish={finish} requiredMark={false} style={{ maxWidth: 420 }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
-      <Form.Item label="Şu anki şifre" name="current_password" rules={[{ required: true, message: 'Şu anki şifreyi yazın.' }]}>
+      <Form.Item label={t('Şu anki şifre')} name="current_password" rules={[{ required: true, message: t('Şu anki şifreyi yazın.') }]}>
         <Input.Password autoComplete="current-password" />
       </Form.Item>
       <Form.Item
-        label="Yeni şifre"
+        label={t('Yeni şifre')}
         name="new_password"
         extra={RULE}
         rules={[
-          { required: true, message: 'Yeni şifreyi yazın.' },
+          { required: true, message: t('Yeni şifreyi yazın.') },
           { min: 8, message: RULE },
           { pattern: /^(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d).+$/, message: RULE },
         ]}
@@ -51,23 +52,23 @@ function PasswordForm({ onDone }: { onDone: () => void }) {
         <Input.Password autoComplete="new-password" />
       </Form.Item>
       <Form.Item
-        label="Yeni şifre (tekrar)"
+        label={t('Yeni şifre (tekrar)')}
         name="repeat"
         dependencies={['new_password']}
         rules={[
-          { required: true, message: 'Yeni şifreyi tekrar yazın.' },
+          { required: true, message: t('Yeni şifreyi tekrar yazın.') },
           ({ getFieldValue }) => ({
             validator: (_, value) =>
               !value || value === getFieldValue('new_password')
                 ? Promise.resolve()
-                : Promise.reject(new Error('İki şifre aynı değil.')),
+                : Promise.reject(new Error(t('İki şifre aynı değil.'))),
           }),
         ]}
       >
         <Input.Password autoComplete="new-password" />
       </Form.Item>
       <Button type="primary" htmlType="submit" loading={busy} size="large">
-        Şifreyi değiştir
+        {t('Şifreyi değiştir')}
       </Button>
     </Form>
   )
@@ -77,11 +78,11 @@ function PasswordForm({ onDone }: { onDone: () => void }) {
 export default function ChangePasswordPage() {
   const { message } = App.useApp()
   return (
-    <Page title="Şifremi değiştir" description="Diğer cihazlardaki oturumlarınız kapanır; bu oturum açık kalır.">
+    <Page title={t('Şifremi değiştir')} description={t('Diğer cihazlardaki oturumlarınız kapanır; bu oturum açık kalır.')}>
       <Card>
         <PasswordForm
           onDone={() => {
-            message.success('Şifreniz değiştirildi.')
+            message.success(t('Şifreniz değiştirildi.'))
             navigate('/')
           }}
         />
@@ -97,15 +98,14 @@ export function ForcedPasswordChange() {
     <Flex justify="center" style={{ minHeight: '100vh', padding: '8vh 16px 16px' }}>
       <Card style={{ width: '100%', maxWidth: 480, alignSelf: 'flex-start' }}>
         <Typography.Title level={2} style={{ marginTop: 0 }}>
-          Yeni şifrenizi belirleyin
+          {t('Yeni şifrenizi belirleyin')}
         </Typography.Title>
         <Typography.Paragraph type="secondary">
-          Merhaba {user.full_name}. Hesabınız yeni açıldı ya da şifreniz sıfırlandı. Devam etmeden önce yalnız sizin
-          bildiğiniz bir şifre belirleyin.
+          {t('Merhaba {name}. Hesabınız yeni açıldı ya da şifreniz sıfırlandı. Devam etmeden önce yalnız sizin bildiğiniz bir şifre belirleyin.', { name: user.full_name })}
         </Typography.Paragraph>
         <PasswordForm onDone={() => navigate('/')} />
         <Button type="link" onClick={() => void logout()} style={{ paddingInline: 0, marginTop: 12 }}>
-          Çıkış yap
+          {t('Çıkış yap')}
         </Button>
       </Card>
     </Flex>

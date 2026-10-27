@@ -14,6 +14,7 @@ import { compare, divide, multiply, parseUserDecimal, sum } from '../lib/decimal
 import { formatDecimal, formatQty, formatUnitCost } from '../lib/format'
 import { ALLOCATION_METHOD, options, RECIPE_LINE_TYPE, SPECIES } from '../lib/labels'
 import { decimalRule, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type RecipeLine = Recipe['lines'][number]
 
@@ -37,31 +38,31 @@ type FormValues = {
 const percentOf = (ratio: string) => `%${formatDecimal(multiply(ratio, '100', 2), 0, 2)}`
 
 const LINE_COLUMNS: TableColumnsType<RecipeLine> = [
-  { title: 'Sıra', dataIndex: 'sort_order', width: 60 },
-  { title: 'Tür', dataIndex: 'line_type', render: (t: RecipeLineType) => RECIPE_LINE_TYPE[t] },
-  { title: 'Ürün', key: 'product', render: (_, line) => (line.product_name ? `${line.product_code} · ${line.product_name}` : '—') },
-  { title: 'Standart oran', dataIndex: 'standard_ratio', align: 'right', render: percentOf },
+  { title: t('Sıra'), dataIndex: 'sort_order', width: 60 },
+  { title: t('Tür'), dataIndex: 'line_type', render: (t: RecipeLineType) => RECIPE_LINE_TYPE[t] },
+  { title: t('Ürün'), key: 'product', render: (_, line) => (line.product_name ? `${line.product_code} · ${line.product_name}` : '—') },
+  { title: t('Standart oran'), dataIndex: 'standard_ratio', align: 'right', render: percentOf },
   {
-    title: 'Değer katsayısı',
+    title: t('Değer katsayısı'),
     dataIndex: 'value_per_kg',
     align: 'right',
     render: (v: string | null) => (v ? `${formatUnitCost(v)}/kg` : '—'),
   },
   {
-    title: 'Maliyet taşır',
+    title: t('Maliyet taşır'),
     dataIndex: 'bears_cost',
-    render: (bears: boolean) => (bears ? <Tag color="blue">Evet</Tag> : <Tag>Hayır</Tag>),
+    render: (bears: boolean) => (bears ? <Tag color="blue">{t('Evet')}</Tag> : <Tag>{t('Hayır')}</Tag>),
   },
 ]
 
 const COLUMNS: TableColumnsType<Recipe> = [
-  { title: 'Kod', dataIndex: 'code' },
-  { title: 'Ad', dataIndex: 'name' },
-  { title: 'Giriş ürünü', dataIndex: 'input_product_name' },
-  { title: 'Tür', dataIndex: 'species', render: (s: Species) => SPECIES[s] },
-  { title: 'Varsayılan yöntem', dataIndex: 'default_method', render: (m: AllocationMethod) => ALLOCATION_METHOD[m] },
-  { title: 'Tolerans', dataIndex: 'tolerance_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
-  { title: 'Kalem', key: 'lines', align: 'right', render: (_, r) => r.lines.length },
+  { title: t('Kod'), dataIndex: 'code' },
+  { title: t('Ad'), dataIndex: 'name' },
+  { title: t('Giriş ürünü'), dataIndex: 'input_product_name' },
+  { title: t('Tür'), dataIndex: 'species', render: (s: Species) => SPECIES[s] },
+  { title: t('Varsayılan yöntem'), dataIndex: 'default_method', render: (m: AllocationMethod) => ALLOCATION_METHOD[m] },
+  { title: t('Tolerans'), dataIndex: 'tolerance_kg', align: 'right', render: (v: string) => formatQty(v, 'KG') },
+  { title: t('Kalem'), key: 'lines', align: 'right', render: (_, r) => r.lines.length },
 ]
 
 function toInput(values: FormValues): RecipeInput {
@@ -104,16 +105,16 @@ export default function RecipesPage() {
   async function save(values: FormValues) {
     const recipe = await api<Recipe>('/cutting-recipes', { method: 'POST', body: toInput(values) })
     await refreshBusinessData(queryClient)
-    message.success(`${recipe.code} reçetesi kaydedildi.`)
+    message.success(t('{code} reçetesi kaydedildi.', { code: recipe.code }))
   }
 
   return (
     <Page
-      title="Parçalama reçeteleri"
-      description="Bir karkastan hangi parçaların ne oranda çıkması beklendiği. Parçalamada tartılan miktarlar bununla karşılaştırılır."
+      title={t('Parçalama reçeteleri')}
+      description={t('Bir karkastan hangi parçaların ne oranda çıkması beklendiği. Parçalamada tartılan miktarlar bununla karşılaştırılır.')}
       extra={
         <Button type="primary" onClick={() => setOpen(true)}>
-          Yeni reçete
+          {t('Yeni reçete')}
         </Button>
       }
     >
@@ -140,10 +141,9 @@ export default function RecipesPage() {
         }}
       />
       <Typography.Paragraph type="secondary" style={{ marginTop: 12 }}>
-        Standart oranlar, "beklenen kg" için referans yöntemdir (oran × giriş ağırlığı). Değer katsayıları değer
-        ağırlıklı dağıtımda kullanılır: pay ∝ kg × €/kg. Fire stoka girmez ve maliyet almaz.
+        {t('Standart oranlar, "beklenen kg" için referans yöntemdir (oran × giriş ağırlığı). Değer katsayıları değer ağırlıklı dağıtımda kullanılır: pay ∝ kg × €/kg. Fire stoka girmez ve maliyet almaz.')}
       </Typography.Paragraph>
-      <FormModal<FormValues> title="Yeni reçete" open={open} onClose={() => setOpen(false)} initialValues={NEW_RECIPE} onSubmit={save} width={880}>
+      <FormModal<FormValues> title={t('Yeni reçete')} open={open} onClose={() => setOpen(false)} initialValues={NEW_RECIPE} onSubmit={save} width={880}>
         <RecipeFields />
       </FormModal>
     </Page>
@@ -162,42 +162,42 @@ function RecipeFields() {
     <>
       <Row gutter={16}>
         <Col xs={24} sm={8}>
-          <Form.Item label="Kod" name="code" rules={[{ required: true, whitespace: true, message: 'Kod gerekli.' }]}>
+          <Form.Item label={t('Kod')} name="code" rules={[{ required: true, whitespace: true, message: t('Kod gerekli.') }]}>
             <Input maxLength={30} autoComplete="off" spellCheck={false} />
           </Form.Item>
         </Col>
         <Col xs={24} sm={16}>
-          <Form.Item label="Ad" name="name" rules={[{ required: true, whitespace: true, message: 'Ad gerekli.' }]}>
+          <Form.Item label={t('Ad')} name="name" rules={[{ required: true, whitespace: true, message: t('Ad gerekli.') }]}>
             <Input maxLength={100} autoComplete="off" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8}>
-          <Form.Item label="Giriş ürünü" name="input_product_id" rules={[{ required: true, message: 'Giriş ürünü seçin.' }]}>
+          <Form.Item label={t('Giriş ürünü')} name="input_product_id" rules={[{ required: true, message: t('Giriş ürünü seçin.') }]}>
             <Select
               options={kgProducts.filter((p) => p.kind === 'HAMMADDE').map((p) => ({ value: p.id, label: `${p.code} · ${p.name}` }))}
             />
           </Form.Item>
         </Col>
         <Col xs={12} sm={5}>
-          <Form.Item label="Hayvan" name="species" rules={[{ required: true }]}>
+          <Form.Item label={t('Hayvan')} name="species" rules={[{ required: true }]}>
             <Select options={options(SPECIES)} />
           </Form.Item>
         </Col>
         <Col xs={12} sm={6}>
-          <Form.Item label="Varsayılan yöntem" name="default_method" rules={[{ required: true }]}>
+          <Form.Item label={t('Varsayılan yöntem')} name="default_method" rules={[{ required: true }]}>
             <Select options={options(ALLOCATION_METHOD)} />
           </Form.Item>
         </Col>
         <Col xs={24} sm={5}>
-          <Form.Item label="Tartım toleransı" name="tolerance_kg" rules={[decimalRule('Tolerans', { maxFraction: 3, allowZero: true })]}>
+          <Form.Item label={t('Tartım toleransı')} name="tolerance_kg" rules={[decimalRule(t('Tolerans'), { maxFraction: 3, allowZero: true })]}>
             <Input inputMode="decimal" autoComplete="off" suffix="kg" />
           </Form.Item>
         </Col>
       </Row>
 
-      <Typography.Text strong>Çıkış kalemleri</Typography.Text>{' '}
+      <Typography.Text strong>{t('Çıkış kalemleri')}</Typography.Text>{' '}
       <Typography.Text type={compare(total, '100') === 0 ? 'success' : 'danger'} aria-live="polite">
-        (oranlar toplamı %{formatDecimal(total, 0, 2)}; %100 olmalı)
+        {t('(oranlar toplamı %{total}; %100 olmalı)', { total: formatDecimal(total, 0, 2) })}
       </Typography.Text>
       <Form.List
         name="lines"
@@ -205,7 +205,7 @@ function RecipeFields() {
           {
             validator: async (_rule, value: LineValues[] | undefined) => {
               const percentsNow = (value ?? []).map((line) => parseUserDecimal(line?.percent ?? '', 2) ?? '0')
-              if (compare(sum(percentsNow, 2), '100') !== 0) throw new Error('Standart oranların toplamı %100 olmalı.')
+              if (compare(sum(percentsNow, 2), '100') !== 0) throw new Error(t('Standart oranların toplamı %100 olmalı.'))
             },
           },
         ]}
@@ -217,15 +217,15 @@ function RecipeFields() {
               return (
                 <Row gutter={8} key={field.key} align="top" style={{ marginTop: 8 }}>
                   <Col xs={12} sm={4}>
-                    <Form.Item label="Tür" name={[field.name, 'line_type']} rules={[{ required: true }]}>
+                    <Form.Item label={t('Tür')} name={[field.name, 'line_type']} rules={[{ required: true }]}>
                       <Select options={options(RECIPE_LINE_TYPE)} />
                     </Form.Item>
                   </Col>
                   <Col xs={12} sm={7}>
                     <Form.Item
-                      label="Ürün"
+                      label={t('Ürün')}
                       name={[field.name, 'product_id']}
-                      rules={[{ required: !fire, message: 'Ürün seçin.' }]}
+                      rules={[{ required: !fire, message: t('Ürün seçin.') }]}
                     >
                       <Select
                         disabled={fire}
@@ -238,28 +238,28 @@ function RecipeFields() {
                     </Form.Item>
                   </Col>
                   <Col xs={8} sm={4}>
-                    <Form.Item label="Oran" name={[field.name, 'percent']} rules={[decimalRule('Oran', { maxFraction: 2, allowZero: true })]}>
+                    <Form.Item label={t('Oran')} name={[field.name, 'percent']} rules={[decimalRule(t('Oran'), { maxFraction: 2, allowZero: true })]}>
                       <Input inputMode="decimal" autoComplete="off" suffix="%" />
                     </Form.Item>
                   </Col>
                   <Col xs={8} sm={4}>
                     <Form.Item
-                      label="Değer"
+                      label={t('Değer')}
                       name={[field.name, 'value_per_kg']}
-                      rules={[decimalRule('Değer katsayısı', { maxFraction: 4, required: false, allowZero: true })]}
+                      rules={[decimalRule(t('Değer katsayısı'), { maxFraction: 4, required: false, allowZero: true })]}
                     >
                       <Input inputMode="decimal" autoComplete="off" suffix="€/kg" disabled={fire} />
                     </Form.Item>
                   </Col>
                   <Col xs={5} sm={3}>
-                    <Form.Item label="Maliyet" name={[field.name, 'bears_cost']} valuePropName="checked">
-                      <Switch disabled={fire} aria-label="Maliyet taşır" />
+                    <Form.Item label={t('Maliyet')} name={[field.name, 'bears_cost']} valuePropName="checked">
+                      <Switch disabled={fire} aria-label={t('Maliyet taşır')} />
                     </Form.Item>
                   </Col>
                   <Col xs={3} sm={2}>
                     <Form.Item label=" ">
                       <Button disabled={fields.length === 1} onClick={() => remove(field.name)}>
-                        Sil
+                        {t('Sil')}
                       </Button>
                     </Form.Item>
                   </Col>
@@ -268,7 +268,7 @@ function RecipeFields() {
             })}
             <Form.ErrorList errors={errors} />
             <Button size="small" onClick={() => add({ line_type: 'PARCA', bears_cost: true })}>
-              Kalem ekle
+              {t('Kalem ekle')}
             </Button>
           </>
         )}

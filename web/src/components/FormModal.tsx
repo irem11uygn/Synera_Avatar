@@ -1,6 +1,7 @@
 import { Alert, Form, Modal } from 'antd'
 import { useState, type ReactNode } from 'react'
 import { errorMessage } from '../api/client'
+import { t } from '../lib/i18n'
 
 type Props<T> = {
   title: string
@@ -26,7 +27,7 @@ export function FormModal<T extends object>({
   onClose,
   initialValues,
   onSubmit,
-  okText = 'Kaydet',
+  okText = t('Kaydet'),
   width,
   children,
 }: Props<T>) {
@@ -52,7 +53,7 @@ export function FormModal<T extends object>({
       title={title}
       width={width}
       okText={okText}
-      cancelText="Vazgeç"
+      cancelText={t('Vazgeç')}
       onCancel={onClose}
       afterClose={() => setError(null)}
       destroyOnHidden

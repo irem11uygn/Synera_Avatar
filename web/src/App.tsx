@@ -32,9 +32,11 @@ import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { api } from './api/client'
 import type { AlertRow, ReportCode, UserRole } from './api/types'
 import { useSession } from './auth/context'
+import { LanguageSwitch } from './components/LanguageSwitch'
 import { LotSearch } from './components/LotSearch'
 import { can, ROLE } from './lib/roles'
 import { matchPath, navigate, usePath } from './lib/router'
+import { t } from './lib/i18n'
 
 // Her sayfa ayrı dosyada yüklenir: ilk açılış hızlı, kullanılmayan ekran indirilmez.
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -127,55 +129,55 @@ const ALL: UserRole[] = ['YONETICI', 'DEPO', 'URETIM', 'KALITE', 'MAGAZA']
 // Menü işe göre gruplanır; herkes yalnız kendi işinin ekranlarını görür (yönetici hepsini).
 const NAV: NavGroup[] = [
   {
-    label: 'Satış',
+    label: t('Satış'),
     items: [
-      { to: '/magaza-satisi', label: 'Mağaza satışı', icon: <ShoppingCartOutlined />, roles: ['YONETICI', 'MAGAZA'] },
-      { to: '/satislar', label: 'Satışlar ve iadeler', icon: <SolutionOutlined />, roles: ['YONETICI', 'MAGAZA', 'KALITE'] },
-      { to: '/gun-sonu', label: 'Gün sonu', icon: <CalculatorOutlined />, roles: ['YONETICI', 'MAGAZA'] },
+      { to: '/magaza-satisi', label: t('Mağaza satışı'), icon: <ShoppingCartOutlined />, roles: ['YONETICI', 'MAGAZA'] },
+      { to: '/satislar', label: t('Satışlar ve iadeler'), icon: <SolutionOutlined />, roles: ['YONETICI', 'MAGAZA', 'KALITE'] },
+      { to: '/gun-sonu', label: t('Gün sonu'), icon: <CalculatorOutlined />, roles: ['YONETICI', 'MAGAZA'] },
     ],
   },
   {
-    label: 'Depo',
+    label: t('Depo'),
     items: [
-      { to: '/alislar', label: 'Mal kabul', icon: <InboxOutlined />, roles: ['YONETICI', 'DEPO'] },
-      { to: '/stok', label: 'Stok durumu', icon: <DatabaseOutlined />, roles: ALL },
-      { to: '/son-kullanma', label: 'Son kullanma takibi', icon: <ClockCircleOutlined />, roles: ['YONETICI', 'DEPO', 'MAGAZA', 'KALITE'] },
-      { to: '/sayim', label: 'Sayım', icon: <AppstoreOutlined />, roles: ['YONETICI', 'DEPO'] },
-      { to: '/transferler', label: 'Araca yükleme', icon: <CarOutlined />, roles: ['YONETICI', 'DEPO'] },
-      { to: '/lotlar', label: 'Lotlar (partiler)', icon: <TagsOutlined />, roles: ALL },
+      { to: '/alislar', label: t('Mal kabul'), icon: <InboxOutlined />, roles: ['YONETICI', 'DEPO'] },
+      { to: '/stok', label: t('Stok durumu'), icon: <DatabaseOutlined />, roles: ALL },
+      { to: '/son-kullanma', label: t('Son kullanma takibi'), icon: <ClockCircleOutlined />, roles: ['YONETICI', 'DEPO', 'MAGAZA', 'KALITE'] },
+      { to: '/sayim', label: t('Sayım'), icon: <AppstoreOutlined />, roles: ['YONETICI', 'DEPO'] },
+      { to: '/transferler', label: t('Araca yükleme'), icon: <CarOutlined />, roles: ['YONETICI', 'DEPO'] },
+      { to: '/lotlar', label: t('Lotlar (partiler)'), icon: <TagsOutlined />, roles: ALL },
     ],
   },
   {
-    label: 'Üretim',
+    label: t('Üretim'),
     items: [
-      { to: '/uretim', label: 'Fason üretim', icon: <ToolOutlined />, roles: ['YONETICI', 'URETIM'] },
-      { to: '/parcalama', label: 'Parçalama', icon: <ScissorOutlined />, roles: ['YONETICI', 'URETIM'] },
-      { to: '/yeniden-isleme', label: 'Yeniden işleme', icon: <ReloadOutlined />, roles: ['YONETICI', 'URETIM'] },
-      { to: '/receteler', label: 'Parçalama reçeteleri', icon: <ExperimentOutlined />, roles: ['YONETICI', 'URETIM'] },
+      { to: '/uretim', label: t('Fason üretim'), icon: <ToolOutlined />, roles: ['YONETICI', 'URETIM'] },
+      { to: '/parcalama', label: t('Parçalama'), icon: <ScissorOutlined />, roles: ['YONETICI', 'URETIM'] },
+      { to: '/yeniden-isleme', label: t('Yeniden işleme'), icon: <ReloadOutlined />, roles: ['YONETICI', 'URETIM'] },
+      { to: '/receteler', label: t('Parçalama reçeteleri'), icon: <ExperimentOutlined />, roles: ['YONETICI', 'URETIM'] },
     ],
   },
   {
-    label: 'Kalite',
+    label: t('Kalite'),
     items: [
-      { to: '/izleme', label: 'Lot izleme', icon: <NodeIndexOutlined />, roles: ALL },
-      { to: '/geri-cagirma', label: 'Geri çağırma', icon: <SafetyCertificateOutlined />, roles: ['YONETICI', 'KALITE'] },
-      { to: '/tatbikat', label: 'Geri çağırma tatbikatı', icon: <FileSearchOutlined />, roles: ['YONETICI', 'KALITE'] },
-      { to: '/uyarilar', label: 'Uyarılar', icon: <AlertOutlined />, roles: ['YONETICI', 'KALITE'], badge: 'alerts' },
+      { to: '/izleme', label: t('Lot izleme'), icon: <NodeIndexOutlined />, roles: ALL },
+      { to: '/geri-cagirma', label: t('Geri çağırma'), icon: <SafetyCertificateOutlined />, roles: ['YONETICI', 'KALITE'] },
+      { to: '/tatbikat', label: t('Geri çağırma tatbikatı'), icon: <FileSearchOutlined />, roles: ['YONETICI', 'KALITE'] },
+      { to: '/uyarilar', label: t('Uyarılar'), icon: <AlertOutlined />, roles: ['YONETICI', 'KALITE'], badge: 'alerts' },
     ],
   },
   {
-    label: 'Raporlar',
+    label: t('Raporlar'),
     items: [
-      { to: '/raporlar', label: 'Raporlar', icon: <BarChartOutlined />, roles: ALL },
-      { to: '/yapay-zeka', label: 'Yapay zekâ tahminleri', icon: <BulbOutlined />, roles: ['YONETICI', 'URETIM'] },
+      { to: '/raporlar', label: t('Raporlar'), icon: <BarChartOutlined />, roles: ALL },
+      { to: '/yapay-zeka', label: t('Yapay zekâ tahminleri'), icon: <BulbOutlined />, roles: ['YONETICI', 'URETIM'] },
     ],
   },
   {
-    label: 'Yönetim',
+    label: t('Yönetim'),
     items: [
-      { to: '/kullanicilar', label: 'Kullanıcılar', icon: <TeamOutlined />, roles: ['YONETICI'] },
-      { to: '/urunler', label: 'Ürünler ve fiyatlar', icon: <ShopOutlined />, roles: ['YONETICI'] },
-      { to: '/cariler', label: 'Müşteri ve tedarikçiler', icon: <UserOutlined />, roles: ['YONETICI', 'DEPO', 'MAGAZA'] },
+      { to: '/kullanicilar', label: t('Kullanıcılar'), icon: <TeamOutlined />, roles: ['YONETICI'] },
+      { to: '/urunler', label: t('Ürünler ve fiyatlar'), icon: <ShopOutlined />, roles: ['YONETICI'] },
+      { to: '/cariler', label: t('Müşteri ve tedarikçiler'), icon: <UserOutlined />, roles: ['YONETICI', 'DEPO', 'MAGAZA'] },
     ],
   },
 ]
@@ -190,11 +192,11 @@ function NotFound() {
   return (
     <Result
       status="404"
-      title="Sayfa bulunamadı"
-      subTitle="Adres yanlış ya da kayıt silinmiş olabilir."
+      title={t('Sayfa bulunamadı')}
+      subTitle={t('Adres yanlış ya da kayıt silinmiş olabilir.')}
       extra={
         <Button type="primary" onClick={() => navigate('/')}>
-          Ana sayfaya dön
+          {t('Ana sayfaya dön')}
         </Button>
       }
     />
@@ -231,7 +233,7 @@ function menuItems(role: UserRole, openAlerts: number, go: (to: string) => void)
         <Flex justify="space-between" align="center" gap="small">
           {item.label}
           {item.badge === 'alerts' && openAlerts > 0 && (
-            <Badge count={openAlerts} size="small" aria-label={`${openAlerts} okunmamış uyarı`} />
+            <Badge count={openAlerts} size="small" aria-label={t('{n} okunmamış uyarı', { n: openAlerts })} />
           )}
         </Flex>
       </a>
@@ -242,7 +244,7 @@ function menuItems(role: UserRole, openAlerts: number, go: (to: string) => void)
     label: group.label,
     children: group.items.filter((item) => !item.roles || item.roles.includes(role)).map(entry),
   })).filter((group) => group.children.length > 0)
-  return [entry({ to: '/', label: 'Ana sayfa', icon: <HomeOutlined /> }), ...groups]
+  return [entry({ to: '/', label: t('Ana sayfa'), icon: <HomeOutlined /> }), ...groups]
 }
 
 export default function App() {
@@ -291,13 +293,13 @@ function Shell({
   const userMenu: MenuProps['items'] = [
     { key: 'role', label: ROLE[role], disabled: true },
     { type: 'divider' },
-    { key: 'password', icon: <KeyOutlined />, label: 'Şifremi değiştir', onClick: () => go('/sifre') },
-    { key: 'logout', icon: <LogoutOutlined />, label: 'Çıkış', danger: true, onClick: () => void logout() },
+    { key: 'password', icon: <KeyOutlined />, label: t('Şifremi değiştir'), onClick: () => go('/sifre') },
+    { key: 'logout', icon: <LogoutOutlined />, label: t('Çıkış'), danger: true, onClick: () => void logout() },
   ]
 
   return (
     <div className={`shell${menuOpen ? ' is-menu-open' : ''}`}>
-      <aside className="shell-sider" aria-label="Ana menü">
+      <aside className="shell-sider" aria-label={t('Ana menü')}>
         <a
           className="shell-brand"
           href="/"
@@ -312,7 +314,7 @@ function Shell({
           <span>
             <span className="shell-brand-name">Synera</span>
             <br />
-            <span className="shell-brand-sub">Üretim · Stok · Satış · İzlenebilirlik</span>
+            <span className="shell-brand-sub">{t('Üretim · Stok · Satış · İzlenebilirlik')}</span>
           </span>
         </a>
         <nav className="shell-nav" id="ana-menu">
@@ -325,14 +327,17 @@ function Shell({
           <Button
             className="shell-menu-button"
             icon={<MenuOutlined />}
-            aria-label="Menüyü aç"
+            aria-label={t('Menüyü aç')}
             aria-expanded={menuOpen}
             aria-controls="ana-menu"
             onClick={() => setMenuOpen(!menuOpen)}
           />
           <LotSearch />
+          <span style={{ marginLeft: 'auto' }}>
+            <LanguageSwitch />
+          </span>
           <Dropdown menu={{ items: userMenu }} trigger={['click']} placement="bottomRight">
-            <Button icon={<UserOutlined />} aria-label={`Hesap: ${userName}`} style={{ marginLeft: 'auto' }}>
+            <Button icon={<UserOutlined />} aria-label={t('Hesap: {name}', { name: userName })}>
               <span className="shell-user-name">{userName}</span>
             </Button>
           </Dropdown>

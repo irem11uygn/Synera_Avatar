@@ -13,6 +13,7 @@ import { formatDate, formatQty, formatUnitCost } from '../lib/format'
 import { ALLOCATION_METHOD, options, SPECIES } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { decimalRule, fromApiDecimal, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type FormValues = { recipe_id: number; input_lot_no: string; input_qty: string; method: AllocationMethod }
 
@@ -57,7 +58,7 @@ export default function CuttingNewPage() {
     try {
       const cutting = await api<Cutting>('/cuttings', { method: 'POST', body })
       await refreshBusinessData(queryClient)
-      message.success(`${cutting.cutting_no} taslağı açıldı; şimdi parçaları tartın.`)
+      message.success(t('{no} taslağı açıldı; şimdi parçaları tartın.', { no: cutting.cutting_no }))
       navigate(`/parcalama/${cutting.id}`)
     } catch (caught) {
       setError(errorMessage(caught))
@@ -66,13 +67,13 @@ export default function CuttingNewPage() {
   }
 
   return (
-    <Page title="Yeni parçalama" back={{ to: '/parcalama', label: 'Parçalama' }}>
+    <Page title={t('Yeni parçalama')} back={{ to: '/parcalama', label: t('Parçalama') }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues> form={form} layout="vertical" onFinish={finish} validateTrigger="onBlur">
         <Card size="small" style={{ marginBottom: 16 }}>
           <Row gutter={16}>
             <Col xs={24} md={12}>
-              <Form.Item label="Reçete" name="recipe_id" rules={[{ required: true, message: 'Reçete seçin.' }]}>
+              <Form.Item label={t('Reçete')} name="recipe_id" rules={[{ required: true, message: t('Reçete seçin.') }]}>
                 <Select
                   loading={recipes.isPending}
                   onChange={chooseRecipe}
@@ -81,22 +82,22 @@ export default function CuttingNewPage() {
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
-              <Form.Item label="Dağıtım yöntemi" name="method" rules={[{ required: true, message: 'Yöntem seçin.' }]}>
+              <Form.Item label={t('Dağıtım yöntemi')} name="method" rules={[{ required: true, message: t('Yöntem seçin.') }]}>
                 <Segmented<AllocationMethod> options={options(ALLOCATION_METHOD)} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                label="Giriş lotu (ana depo)"
+                label={t('Giriş lotu (ana depo)')}
                 name="input_lot_no"
-                rules={[{ required: true, message: 'Giriş lotu seçin.' }]}
-                extra={recipe ? `${recipe.input_product_name} lotları` : 'Önce reçete seçin.'}
+                rules={[{ required: true, message: t('Giriş lotu seçin.') }]}
+                extra={recipe ? t('{product} lotları', { product: recipe.input_product_name }) : t('Önce reçete seçin.')}
               >
                 <Select
                   disabled={!recipe}
                   loading={stock.isFetching}
                   onChange={chooseLot}
-                  notFoundContent="Ana depoda bu ürünün aktif lotu yok."
+                  notFoundContent={t('Ana depoda bu ürünün aktif lotu yok.')}
                   options={lots.map((row) => ({
                     value: row.lot_no,
                     label: `${row.lot_no} · ${formatQty(row.qty, row.base_unit)} · ${formatUnitCost(row.unit_cost)}/kg · SKT ${formatDate(row.expiry_date)}`,
@@ -106,11 +107,11 @@ export default function CuttingNewPage() {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                label="Parçalanacak ağırlık"
+                label={t('Parçalanacak ağırlık')}
                 name="input_qty"
                 dependencies={['input_lot_no']}
                 rules={[
-                  decimalRule('Ağırlık', { maxFraction: 3 }),
+                  decimalRule(t('Ağırlık'), { maxFraction: 3 }),
                   {
                     validator: async (_rule, value: string | undefined) => {
                       const qty = parseUserDecimal(value ?? '', 3)
@@ -130,18 +131,18 @@ export default function CuttingNewPage() {
               size="small"
               column={{ xs: 1, sm: 3 }}
               items={[
-                { key: 'species', label: 'Tür', children: SPECIES[recipe.species] },
-                { key: 'tolerance', label: 'Tartım toleransı', children: formatQty(recipe.tolerance_kg, 'KG') },
-                { key: 'lines', label: 'Çıkış kalemleri', children: recipe.lines.length },
+                { key: 'species', label: t('Tür'), children: SPECIES[recipe.species] },
+                { key: 'tolerance', label: t('Tartım toleransı'), children: formatQty(recipe.tolerance_kg, 'KG') },
+                { key: 'lines', label: t('Çıkış kalemleri'), children: recipe.lines.length },
               ]}
             />
           )}
         </Card>
         <Flex gap="small">
           <Button type="primary" htmlType="submit" loading={saving}>
-            Taslağı aç
+            {t('Taslağı aç')}
           </Button>
-          <Button onClick={() => navigate('/parcalama')}>Vazgeç</Button>
+          <Button onClick={() => navigate('/parcalama')}>{t('Vazgeç')}</Button>
         </Flex>
       </Form>
     </Page>

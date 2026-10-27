@@ -13,10 +13,11 @@ import { QueryError } from '../components/QueryError'
 import { compare, parseUserDecimal } from '../lib/decimal'
 import { formatDate, formatDateTime, formatMoney, formatQty } from '../lib/format'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 export function DifferenceTag({ difference }: { difference: string }) {
   const sign = compare(difference, '0')
-  if (sign === 0) return <Tag color="green">Tutuyor</Tag>
+  if (sign === 0) return <Tag color="green">{t('Tutuyor')}</Tag>
   if (sign < 0) return <Tag color="red">{formatQty(difference.replace('-', ''))} eksik</Tag>
   return <Tag color="orange">{formatQty(difference)} fazla</Tag>
 }
@@ -27,18 +28,18 @@ function CountResult({ count, onNew }: { count: StockCount; onNew: () => void })
     <>
       <Result
         status={short || count.surplus_lines ? 'warning' : 'success'}
-        title={`Sayım kaydedildi: ${count.count_no}`}
+        title={t('Sayım kaydedildi: {no}', { no: count.count_no })}
         subTitle={
           short || count.surplus_lines
-            ? `${short} lotta eksik (fire yazıldı, maliyeti ${formatMoney(count.shortage_value)}), ${count.surplus_lines} lotta fazla.`
-            : 'Sayılan bütün lotlar defterle tutuyor.'
+            ? t('{short} lotta eksik (fire yazıldı, maliyeti {cost}), {surplus} lotta fazla.', { short, cost: formatMoney(count.shortage_value), surplus: count.surplus_lines })
+            : t('Sayılan bütün lotlar sistemle tutuyor.')
         }
         extra={[
           <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={() => navigate(`/yazdir/sayim/${count.id}`)}>
-            Sayım tutanağını yazdır
+            {t('Sayım tutanağını yazdır')}
           </Button>,
           <Button key="new" onClick={onNew}>
-            Yeni sayım
+            {t('Yeni sayım')}
           </Button>,
         ]}
       />
@@ -46,8 +47,8 @@ function CountResult({ count, onNew }: { count: StockCount; onNew: () => void })
         <Alert
           type="warning"
           showIcon
-          title="Fazla çıkan mal stoka eklenmedi"
-          description="Kaynağı belli olmayan mal deftere girmez. Yanlış lota yazılmış satış ya da eksik girilmiş aktarma olabilir; araştırıp ilgili belgeyi düzeltin."
+          title={t('Fazla çıkan mal stoka eklenmedi')}
+          description={t('Kaynağı belli olmayan mal stoka girmez. Yanlış lota yazılmış satış ya da eksik girilmiş aktarma olabilir; araştırıp ilgili belgeyi düzeltin.')}
           style={{ marginBottom: 16 }}
         />
       )}
@@ -97,7 +98,7 @@ export default function StockCountPage() {
 
   if (result) {
     return (
-      <Page title="Sayım" back={{ to: '/sayim', label: 'Sayım' }}>
+      <Page title={t('Sayım')} back={{ to: '/sayim', label: t('Sayım') }}>
         <CountResult
           count={result}
           onNew={() => {
@@ -111,11 +112,11 @@ export default function StockCountPage() {
           pagination={false}
           scroll={{ x: 'max-content' }}
           columns={[
-            { title: 'Ürün', dataIndex: 'product_name' },
-            { title: 'Lot', dataIndex: 'lot_no' },
-            { title: 'Defterde', align: 'right', render: (_, l) => formatQty(l.system_qty, l.base_unit) },
-            { title: 'Sayılan', align: 'right', render: (_, l) => formatQty(l.counted_qty, l.base_unit) },
-            { title: 'Fark', render: (_, l) => <DifferenceTag difference={l.difference} /> },
+            { title: t('Ürün'), dataIndex: 'product_name' },
+            { title: t('Lot'), dataIndex: 'lot_no' },
+            { title: t('Sistemde'), align: 'right', render: (_, l) => formatQty(l.system_qty, l.base_unit) },
+            { title: t('Sayılan'), align: 'right', render: (_, l) => formatQty(l.counted_qty, l.base_unit) },
+            { title: t('Fark'), render: (_, l) => <DifferenceTag difference={l.difference} /> },
           ]}
         />
       </Page>
@@ -124,15 +125,15 @@ export default function StockCountPage() {
 
   return (
     <Page
-      title="Sayım"
-      description="Rafta saydığınız miktarı yazın. Saymadığınız lotları boş bırakın; onlar değişmez. Eksik çıkan mal fire olarak düşülür."
+      title={t('Sayım')}
+      description={t('Rafta saydığınız miktarı yazın. Saymadığınız lotları boş bırakın; onlar değişmez. Eksik çıkan mal fire olarak düşülür.')}
     >
       {(warehouses.isError || stock.isError) && <QueryError error={warehouses.error ?? stock.error} />}
       <Card style={{ marginBottom: 16 }}>
         <Space wrap size="large">
           <span>
             <label className="muted" htmlFor="sayim-yeri" style={{ display: 'block' }}>
-              Sayılan yer
+              {t('Sayılan yer')}
             </label>
             <Select
               id="sayim-yeri"
@@ -146,7 +147,7 @@ export default function StockCountPage() {
             />
           </span>
           <Checkbox checked={blind} onChange={(e) => setBlind(e.target.checked)}>
-            Defterdeki miktarı gizle (kör sayım)
+            {t('Sistemdeki miktarı gizle (kör sayım)')}
           </Checkbox>
         </Space>
       </Card>
@@ -157,16 +158,16 @@ export default function StockCountPage() {
         dataSource={rows}
         pagination={false}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'Bu yerde stok yok.' }}
+        locale={{ emptyText: t('Bu yerde stok yok.') }}
         columns={[
-          { title: 'Ürün', dataIndex: 'product_name' },
-          { title: 'Lot', dataIndex: 'lot_no' },
-          { title: 'Son kullanma', dataIndex: 'expiry_date', render: formatDate, responsive: ['md'] },
+          { title: t('Ürün'), dataIndex: 'product_name' },
+          { title: t('Lot'), dataIndex: 'lot_no' },
+          { title: t('Son kullanma'), dataIndex: 'expiry_date', render: formatDate, responsive: ['md'] },
           ...(blind
             ? []
-            : [{ title: 'Defterde', align: 'right' as const, render: (_: unknown, row: StockRow) => formatQty(row.qty, row.base_unit) }]),
+            : [{ title: t('Sistemde'), align: 'right' as const, render: (_: unknown, row: StockRow) => formatQty(row.qty, row.base_unit) }]),
           {
-            title: 'Sayılan',
+            title: t('Sayılan'),
             width: 170,
             render: (_, row) => (
               <Input
@@ -174,8 +175,8 @@ export default function StockCountPage() {
                 value={counted[row.lot_no] ?? ''}
                 status={invalid.includes(row) ? 'error' : undefined}
                 suffix={row.base_unit === 'ADET' ? 'adet' : 'kg'}
-                placeholder="sayılmadı"
-                aria-label={`${row.lot_no} sayılan miktar`}
+                placeholder={t('sayılmadı')}
+                aria-label={t('{lot} sayılan miktar', { lot: row.lot_no })}
                 onChange={(e) => setCounted((current) => ({ ...current, [row.lot_no]: e.target.value }))}
               />
             ),
@@ -184,12 +185,12 @@ export default function StockCountPage() {
             ? []
             : [
                 {
-                  title: 'Fark',
+                  title: t('Fark'),
                   render: (_: unknown, row: StockRow) => {
                     const value = parseUserDecimal(counted[row.lot_no] ?? '', 3)
                     if (value === null) return null
                     const sign = compare(value, row.qty)
-                    return sign === 0 ? <Tag color="green">Tutuyor</Tag> : sign < 0 ? <Tag color="red">Eksik</Tag> : <Tag color="orange">Fazla</Tag>
+                    return sign === 0 ? <Tag color="green">{t('Tutuyor')}</Tag> : sign < 0 ? <Tag color="red">{t('Eksik')}</Tag> : <Tag color="orange">{t('Fazla')}</Tag>
                   },
                 },
               ]),
@@ -198,10 +199,11 @@ export default function StockCountPage() {
 
       <Card style={{ marginTop: 16 }}>
         <Space orientation="vertical" style={{ width: '100%' }}>
-          <Input placeholder="Not (isteğe bağlı), ör. Ay sonu sayımı" value={note} maxLength={255} onChange={(e) => setNote(e.target.value)} />
+          <Input placeholder={t('Not (isteğe bağlı), ör. Ay sonu sayımı')} value={note} maxLength={255} onChange={(e) => setNote(e.target.value)} />
           {invalid.length > 0 && (
             <Typography.Text type="danger">
-              {invalid.map((row) => row.lot_no).join(', ')}: miktar geçersiz{invalid.some((r) => r.base_unit === 'ADET') ? ' (adet tam sayı olmalı)' : ''}.
+              {t('{lots}: miktar geçersiz.', { lots: invalid.map((row) => row.lot_no).join(', ') })}
+              {invalid.some((r) => r.base_unit === 'ADET') ? ` ${t('Adet tam sayı olmalı.')}` : ''}
             </Typography.Text>
           )}
           {save.isError && <Alert type="error" showIcon title={errorMessage(save.error)} />}
@@ -212,31 +214,31 @@ export default function StockCountPage() {
             loading={save.isPending}
             onClick={() => save.mutate()}
           >
-            Sayımı kaydet ({entered.length} lot)
+            {t('Sayımı kaydet ({n} lot)', { n: entered.length })}
           </Button>
         </Space>
       </Card>
 
-      <div className="section-title">Önceki sayımlar</div>
+      <div className="section-title">{t('Önceki sayımlar')}</div>
       <Table<StockCount>
         rowKey="id"
         loading={history.isPending}
         dataSource={history.data}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'Henüz sayım yapılmadı.' }}
+        locale={{ emptyText: t('Henüz sayım yapılmadı.') }}
         columns={[
-          { title: 'Sayım', dataIndex: 'count_no' },
-          { title: 'Tarih', dataIndex: 'created_at', render: formatDateTime },
-          { title: 'Yer', dataIndex: 'warehouse_code' },
-          { title: 'Sayan', dataIndex: 'counted_by' },
-          { title: 'Lot', render: (_, c) => c.lines.length, align: 'right' },
-          { title: 'Eksik maliyeti', dataIndex: 'shortage_value', render: formatMoney, align: 'right' },
+          { title: t('Sayım'), dataIndex: 'count_no' },
+          { title: t('Tarih'), dataIndex: 'created_at', render: formatDateTime },
+          { title: t('Yer'), dataIndex: 'warehouse_code' },
+          { title: t('Sayan'), dataIndex: 'counted_by' },
+          { title: t('Lot'), render: (_, c) => c.lines.length, align: 'right' },
+          { title: t('Eksik maliyeti'), dataIndex: 'shortage_value', render: formatMoney, align: 'right' },
           {
             title: '',
             render: (_, c) => (
               <Button size="small" icon={<PrinterOutlined />} onClick={() => navigate(`/yazdir/sayim/${c.id}`)}>
-                Tutanak
+                {t('Tutanak')}
               </Button>
             ),
           },

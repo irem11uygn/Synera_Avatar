@@ -14,16 +14,17 @@ import { QueryError } from '../components/QueryError'
 import { formatDateTime, formatQty } from '../lib/format'
 import { RECALL_STATUS } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 const COLUMNS: TableColumnsType<RecallSummary> = [
   {
-    title: 'Geri çağırma',
+    title: t('Geri çağırma'),
     dataIndex: 'recall_no',
     render: (no: string, r) => <Link to={`/geri-cagirma/${r.id}`}>{no}</Link>,
   },
-  { title: 'Başlangıç', dataIndex: 'started_at', render: formatDateTime },
+  { title: t('Başlangıç'), dataIndex: 'started_at', render: formatDateTime },
   {
-    title: 'Durum',
+    title: t('Durum'),
     dataIndex: 'status',
     render: (status: RecallSummary['status'], r) => (
       <Tag color={status === 'ACIK' ? 'red' : 'default'}>
@@ -32,12 +33,12 @@ const COLUMNS: TableColumnsType<RecallSummary> = [
       </Tag>
     ),
   },
-  { title: 'Kaynak lot', dataIndex: 'source_lot_no' },
-  { title: 'Neden', dataIndex: 'reason' },
-  { title: 'Etkilenen lot', dataIndex: 'lot_count', align: 'right' },
-  { title: 'Alıcı', dataIndex: 'customer_count', align: 'right' },
+  { title: t('Kaynak lot'), dataIndex: 'source_lot_no' },
+  { title: t('Neden'), dataIndex: 'reason' },
+  { title: t('Etkilenen lot'), dataIndex: 'lot_count', align: 'right' },
+  { title: t('Alıcı'), dataIndex: 'customer_count', align: 'right' },
   {
-    title: 'Müşterilerde',
+    title: t('Müşterilerde'),
     dataIndex: 'held_by_customers',
     align: 'right',
     render: (held: RecallSummary['held_by_customers']) =>
@@ -46,7 +47,7 @@ const COLUMNS: TableColumnsType<RecallSummary> = [
         .join(' + ') || '—',
   },
   {
-    title: 'İhlal',
+    title: t('İhlal'),
     dataIndex: 'violation_count',
     align: 'right',
     render: (count: number) => (count ? <Tag color="orange">{count}</Tag> : '0'),
@@ -66,20 +67,20 @@ export function NewRecallModal({ open, onClose, lotNo = '' }: { open: boolean; o
   })
   return (
     <FormModal<{ reason: string }>
-      title="Yeni geri çağırma"
+      title={t('Yeni geri çağırma')}
       open={open}
       onClose={onClose}
       onSubmit={(values) => start.mutateAsync(values)}
-      okText="Başlat ve satışa kapat"
+      okText={t('Başlat ve satışa kapat')}
     >
-      <Form.Item label="Kaynak lot" required>
+      <Form.Item label={t('Kaynak lot')} required>
         <LotPicker value={lot} onChange={setLot} />
       </Form.Item>
-      <Form.Item name="reason" label="Neden" rules={[{ required: true, message: 'Nedeni yazın.' }]}>
-        <Input.TextArea rows={3} maxLength={500} placeholder="Tedarikçi laboratuvar sonucu: uygunsuz" />
+      <Form.Item name="reason" label={t('Neden')} rules={[{ required: true, message: t('Nedeni yazın.') }]}>
+        <Input.TextArea rows={3} maxLength={500} placeholder={t('Tedarikçi laboratuvar sonucu: uygunsuz')} />
       </Form.Item>
       <Typography.Text type="secondary">
-        Kaynak lot ve ondan yapılan bütün lotlar tek işlemde satışa kapatılır; kime gittiği hemen listelenir.
+        {t('Kaynak lot ve ondan yapılan bütün lotlar tek işlemde satışa kapatılır; kime gittiği hemen listelenir.')}
       </Typography.Text>
     </FormModal>
   )
@@ -90,11 +91,11 @@ export default function RecallsPage() {
   const [open, setOpen] = useState(false)
   return (
     <Page
-      title="Geri çağırmalar"
-      description="Sorunlu bir lot için geri çağırma başlatın: o lot ve ondan yapılan bütün ürünler hemen satışa kapanır, malın gittiği müşteriler listelenir."
+      title={t('Geri çağırmalar')}
+      description={t('Sorunlu bir lot için geri çağırma başlatın: o lot ve ondan yapılan bütün ürünler hemen satışa kapanır, malın gittiği müşteriler listelenir.')}
       extra={
         <Button danger type="primary" onClick={() => setOpen(true)}>
-          Yeni geri çağırma
+          {t('Yeni geri çağırma')}
         </Button>
       }
     >
@@ -108,7 +109,7 @@ export default function RecallsPage() {
           dataSource={recalls.data}
           pagination={false}
           scroll={{ x: 'max-content' }}
-          locale={{ emptyText: 'Henüz geri çağırma yok. Bir lotu izleme ekranından ya da buradan geri çağırabilirsiniz.' }}
+          locale={{ emptyText: t('Henüz geri çağırma yok. Bir lotu izleme ekranından ya da buradan geri çağırabilirsiniz.') }}
         />
       </Card>
       <NewRecallModal open={open} onClose={() => setOpen(false)} />

@@ -6,40 +6,41 @@ import { formatQty } from '../lib/format'
 import { ONWARD_STATUS, SALE_CHANNEL } from '../lib/labels'
 import { ContactInfo } from './ContactInfo'
 import { Link } from './Link'
+import { t } from '../lib/i18n'
 
 export const RECIPIENT_COLUMNS: TableColumnsType<Recipient> = [
   {
-    title: 'Alıcı',
+    title: t('Alıcı'),
     dataIndex: 'customer',
     render: (name: string, r) => (
       <>
         <Typography.Text strong>{name}</Typography.Text>
         {r.recall_violation && (
           <Tag color="orange" style={{ marginInlineStart: 8 }}>
-            Geri çağırmadan sonra satış
+            {t('Geri çağırmadan sonra satış')}
           </Tag>
         )}
       </>
     ),
   },
-  { title: 'İletişim', key: 'contact', render: (_, r) => <ContactInfo contact={r.contact} /> },
-  { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-  { title: 'Ürün', dataIndex: 'product_name' },
-  { title: 'Satılan', dataIndex: 'sold_qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
-  { title: 'İade', dataIndex: 'returned_qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
+  { title: t('İletişim'), key: 'contact', render: (_, r) => <ContactInfo contact={r.contact} /> },
+  { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+  { title: t('Ürün'), dataIndex: 'product_name' },
+  { title: t('Satılan'), dataIndex: 'sold_qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
+  { title: t('İade'), dataIndex: 'returned_qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
   {
-    title: 'Müşteride',
+    title: t('Müşteride'),
     dataIndex: 'qty',
     align: 'right',
     render: (v: string, r) => <Typography.Text strong>{formatQty(v, r.base_unit)}</Typography.Text>,
   },
   {
-    title: 'Satış belgeleri',
+    title: t('Satış belgeleri'),
     key: 'sales',
     render: (_, r) => r.sales.map((s) => `${s.sale_no} (${SALE_CHANNEL[s.channel]})`).join(', '),
   },
   {
-    title: 'Müşterinin dağıttığı',
+    title: t('Müşterinin dağıttığı'),
     key: 'onward',
     render: (_, r) => (
       <Space orientation="vertical" size={0}>

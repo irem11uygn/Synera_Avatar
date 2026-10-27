@@ -40,6 +40,7 @@ import { formatDateTime, formatQty, unitLabel } from '../lib/format'
 import { LOT_ORIGIN, RECALL_RESOLUTION, RECALL_STATUS, WAREHOUSE_KIND, options } from '../lib/labels'
 import { tracePath } from '../lib/paths'
 import { decimalRule, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type ReturnValues = { sale_line_id: number; qty: string; warehouse_id?: number; reason?: string }
 type OnwardValues = {
@@ -65,10 +66,10 @@ function ReturnModal({ recipient, onClose }: { recipient: Recipient | null; onCl
       open
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
-      initialValues={{ sale_line_id: recipient.sales[0]?.sale_line_id, reason: 'Geri çağırma' }}
-      okText="İadeyi kaydet"
+      initialValues={{ sale_line_id: recipient.sales[0]?.sale_line_id, reason: t('Geri çağırma') }}
+      okText={t('İadeyi kaydet')}
     >
-      <Form.Item name="sale_line_id" label="Satış" rules={[{ required: true }]}>
+      <Form.Item name="sale_line_id" label={t('Satış')} rules={[{ required: true }]}>
         <Select
           options={recipient.sales.map((s) => ({
             value: s.sale_line_id,
@@ -78,22 +79,22 @@ function ReturnModal({ recipient, onClose }: { recipient: Recipient | null; onCl
       </Form.Item>
       <Form.Item
         name="qty"
-        label={`Miktar (${unitLabel(recipient.base_unit)}) — müşteride ${formatQty(recipient.qty, recipient.base_unit)}`}
-        rules={[decimalRule('Miktar', { maxFraction: 3, integer: recipient.base_unit === 'ADET' })]}
+        label={t('Miktar ({unit}) — müşteride {qty}', { unit: unitLabel(recipient.base_unit), qty: formatQty(recipient.qty, recipient.base_unit) })}
+        rules={[decimalRule(t('Miktar'), { maxFraction: 3, integer: recipient.base_unit === 'ADET' })]}
       >
         <Input inputMode="decimal" autoComplete="off" />
       </Form.Item>
-      <Form.Item name="warehouse_id" label="Giriş deposu" extra="Boş bırakılırsa ana depo">
+      <Form.Item name="warehouse_id" label={t('Giriş deposu')} extra={t('Boş bırakılırsa ana depo')}>
         <Select
           allowClear
           options={(warehouses.data ?? []).map((w) => ({ value: w.id, label: `${w.name} (${WAREHOUSE_KIND[w.kind]})` }))}
         />
       </Form.Item>
-      <Form.Item name="reason" label="Neden">
+      <Form.Item name="reason" label={t('Neden')}>
         <Input maxLength={255} />
       </Form.Item>
       <Typography.Text type="secondary">
-        Mal aynı lot numarasıyla depoya döner; satışa kapalı lota da iade alınır. Değeri satıştaki maliyetin payıdır.
+        {t('Mal aynı lot numarasıyla depoya döner; satışa kapalı lota da iade alınır. Değeri satıştaki maliyetin payıdır.')}
       </Typography.Text>
     </FormModal>
   )
@@ -113,16 +114,16 @@ function OnwardModal({ recipient, onClose }: { recipient: Recipient | null; onCl
   if (!recipient) return null
   return (
     <FormModal<OnwardValues>
-      title={`${recipient.customer} — müşterinin dağıttığı yer`}
+      title={t('{customer} — müşterinin dağıttığı yer', { customer: recipient.customer })}
       open
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
       initialValues={{ sale_line_id: recipient.sales[0]?.sale_line_id }}
     >
-      <Form.Item name="sale_line_id" label="Satış" rules={[{ required: true }]}>
+      <Form.Item name="sale_line_id" label={t('Satış')} rules={[{ required: true }]}>
         <Select options={recipient.sales.map((s) => ({ value: s.sale_line_id, label: s.sale_no }))} />
       </Form.Item>
-      <Form.Item name="recipient_partner_id" label="Müşterinin alıcısı (şube, bayi…)" rules={[{ required: true }]}>
+      <Form.Item name="recipient_partner_id" label={t('Müşterinin alıcısı (şube, bayi…)')} rules={[{ required: true }]}>
         <Select
           showSearch
           optionFilterProp="label"
@@ -134,18 +135,18 @@ function OnwardModal({ recipient, onClose }: { recipient: Recipient | null; onCl
       <Form.Item
         name="qty"
         label={`Miktar (${unitLabel(recipient.base_unit)})`}
-        rules={[decimalRule('Miktar', { maxFraction: 3, integer: recipient.base_unit === 'ADET' })]}
+        rules={[decimalRule(t('Miktar'), { maxFraction: 3, integer: recipient.base_unit === 'ADET' })]}
       >
         <Input inputMode="decimal" autoComplete="off" />
       </Form.Item>
-      <Form.Item name="delivered_at" label="Teslim tarihi">
+      <Form.Item name="delivered_at" label={t('Teslim tarihi')}>
         <DatePicker format="DD.MM.YYYY" style={{ width: '100%' }} />
       </Form.Item>
-      <Form.Item name="source_note" label="Bilginin kaynağı">
-        <Input maxLength={255} placeholder="Market B'nin e-postası" />
+      <Form.Item name="source_note" label={t('Bilginin kaynağı')}>
+        <Input maxLength={255} placeholder={t("Market B'nin e-postası")} />
       </Form.Item>
       <Typography.Text type="secondary">
-        Müşteri malı kendi şubesine ya da alıcısına verdiyse buraya yazın; geri çağırmada onlara da ulaşılır.
+        {t('Müşteri malı kendi şubesine ya da alıcısına verdiyse buraya yazın; geri çağırmada onlara da ulaşılır.')}
       </Typography.Text>
     </FormModal>
   )
@@ -165,12 +166,12 @@ function CloseModal({ recall, open, onClose }: { recall: Recall; open: boolean; 
       onClose={onClose}
       onSubmit={(values) => mutation.mutateAsync(values)}
       initialValues={{ resolution: 'IMHA' }}
-      okText="Kapat"
+      okText={t('Kapat')}
     >
-      <Form.Item name="resolution" label="Sonuç" rules={[{ required: true }]}>
+      <Form.Item name="resolution" label={t('Sonuç')} rules={[{ required: true }]}>
         <Radio.Group options={options(RECALL_RESOLUTION)} style={{ display: 'grid', gap: 8 }} />
       </Form.Item>
-      <Form.Item name="note" label="Not">
+      <Form.Item name="note" label={t('Not')}>
         <Input.TextArea rows={2} maxLength={500} />
       </Form.Item>
     </FormModal>
@@ -193,7 +194,7 @@ export default function RecallDetailPage({ id }: { id: number }) {
 
   if (recall.isError) {
     return (
-      <Page title="Geri çağırma">
+      <Page title={t('Geri çağırma')}>
         <QueryError error={recall.error} onRetry={() => recall.refetch()} />
       </Page>
     )
@@ -227,16 +228,16 @@ export default function RecallDetailPage({ id }: { id: number }) {
       .join(' + ') || '0'
 
   const actionColumn: TableColumnsType<Recipient>[number] = {
-    title: 'İşlem',
+    title: t('İşlem'),
     key: 'actions',
     fixed: 'right',
     render: (_, r) => (
       <Space orientation="vertical" size={4}>
         <Button size="small" onClick={() => setReturning(r)} disabled={compare(r.qty, '0') <= 0}>
-          İade al
+          {t('İade al')}
         </Button>
         <Button size="small" onClick={() => setOnward(r)}>
-          Dağıttığı yeri ekle
+          {t('Dağıttığı yeri ekle')}
         </Button>
       </Space>
     ),
@@ -244,17 +245,17 @@ export default function RecallDetailPage({ id }: { id: number }) {
 
   return (
     <Page
-      title={`Geri çağırma ${data.recall_no}`}
-      back={{ to: '/geri-cagirma', label: 'Geri çağırmalar' }}
+      title={t('Geri çağırma {no}', { no: data.recall_no })}
+      back={{ to: '/geri-cagirma', label: t('Geri çağırmalar') }}
       extra={
         <>
           <Button onClick={download} loading={downloading}>
-            İletişim listesi (CSV)
+            {t('İletişim listesi (CSV)')}
           </Button>
-          <Link to={tracePath(data.source_lot_no)}>İzleme ekranı</Link>
+          <Link to={tracePath(data.source_lot_no)}>{t('İzleme ekranı')}</Link>
           {open && (
             <Button type="primary" onClick={() => setClosing(true)}>
-              Geri çağırmayı kapat
+              {t('Geri çağırmayı kapat')}
             </Button>
           )}
         </>
@@ -266,33 +267,33 @@ export default function RecallDetailPage({ id }: { id: number }) {
         style={{ marginBottom: 16 }}
         title={
           open
-            ? `Açık: ${data.source_lot_no} ve ondan yapılan bütün lotlar satışa kapalı — mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz.`
-            : `Kapandı (${data.resolution ? RECALL_RESOLUTION[data.resolution] : ''}) — ${formatDateTime(data.closed_at)}`
+            ? t('Açık: {lot} ve ondan yapılan bütün lotlar satışa kapalı — mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz.', { lot: data.source_lot_no })
+            : t('Kapandı ({how}) — {at}', { how: data.resolution ? RECALL_RESOLUTION[data.resolution] : '', at: formatDateTime(data.closed_at) })
         }
-        description={`Neden: ${data.reason} · Başlatan: ${data.started_by_name ?? '—'} · ${formatDateTime(data.started_at)}`}
+        description={t('Neden: {reason} · Başlatan: {who} · {at}', { reason: data.reason, who: data.started_by_name ?? '—', at: formatDateTime(data.started_at) })}
       />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} lg={6}>
-          <Stat label="Etkilenen lot" value={data.lot_count} tone="danger" hint="Hepsi satışa kapalı" />
+          <Stat label={t('Etkilenen lot')} value={data.lot_count} tone="danger" hint={t('Hepsi satışa kapalı')} />
         </Col>
         <Col xs={12} lg={6}>
-          <Stat label="Alıcı (market)" value={data.customer_count} tone="brand" />
+          <Stat label={t('Alıcı (market)')} value={data.customer_count} tone="brand" />
         </Col>
         <Col xs={12} lg={6}>
-          <Stat label="Müşterilerde kalan" value={heldText} tone="warning" />
+          <Stat label={t('Müşterilerde kalan')} value={heldText} tone="warning" />
         </Col>
         <Col xs={12} lg={6}>
           <Stat
-            label="Bizdeki stok"
+            label={t('Bizdeki stok')}
             value={stockText}
             tone="success"
-            hint={data.violation_count ? `${data.violation_count} çevrimdışı ihlal` : 'İhlal yok'}
+            hint={data.violation_count ? t('{n} çevrimdışı ihlal', { n: data.violation_count }) : t('İhlal yok')}
           />
         </Col>
       </Row>
 
-      <Card size="small" title="Etkilenen zincir" style={{ marginBottom: 16 }}>
+      <Card size="small" title={t('Etkilenen zincir')} style={{ marginBottom: 16 }}>
         {trace.data ? (
           <TraceFlow lots={trace.data.lots} links={trace.data.links} recipients={trace.data.recipients} direction="forward" />
         ) : (
@@ -300,7 +301,7 @@ export default function RecallDetailPage({ id }: { id: number }) {
         )}
       </Card>
 
-      <Card size="small" title="Geri çağırma listesi: alıcılar, miktarlar, iletişim" style={{ marginBottom: 16 }}>
+      <Card size="small" title={t('Geri çağırma listesi: alıcılar, miktarlar, iletişim')} style={{ marginBottom: 16 }}>
         <Table<Recipient>
           rowKey={(r) => `${r.customer_id}-${r.lot_no}`}
           size="small"
@@ -308,45 +309,45 @@ export default function RecallDetailPage({ id }: { id: number }) {
           scroll={{ x: 'max-content' }}
           dataSource={data.recipients}
           columns={[...RECIPIENT_COLUMNS, actionColumn]}
-          locale={{ emptyText: 'Etkilenen lotlardan satış yapılmamış.' }}
+          locale={{ emptyText: t('Etkilenen lotlardan satış yapılmamış.') }}
         />
       </Card>
 
       <Row gutter={16}>
         <Col xs={24} lg={12}>
-          <Card size="small" title="Etkilenen lotlar" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Etkilenen lotlar')} style={{ marginBottom: 16 }}>
             <Table
               rowKey="lot_no"
               size="small"
               pagination={false}
               dataSource={data.lots}
               columns={[
-                { title: 'Lot', dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
-                { title: 'Ürün', dataIndex: 'product_name' },
-                { title: 'Köken', dataIndex: 'origin', render: (o: keyof typeof LOT_ORIGIN) => LOT_ORIGIN[o] },
-                { title: 'Kademe', dataIndex: 'depth', align: 'right' },
-                { title: 'Durum', dataIndex: 'status', render: (s: 'AKTIF' | 'BLOKE') => <LotStatusTag status={s} /> },
+                { title: t('Lot'), dataIndex: 'lot_no', render: (no: string) => <Link to={`/lotlar/${no}`}>{no}</Link> },
+                { title: t('Ürün'), dataIndex: 'product_name' },
+                { title: t('Köken'), dataIndex: 'origin', render: (o: keyof typeof LOT_ORIGIN) => LOT_ORIGIN[o] },
+                { title: t('Kademe'), dataIndex: 'depth', align: 'right' },
+                { title: t('Durum'), dataIndex: 'status', render: (s: 'AKTIF' | 'BLOKE') => <LotStatusTag status={s} /> },
               ]}
             />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card size="small" title="Bizdeki stok" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Bizdeki stok')} style={{ marginBottom: 16 }}>
             <Table
               rowKey={(r) => `${r.lot_no}-${r.warehouse_code}`}
               size="small"
               pagination={false}
               dataSource={data.stock}
-              locale={{ emptyText: 'Bizde stok yok.' }}
+              locale={{ emptyText: t('Bizde stok yok.') }}
               columns={[
-                { title: 'Lot', dataIndex: 'lot_no' },
-                { title: 'Depo', dataIndex: 'warehouse_name' },
-                { title: 'Miktar', dataIndex: 'qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
+                { title: t('Lot'), dataIndex: 'lot_no' },
+                { title: t('Depo'), dataIndex: 'warehouse_name' },
+                { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (v: string, r) => formatQty(v, r.base_unit) },
               ]}
             />
             {open && data.stock.length > 0 && (
               <Typography.Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
-                "İmha" ile kapatınca bu stok fire/imha olarak düşülür.
+                {t('"İmha" ile kapatınca bu stok fire/imha olarak düşülür.')}
               </Typography.Paragraph>
             )}
           </Card>

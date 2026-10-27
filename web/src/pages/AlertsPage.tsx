@@ -8,6 +8,7 @@ import type { AlertRow } from '../api/types'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { formatDateTime } from '../lib/format'
+import { t } from '../lib/i18n'
 
 export default function AlertsPage() {
   const [onlyOpen, setOnlyOpen] = useState(true)
@@ -23,15 +24,15 @@ export default function AlertsPage() {
 
   return (
     <Page
-      title="Uyarılar"
-      description="Telefondan çevrimdışı yapılan sorunlu satışlar: satışa kapalı ya da son kullanma tarihi geçmiş lot satılmış. Müşteriyi arayıp malı geri toplayın, sonra uyarıyı okundu yapın."
+      title={t('Uyarılar')}
+      description={t('Telefondan çevrimdışı yapılan sorunlu satışlar: satışa kapalı ya da son kullanma tarihi geçmiş lot satılmış. Müşteriyi arayıp malı geri toplayın, sonra uyarıyı okundu yapın.')}
       extra={
         <Segmented<boolean>
           value={onlyOpen}
           onChange={setOnlyOpen}
           options={[
-            { value: true, label: 'Okunmamış' },
-            { value: false, label: 'Hepsi' },
+            { value: true, label: t('Okunmamış') },
+            { value: false, label: t('Hepsi') },
           ]}
         />
       }
@@ -45,20 +46,20 @@ export default function AlertsPage() {
           dataSource={alerts.data}
           pagination={false}
           scroll={{ x: 'max-content' }}
-          locale={{ emptyText: onlyOpen ? 'Okunmamış uyarı yok.' : 'Uyarı yok.' }}
+          locale={{ emptyText: onlyOpen ? t('Okunmamış uyarı yok.') : t('Uyarı yok.') }}
           columns={[
-            { title: 'Zaman', dataIndex: 'created_at', render: formatDateTime },
-            { title: 'Tür', dataIndex: 'kind', render: () => <Tag color="orange">Geri çağırma ihlali</Tag> },
-            { title: 'Mesaj', dataIndex: 'message' },
+            { title: t('Zaman'), dataIndex: 'created_at', render: formatDateTime },
+            { title: t('Tür'), dataIndex: 'kind', render: () => <Tag color="orange">{t('Geri çağırma ihlali')}</Tag> },
+            { title: t('Mesaj'), dataIndex: 'message' },
             {
-              title: 'Durum',
+              title: t('Durum'),
               key: 'state',
               render: (_, row) =>
                 row.acknowledged_at ? (
                   `Okundu · ${formatDateTime(row.acknowledged_at)}`
                 ) : (
                   <Button size="small" loading={ack.isPending && ack.variables === row.id} onClick={() => ack.mutate(row.id)}>
-                    Okundu işaretle
+                    {t('Okundu işaretle')}
                   </Button>
                 ),
             },

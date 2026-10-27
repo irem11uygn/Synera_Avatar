@@ -351,7 +351,7 @@ button.stat:focus-visible {
 }
 
 .todo-text {
-  flex: 1;
+  flex: 1 1 220px;
   min-width: 0;
 }
 
@@ -722,6 +722,15 @@ button.stat:focus-visible {
 }
 
 @media (max-width: 575.98px) {
+  .todo {
+    flex-wrap: wrap;
+  }
+  .todo > .ant-btn {
+    width: 100%;
+  }
+  .shell-topbar {
+    gap: 8px;
+  }
   .page-title {
     font-size: 21px !important;
   }

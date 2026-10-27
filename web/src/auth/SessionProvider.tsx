@@ -11,8 +11,9 @@ import { WEB_ROLES } from '../lib/roles'
 import { ForcedPasswordChange } from '../pages/ChangePasswordPage'
 import LoginPage from '../pages/LoginPage'
 import { SessionContext } from './context'
+import { t } from '../lib/i18n'
 
-const WEB_ROLE_MESSAGE = 'Satış elemanı hesabı web arayüzünü kullanmaz; araçtan satış için telefon uygulamasına giriş yapın.'
+const WEB_ROLE_MESSAGE = t('Satış elemanı hesabı web arayüzünü kullanmaz; araçtan satış için telefon uygulamasına giriş yapın.')
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -31,7 +32,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setToken(null)
       setTokenState(null)
       queryClient.clear()
-      setNotice('Oturumun süresi doldu; yeniden giriş yapın.')
+      setNotice(t('Oturumun süresi doldu; yeniden giriş yapın.'))
     })
   }, [queryClient])
 
@@ -79,9 +80,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         <Alert
           type="error"
           showIcon
-          title="Oturum doğrulanamadı"
+          title={t('Oturum doğrulanamadı')}
           description={errorMessage(me.error)}
-          action={<Button onClick={() => me.refetch()}>Yeniden dene</Button>}
+          action={<Button onClick={() => me.refetch()}>{t('Yeniden dene')}</Button>}
         />
       </Flex>
     )
@@ -90,7 +91,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   if (!WEB_ROLES.includes(me.data.role)) {
     return (
       <Flex justify="center" style={{ padding: 48 }}>
-        <Alert type="warning" showIcon title={WEB_ROLE_MESSAGE} action={<Button onClick={logout}>Çıkış</Button>} />
+        <Alert type="warning" showIcon title={WEB_ROLE_MESSAGE} action={<Button onClick={logout}>{t('Çıkış')}</Button>} />
       </Flex>
     )
   }

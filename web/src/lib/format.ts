@@ -1,14 +1,19 @@
-// Ekranda Türkçe sayı ve tarih biçimleri: 1.543,50 € · 85 adet · %27,07 · 23.12.2026.
+// Ekrandaki sayı ve tarih biçimleri. Türkçe: 1.543,50 € · 85 adet · %27,07 · 23.12.2026;
+// İngilizce: 1,543.50 € · 85 pcs · 27.07% · 23/12/2026.
 // Sayılar metin olarak biçimlenir; kayan noktalı sayıya çevrilmez (ADR-006).
 
 import { fromScaled, toScaled } from './decimal'
+import { lang } from './i18n'
 
 export type Unit = 'KG' | 'ADET'
 
-const UNIT_LABEL: Record<Unit, string> = { KG: 'kg', ADET: 'adet' }
+const EN = lang === 'en'
+const UNIT_LABEL: Record<Unit, string> = { KG: 'kg', ADET: EN ? 'pcs' : 'adet' }
+const THOUSANDS = EN ? ',' : '.'
+const DECIMAL = EN ? '.' : ','
 
 function groupThousands(whole: string): string {
-  return whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return whole.replace(/\B(?=(\d{3})+(?!\d))/g, THOUSANDS)
 }
 
 /** Kesir basamağı en az `minFraction`, en çok `maxFraction` olacak biçimde; fazlası yarım yukarı yuvarlanır. */
@@ -19,7 +24,7 @@ export function formatDecimal(value: string, minFraction = 0, maxFraction = 6): 
   let digits = fraction
   while (digits.length > minFraction && digits.endsWith('0')) digits = digits.slice(0, -1)
   const sign = negative && /[1-9]/.test(whole + digits) ? '−' : ''
-  return `${sign}${groupThousands(whole)}${digits ? `,${digits}` : ''}`
+  return `${sign}${groupThousands(whole)}${digits ? `${DECIMAL}${digits}` : ''}`
 }
 
 export function formatMoney(value: string | null | undefined): string {
@@ -38,7 +43,8 @@ export function formatQty(value: string | null | undefined, unit?: Unit): string
 }
 
 export function formatPercent(value: string | null | undefined): string {
-  return value == null ? '—' : `%${formatDecimal(value, 2, 2)}`
+  if (value == null) return '—'
+  return EN ? `${formatDecimal(value, 2, 2)}%` : `%${formatDecimal(value, 2, 2)}`
 }
 
 export function unitLabel(unit: Unit): string {
@@ -49,10 +55,10 @@ export function unitLabel(unit: Unit): string {
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '—'
   const [year, month, day] = value.slice(0, 10).split('-')
-  return `${day}.${month}.${year}`
+  return EN ? `${day}/${month}/${year}` : `${day}.${month}.${year}`
 }
 
-const DATE_TIME = new Intl.DateTimeFormat('tr-TR', {
+const DATE_TIME = new Intl.DateTimeFormat(EN ? 'en-GB' : 'tr-TR', {
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',

@@ -2,6 +2,7 @@
 // Düz bağlantı Authorization başlığı gönderemez; dosya fetch ile alınıp tarayıcıya kaydettirilir.
 
 import { ApiError, getToken } from '../api/client'
+import { t } from './i18n'
 
 type Query = Record<string, string | number | null | undefined>
 
@@ -15,7 +16,7 @@ export async function downloadFile(path: string, query: Query = {}, fallbackName
   try {
     response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
   } catch {
-    throw new ApiError(0, 'NETWORK', 'Sunucuya ulaşılamadı; dosya indirilemedi.')
+    throw new ApiError(0, 'NETWORK', t('Sunucuya ulaşılamadı; dosya indirilemedi.'))
   }
   if (!response.ok) throw new ApiError(response.status, 'HTTP_ERROR', `Dosya indirilemedi (HTTP ${response.status}).`)
   const name = /filename="([^"]+)"/.exec(response.headers.get('content-disposition') ?? '')?.[1] ?? fallbackName

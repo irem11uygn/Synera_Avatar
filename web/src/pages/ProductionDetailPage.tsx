@@ -32,22 +32,23 @@ import { OrderStatusTag } from '../components/StatusTags'
 import { compare, multiply, parseUserDecimal, sum } from '../lib/decimal'
 import { formatDateTime, formatMoney, formatPercent, formatQty, formatUnitCost, unitLabel } from '../lib/format'
 import { decimalRule, fromApiDecimal, textOrNull, toApiDecimal } from '../lib/rules'
+import { t } from '../lib/i18n'
 
 type InputRow = Order['inputs'][number]
 
 function inputColumns(completed: boolean): TableColumnsType<InputRow> {
   const columns: TableColumnsType<InputRow> = [
-    { title: 'Lot', dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
-    { title: 'Hammadde', dataIndex: 'product_name' },
-    { title: 'Planlanan', dataIndex: 'planned_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
-    { title: 'Sevk edilen', dataIndex: 'shipped_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+    { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
+    { title: t('Hammadde'), dataIndex: 'product_name' },
+    { title: t('Planlanan'), dataIndex: 'planned_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+    { title: t('Sevk edilen'), dataIndex: 'shipped_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
   ]
   if (!completed) return columns
   return [
     ...columns,
-    { title: 'Tüketilen', dataIndex: 'consumed_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
-    { title: 'İade edilen', dataIndex: 'returned_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
-    { title: 'Tüketim değeri', dataIndex: 'consumed_value', align: 'right', render: formatMoney },
+    { title: t('Tüketilen'), dataIndex: 'consumed_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+    { title: t('İade edilen'), dataIndex: 'returned_qty', align: 'right', render: (v: string, row) => formatQty(v, row.base_unit) },
+    { title: t('Tüketim değeri'), dataIndex: 'consumed_value', align: 'right', render: formatMoney },
   ]
 }
 
@@ -80,7 +81,7 @@ export default function ProductionDetailPage({ id }: { id: number }) {
 
   if (order.isError) {
     return (
-      <Page title="Fason üretim emri">
+      <Page title={t('Fason üretim emri')}>
         <QueryError error={order.error} onRetry={() => order.refetch()} />
       </Page>
     )
@@ -95,45 +96,45 @@ export default function ProductionDetailPage({ id }: { id: number }) {
     data.status === 'TASLAK' ? (
       <>
         <Popconfirm
-          title="Girdiler sevk edilsin mi?"
-          description={`Hammadde lotları ana depodan ${data.subcontractor_name} deposuna transfer edilecek.`}
-          okText="Sevk et"
-          cancelText="Vazgeç"
+          title={t('Girdiler sevk edilsin mi?')}
+          description={t('Hammadde lotları ana depodan {name} deposuna gönderilecek.', { name: data.subcontractor_name })}
+          okText={t('Sevk et')}
+          cancelText={t('Vazgeç')}
           onConfirm={() => act('ship', `${data.order_no} sevk edildi.`)}
         >
           <Button type="primary" loading={busy === 'ship'}>
-            Girdileri sevk et
+            {t('Girdileri sevk et')}
           </Button>
         </Popconfirm>
         <Popconfirm
-          title="Emir iptal edilsin mi?"
-          okText="İptal et"
-          cancelText="Vazgeç"
+          title={t('Emir iptal edilsin mi?')}
+          okText={t('İptal et')}
+          cancelText={t('Vazgeç')}
           okButtonProps={{ danger: true }}
           onConfirm={() => act('cancel', `${data.order_no} iptal edildi.`)}
         >
           <Button danger loading={busy === 'cancel'}>
-            Emri iptal et
+            {t('Emri iptal et')}
           </Button>
         </Popconfirm>
       </>
     ) : null
 
   return (
-    <Page title={`Fason üretim emri ${data.order_no}`} back={{ to: '/uretim', label: 'Fason üretim' }} extra={actions}>
+    <Page title={t('Fason üretim emri {no}', { no: data.order_no })} back={{ to: '/uretim', label: t('Fason üretim') }} extra={actions}>
       {actionError && <Alert type="error" showIcon role="alert" title={actionError} style={{ marginBottom: 16 }} />}
 
       <Card size="small" style={{ marginBottom: 16 }}>
         {data.status === 'IPTAL' ? (
-          <Alert type="warning" showIcon title="Bu emir iptal edildi." />
+          <Alert type="warning" showIcon title={t('Bu emir iptal edildi.')} />
         ) : (
           <Steps
             size="small"
             current={currentStep(data)}
             items={[
-              { title: 'Taslak', content: formatDateTime(data.ordered_at) },
-              { title: 'Sevk edildi', content: formatDateTime(data.shipped_at) },
-              { title: 'Teslim alındı', content: formatDateTime(data.completed_at) },
+              { title: t('Taslak'), content: formatDateTime(data.ordered_at) },
+              { title: t('Sevk edildi'), content: formatDateTime(data.shipped_at) },
+              { title: t('Teslim alındı'), content: formatDateTime(data.completed_at) },
             ]}
           />
         )}
@@ -144,36 +145,36 @@ export default function ProductionDetailPage({ id }: { id: number }) {
           size="small"
           column={{ xs: 1, sm: 2, lg: 3 }}
           items={[
-            { key: 'status', label: 'Durum', children: <OrderStatusTag status={data.status} /> },
-            { key: 'sub', label: 'Fasoncu', children: data.subcontractor_name },
-            { key: 'product', label: 'Mamul', children: data.output_product_name },
-            { key: 'planned', label: 'Planlanan', children: formatQty(data.planned_qty, unit) },
-            { key: 'received', label: 'Teslim alınan', children: formatQty(data.received_qty, unit) },
+            { key: 'status', label: t('Durum'), children: <OrderStatusTag status={data.status} /> },
+            { key: 'sub', label: t('Fasoncu'), children: data.subcontractor_name },
+            { key: 'product', label: t('Mamul'), children: data.output_product_name },
+            { key: 'planned', label: t('Planlanan'), children: formatQty(data.planned_qty, unit) },
+            { key: 'received', label: t('Teslim alınan'), children: formatQty(data.received_qty, unit) },
             {
               key: 'diff',
-              label: 'Miktar farkı (teslim − plan)',
+              label: t('Miktar farkı (teslim − plan)'),
               children: data.quantity_difference == null ? '—' : formatQty(data.quantity_difference, unit),
             },
             {
               key: 'unit_price',
-              label: 'Hizmet birim ücreti',
+              label: t('Hizmet birim ücreti'),
               children: data.service_unit_price ? `${formatUnitCost(data.service_unit_price)} / ${unitLabel(unit)}` : '—',
             },
-            { key: 'service', label: 'Hizmet faturası', children: formatMoney(data.service_amount) },
-            { key: 'invoice', label: 'Fatura no', children: data.service_invoice_no ?? '—' },
+            { key: 'service', label: t('Hizmet faturası'), children: formatMoney(data.service_amount) },
+            { key: 'invoice', label: t('Fatura no'), children: data.service_invoice_no ?? '—' },
             {
               key: 'lot',
-              label: 'Mamul lotu',
+              label: t('Mamul lotu'),
               children: data.output_lot_no ? <Link to={`/lotlar/${data.output_lot_no}`}>{data.output_lot_no}</Link> : '—',
             },
-            ...(data.service_note ? [{ key: 'note', label: 'Fatura farkı açıklaması', children: data.service_note }] : []),
+            ...(data.service_note ? [{ key: 'note', label: t('Fatura farkı açıklaması'), children: data.service_note }] : []),
           ]}
         />
       </Card>
 
       <ForecastCard order={data} />
 
-      <Card size="small" title="Hammadde girdileri" style={{ marginBottom: 16 }}>
+      <Card size="small" title={t('Hammadde girdileri')} style={{ marginBottom: 16 }}>
         <Table<InputRow>
           rowKey="lot_no"
           size="small"
@@ -245,7 +246,7 @@ function CompleteForm({ order }: { order: Order }) {
   }
 
   return (
-    <Card size="small" title="Mamul kabulü" style={{ marginBottom: 16 }}>
+    <Card size="small" title={t('Mamul kabulü')} style={{ marginBottom: 16 }}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<CompleteValues>
         form={form}
@@ -263,24 +264,24 @@ function CompleteForm({ order }: { order: Order }) {
         <Row gutter={16}>
           <Col xs={24} sm={12} md={8}>
             <Form.Item
-              label="Teslim alınan miktar"
+              label={t('Teslim alınan miktar')}
               name="received_qty"
               extra={`Planlanan: ${formatQty(order.planned_qty, unit)}`}
-              rules={[decimalRule('Teslim alınan miktar', { maxFraction: 3, integer: unit === 'ADET' })]}
+              rules={[decimalRule(t('Teslim alınan miktar'), { maxFraction: 3, integer: unit === 'ADET' })]}
             >
               <Input inputMode="decimal" autoComplete="off" suffix={unitLabel(unit)} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={8}>
-            <Form.Item label="Mamul lot no" name="output_lot_no" extra={`Boş bırakılırsa ${defaultLotNo}`}>
+            <Form.Item label={t('Mamul lot no')} name="output_lot_no" extra={t('Boş bırakılırsa {lot}', { lot: defaultLotNo })}>
               <Input maxLength={40} autoComplete="off" spellCheck={false} placeholder={defaultLotNo} />
             </Form.Item>
           </Col>
         </Row>
 
-        <Typography.Title level={5}>Hammadde tüketimi</Typography.Title>
+        <Typography.Title level={5}>{t('Hammadde tüketimi')}</Typography.Title>
         <Typography.Paragraph type="secondary">
-          Her lot için tüketilen + iade edilen = sevk edilen olmalı. İade edilen miktar ana depoya geri döner.
+          {t('Her lot için tüketilen + iade edilen = sevk edilen olmalı. İade edilen miktar ana depoya geri döner.')}
         </Typography.Paragraph>
         <Form.List name="inputs">
           {(fields) =>
@@ -289,7 +290,7 @@ function CompleteForm({ order }: { order: Order }) {
               return (
                 <Row gutter={8} key={field.key} align="top">
                   <Col xs={24} md={8}>
-                    <Form.Item label="Lot">
+                    <Form.Item label={t('Lot')}>
                       <Typography.Text>
                         {input.lot_no} · {input.product_name} · sevk {formatQty(input.shipped_qty, input.base_unit)}
                       </Typography.Text>
@@ -297,27 +298,27 @@ function CompleteForm({ order }: { order: Order }) {
                   </Col>
                   <Col xs={12} md={8}>
                     <Form.Item
-                      label="Tüketilen"
+                      label={t('Tüketilen')}
                       name={[field.name, 'consumed_qty']}
-                      rules={[decimalRule('Tüketilen', { maxFraction: 3, allowZero: true })]}
+                      rules={[decimalRule(t('Tüketilen'), { maxFraction: 3, allowZero: true })]}
                     >
                       <Input inputMode="decimal" autoComplete="off" suffix={unitLabel(input.base_unit)} />
                     </Form.Item>
                   </Col>
                   <Col xs={12} md={8}>
                     <Form.Item
-                      label="İade edilen"
+                      label={t('İade edilen')}
                       name={[field.name, 'returned_qty']}
                       dependencies={[['inputs', field.name, 'consumed_qty']]}
                       rules={[
-                        decimalRule('İade edilen', { maxFraction: 3, allowZero: true }),
+                        decimalRule(t('İade edilen'), { maxFraction: 3, allowZero: true }),
                         {
                           validator: async (_rule, value: string | undefined) => {
                             const consumed = parseUserDecimal(form.getFieldValue(['inputs', field.name, 'consumed_qty']) ?? '', 3)
                             const returned = parseUserDecimal(value ?? '', 3)
                             if (consumed && returned && compare(sum([consumed, returned], 3), input.shipped_qty) !== 0) {
                               throw new Error(
-                                `Tüketilen + iade edilen, sevk edilen ${formatQty(input.shipped_qty, input.base_unit)} olmalı.`,
+                                t('Tüketilen + iade edilen, sevk edilen {qty} olmalı.', { qty: formatQty(input.shipped_qty, input.base_unit) }),
                               )
                             }
                           },
@@ -333,21 +334,21 @@ function CompleteForm({ order }: { order: Order }) {
           }
         </Form.List>
 
-        <Typography.Title level={5}>Hizmet faturası</Typography.Title>
+        <Typography.Title level={5}>{t('Hizmet faturası')}</Typography.Title>
         <Row gutter={16}>
           <Col xs={24} sm={12} md={8}>
             <Form.Item
-              label="Fatura tutarı"
+              label={t('Fatura tutarı')}
               name="service_amount"
               extra={
                 suggested
-                  ? `Boşsa teslim alınan × birim ücret = ${formatMoney(suggested)}`
+                  ? t('Boşsa teslim alınan × birim ücret = {amount}', { amount: formatMoney(suggested) })
                   : order.service_unit_price
-                    ? 'Teslim alınan miktarı girince önerilen tutar hesaplanır.'
-                    : 'Emirde birim ücret yok; tutar zorunlu.'
+                    ? t('Teslim alınan miktarı girince önerilen tutar hesaplanır.')
+                    : t('Emirde birim ücret yok; tutar zorunlu.')
               }
               rules={[
-                decimalRule('Fatura tutarı', {
+                decimalRule(t('Fatura tutarı'), {
                   maxFraction: 2,
                   required: !order.service_unit_price,
                   allowZero: true,
@@ -358,20 +359,20 @@ function CompleteForm({ order }: { order: Order }) {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={8}>
-            <Form.Item label="Fatura no" name="service_invoice_no">
+            <Form.Item label={t('Fatura no')} name="service_invoice_no">
               <Input maxLength={50} autoComplete="off" spellCheck={false} />
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
             <Form.Item
-              label="Fark açıklaması"
+              label={t('Fark açıklaması')}
               name="service_note"
               dependencies={['service_amount', 'received_qty']}
               rules={[
                 {
                   validator: async (_rule, value: string | undefined) => {
                     if (amountDiffers && !value?.trim()) {
-                      throw new Error('Fatura önerilen tutardan farklı; nedenini yazın.')
+                      throw new Error(t('Fatura önerilen tutardan farklı; nedenini yazın.'))
                     }
                   },
                 },
@@ -386,11 +387,11 @@ function CompleteForm({ order }: { order: Order }) {
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
-            title={`Fatura (${formatMoney(amount)}) önerilen tutardan (${formatMoney(suggested)}) farklı; açıklama zorunlu.`}
+            title={t('Fatura ({amount}) önerilen tutardan ({suggested}) farklı; açıklama zorunlu.', { amount: formatMoney(amount), suggested: formatMoney(suggested) })}
           />
         )}
         <Button type="primary" htmlType="submit" loading={saving}>
-          Mamulü kabul et
+          {t('Mamulü kabul et')}
         </Button>
       </Form>
     </Card>
@@ -407,10 +408,10 @@ function CostBreakdown({ order }: { order: Order }) {
   const serviceFormula = `${formatQty(order.received_qty, unit)} × ${formatUnitCost(order.service_unit_price)}`
   const serviceDetail =
     suggestedService === null
-      ? `fatura ${order.service_invoice_no ?? ''}`.trim()
+      ? t('fatura {no}', { no: order.service_invoice_no ?? '' }).trim()
       : compare(suggestedService, cost.service) === 0
         ? serviceFormula
-        : `fatura ${order.service_invoice_no ?? ''} · önerilen ${serviceFormula} = ${formatMoney(suggestedService)}`
+        : t('fatura {no} · önerilen {formula} = {amount}', { no: order.service_invoice_no ?? '', formula: serviceFormula, amount: formatMoney(suggestedService) })
 
   const rows = [
     ...order.inputs
@@ -418,12 +419,12 @@ function CostBreakdown({ order }: { order: Order }) {
       .map((input) => ({
         key: input.lot_no,
         label: `${input.product_name} (${input.lot_no})`,
-        detail: `${formatQty(input.consumed_qty, input.base_unit)} tüketildi`,
+        detail: t('{qty} tüketildi', { qty: formatQty(input.consumed_qty, input.base_unit) }),
         amount: input.consumed_value,
       })),
     {
       key: 'service',
-      label: 'Fason işçilik',
+      label: t('Fason işçilik'),
       detail: serviceDetail,
       amount: cost.service,
     },
@@ -434,46 +435,46 @@ function CostBreakdown({ order }: { order: Order }) {
       <Row gutter={16}>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Toplam maliyet (lot değeri)" value={formatMoney(cost.total)} />
+            <Statistic title={t('Toplam maliyet (lot değeri)')} value={formatMoney(cost.total)} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
             <Statistic title={`Birim maliyet — EKP (€ / ${unitLabel(unit)})`} value={formatUnitCost(cost.ekp_display)} />
-            <Typography.Text type="secondary">Saklanan tam değer: {formatUnitCost(cost.ekp)}</Typography.Text>
+            <Typography.Text type="secondary">{t('Saklanan tam değer: {v}', { v: formatUnitCost(cost.ekp) })}</Typography.Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Brüt kâr / birim" value={formatMoney(order.sales?.gross_profit_per_unit)} />
-            <Typography.Text type="secondary">Satış fiyatı {formatMoney(order.sales?.vkp)}</Typography.Text>
+            <Statistic title={t('Brüt kâr / birim')} value={formatMoney(order.sales?.gross_profit_per_unit)} />
+            <Typography.Text type="secondary">{t('Satış fiyatı {v}', { v: formatMoney(order.sales?.vkp) })}</Typography.Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" style={{ marginBottom: 16 }}>
-            <Statistic title="Marj (brüt kâr / satış fiyatı)" value={formatPercent(order.sales?.margin_pct)} />
+            <Statistic title={t('Marj (brüt kâr / satış fiyatı)')} value={formatPercent(order.sales?.margin_pct)} />
           </Card>
         </Col>
       </Row>
 
       <Row gutter={16}>
         <Col xs={24} lg={14}>
-          <Card size="small" title="Birim maliyet nasıl hesaplandı?" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Birim maliyet nasıl hesaplandı?')} style={{ marginBottom: 16 }}>
             <Table
               rowKey="key"
               size="small"
               pagination={false}
               dataSource={rows}
               columns={[
-                { title: 'Kalem', dataIndex: 'label' },
-                { title: 'Ayrıntı', dataIndex: 'detail' },
-                { title: 'Tutar', dataIndex: 'amount', align: 'right', render: formatMoney },
+                { title: t('Kalem'), dataIndex: 'label' },
+                { title: t('Ayrıntı'), dataIndex: 'detail' },
+                { title: t('Tutar'), dataIndex: 'amount', align: 'right', render: formatMoney },
               ]}
               summary={() => (
                 <>
                   <Table.Summary.Row>
                     <Table.Summary.Cell index={0} colSpan={2}>
-                      <Typography.Text strong>Toplam maliyet</Typography.Text>
+                      <Typography.Text strong>{t('Toplam maliyet')}</Typography.Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} align="right">
                       <Typography.Text strong>{formatMoney(cost.total)}</Typography.Text>
@@ -481,7 +482,7 @@ function CostBreakdown({ order }: { order: Order }) {
                   </Table.Summary.Row>
                   <Table.Summary.Row>
                     <Table.Summary.Cell index={0} colSpan={2}>
-                      ÷ Teslim alınan {formatQty(order.received_qty, unit)} = birim maliyet
+                      {t('÷ Teslim alınan {qty} = birim maliyet', { qty: formatQty(order.received_qty, unit) })}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} align="right">
                       <Typography.Text strong>{formatUnitCost(cost.ekp_display)}</Typography.Text>
@@ -491,28 +492,30 @@ function CostBreakdown({ order }: { order: Order }) {
               )}
             />
             <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
-              Lot değeri toplam maliyettir ({formatMoney(cost.total)}). Birim maliyet {formatUnitCost(cost.ekp)} olarak saklanır,
-              ekranda {formatUnitCost(cost.ekp_display)} gösterilir; satış maliyetleri lot değerinden dağıtıldığı için
-              yuvarlama farkı oluşmaz.
+              {t('Lot değeri toplam maliyettir ({total}). Birim maliyet {exact} olarak saklanır, ekranda {shown} gösterilir; satış maliyetleri lot değerinden dağıtıldığı için yuvarlama farkı oluşmaz.', {
+                total: formatMoney(cost.total),
+                exact: formatUnitCost(cost.ekp),
+                shown: formatUnitCost(cost.ekp_display),
+              })}
             </Typography.Paragraph>
           </Card>
         </Col>
         <Col xs={24} lg={10}>
-          <Card size="small" title="Verim" style={{ marginBottom: 16 }}>
+          <Card size="small" title={t('Verim')} style={{ marginBottom: 16 }}>
             {order.yield ? (
               <Descriptions
                 size="small"
                 column={1}
                 items={[
-                  { key: 'out', label: 'Mamul (kg)', children: formatQty(order.yield.output_kg, 'KG') },
-                  { key: 'main', label: 'Ana hammadde (kg)', children: formatQty(order.yield.main_input_kg, 'KG') },
-                  { key: 'all', label: 'Bütün girdiler (kg)', children: formatQty(order.yield.inputs_kg, 'KG') },
-                  { key: 'ymain', label: 'Et bazlı verim', children: formatPercent(order.yield.yield_main_pct) },
-                  { key: 'yall', label: 'Toplam girdi verimi', children: formatPercent(order.yield.yield_total_pct) },
+                  { key: 'out', label: t('Mamul (kg)'), children: formatQty(order.yield.output_kg, 'KG') },
+                  { key: 'main', label: t('Ana hammadde (kg)'), children: formatQty(order.yield.main_input_kg, 'KG') },
+                  { key: 'all', label: t('Bütün girdiler (kg)'), children: formatQty(order.yield.inputs_kg, 'KG') },
+                  { key: 'ymain', label: t('Et bazlı verim'), children: formatPercent(order.yield.yield_main_pct) },
+                  { key: 'yall', label: t('Toplam girdi verimi'), children: formatPercent(order.yield.yield_total_pct) },
                 ]}
               />
             ) : (
-              <Typography.Text type="secondary">Verim hesaplanamadı (ağırlık bilgisi eksik).</Typography.Text>
+              <Typography.Text type="secondary">{t('Verim hesaplanamadı (ağırlık bilgisi eksik).')}</Typography.Text>
             )}
           </Card>
         </Col>

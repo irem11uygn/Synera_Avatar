@@ -7,6 +7,7 @@ import type { Recipient, TraceLink, TracedLot } from '../api/types'
 import { formatQty } from '../lib/format'
 import { LINK_PROCESS, LOT_ORIGIN, ONWARD_STATUS } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 type Props = {
   lots: TracedLot[]
@@ -25,16 +26,16 @@ function LotBlock({ lot, source }: { lot: TracedLot; source: boolean }) {
       className={classes.join(' ')}
       style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit' }}
       onClick={() => navigate(`/lotlar/${lot.lot_no}`)}
-      aria-label={`${lot.lot_no} lotunun ayrıntısı`}
+      aria-label={t('{lot} lotunun ayrıntısı', { lot: lot.lot_no })}
     >
       <div className="lot-block-title">{lot.lot_no}</div>
       <div className="lot-block-sub">{lot.product_name}</div>
       <div className="lot-block-sub">
-        {LOT_ORIGIN[lot.origin]} · başlangıç {formatQty(lot.initial_qty, lot.base_unit)}
+        {LOT_ORIGIN[lot.origin]} · {t('başlangıç')} {formatQty(lot.initial_qty, lot.base_unit)}
       </div>
       <div className="lot-block-sub">
         Kalan {formatQty(lot.remaining_qty, lot.base_unit)}
-        {lot.status === 'BLOKE' && <strong style={{ color: 'var(--danger)' }}> · BLOKE</strong>}
+        {lot.status === 'BLOKE' && <strong style={{ color: 'var(--danger)' }}> · {t('satışa kapalı')}</strong>}
       </div>
     </button>
   )
@@ -51,12 +52,12 @@ function CustomerBlock({ recipient }: { recipient: Recipient }) {
         </div>
         <div className="lot-block-sub">
           {recipient.onward_status === 'KAYITLI'
-            ? `Alıcıları kayıtlı (${recipient.onward_items.length})`
+            ? t('Alıcıları kayıtlı ({n})', { n: recipient.onward_items.length })
             : recipient.onward_status === 'KISMEN'
-              ? 'Kısmen kayıtlı'
-              : 'Sonrası bilinmiyor'}
+              ? t('Kısmen kayıtlı')
+              : t('Sonrası bilinmiyor')}
         </div>
-        {recipient.recall_violation && <div className="lot-block-sub">Geri çağırma sonrası satış</div>}
+        {recipient.recall_violation && <div className="lot-block-sub">{t('Geri çağırma sonrası satış')}</div>}
       </div>
     </Tooltip>
   )
@@ -76,7 +77,7 @@ export function TraceFlow({ lots, links, recipients = [], direction }: Props) {
   }
 
   return (
-    <div className="trace-stage" role="group" aria-label="Lot akış şeması">
+    <div className="trace-stage" role="group" aria-label={t('Lot akış şeması')}>
       <div className="trace-plane">
         {columns.map((column, index) => (
           <div key={order[index]} style={{ display: 'flex' }}>
@@ -93,7 +94,7 @@ export function TraceFlow({ lots, links, recipients = [], direction }: Props) {
             )}
             <div className="trace-column">
               <div className="trace-column-title">
-                {order[index] === 0 ? (direction === 'forward' ? 'Kaynak lot' : 'İncelenen lot') : `${order[index]}. kademe`}
+                {order[index] === 0 ? (direction === 'forward' ? t('Kaynak lot') : t('İncelenen lot')) : `${order[index]}. kademe`}
               </div>
               {column.map((lot) => (
                 <LotBlock key={lot.lot_no} lot={lot} source={lot.lot_no === sourceNo} />
@@ -113,7 +114,7 @@ export function TraceFlow({ lots, links, recipients = [], direction }: Props) {
               ))}
             </div>
             <div className="trace-column">
-              <div className="trace-column-title">Alıcılar</div>
+              <div className="trace-column-title">{t('Alıcılar')}</div>
               {recipients.map((r) => (
                 <CustomerBlock key={`${r.customer}-${r.lot_no}`} recipient={r} />
               ))}

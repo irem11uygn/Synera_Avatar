@@ -8,17 +8,18 @@ import { ORDER_COLUMNS } from '../components/orderColumns'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 export default function ProductionListPage() {
   const orders = useQuery({ queryKey: ['orders'], queryFn: () => api<Order[]>('/production-orders') })
 
   return (
     <Page
-      title="Fason üretim"
-      description="Hammaddeyi fasoncuya gönderip ürettirdiğiniz işler. Adımlar: emir aç → hammaddeyi sevk et → ürünü teslim al (birim maliyet hesaplanır)."
+      title={t('Fason üretim')}
+      description={t('Hammaddeyi fasoncuya gönderip ürettirdiğiniz işler. Adımlar: emir aç → hammaddeyi sevk et → ürünü teslim al (birim maliyet hesaplanır).')}
       extra={
         <Button type="primary" onClick={() => navigate('/uretim/yeni')}>
-          Yeni fason üretim emri
+          {t('Yeni fason üretim emri')}
         </Button>
       }
     >
@@ -31,7 +32,7 @@ export default function ProductionListPage() {
         dataSource={orders.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
-        locale={{ emptyText: 'Henüz fason üretim emri yok.' }}
+        locale={{ emptyText: t('Henüz fason üretim emri yok.') }}
       />
     </Page>
   )

@@ -1,11 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App as AntApp, ConfigProvider } from 'antd'
+import enUS from 'antd/locale/en_US'
 import trTR from 'antd/locale/tr_TR'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { SessionProvider } from './auth/SessionProvider.tsx'
+import { lang } from './lib/i18n'
 import './index.css'
+
+document.documentElement.lang = lang
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,7 +21,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ConfigProvider
-      locale={trTR}
+      locale={lang === 'en' ? enUS : trTR}
       theme={{
         // Sade, okunaklı iş uygulaması: düz yüzeyler, 15 px yazı, büyük dokunma alanları.
         token: {

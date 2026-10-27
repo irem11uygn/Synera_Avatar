@@ -13,6 +13,7 @@ import { FormModal } from '../components/FormModal'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { ROLE, ROLE_HELP } from '../lib/roles'
+import { t } from '../lib/i18n'
 
 const ROLE_OPTIONS = (Object.keys(ROLE) as UserRole[]).map((role) => ({
   value: role,
@@ -34,7 +35,7 @@ function VanField() {
   const role = Form.useWatch('role')
   if (role !== 'SATIS') return null
   return (
-    <Form.Item name="warehouse_id" label="Aracı" rules={[{ required: true, message: 'Satış elemanının aracını seçin.' }]}>
+    <Form.Item name="warehouse_id" label={t('Aracı')} rules={[{ required: true, message: t('Satış elemanının aracını seçin.') }]}>
       <Select
         options={(warehouses.data ?? []).filter((w) => w.kind === 'ARAC').map((w) => ({ value: w.id, label: w.name }))}
       />
@@ -69,10 +70,10 @@ export default function UsersPage() {
 
   function reset(user: UserAdmin) {
     modal.confirm({
-      title: `${user.full_name} için yeni geçici şifre verilsin mi?`,
-      content: 'Kullanıcının açık oturumları kapanır; ilk girişte kendi şifresini belirler.',
-      okText: 'Geçici şifre ver',
-      cancelText: 'Vazgeç',
+      title: t('{name} için yeni geçici şifre verilsin mi?', { name: user.full_name }),
+      content: t('Kullanıcının açık oturumları kapanır; ilk girişte kendi şifresini belirler.'),
+      okText: t('Geçici şifre ver'),
+      cancelText: t('Vazgeç'),
       onOk: async () => {
         const result = await api<{ temporary_password: string }>(`/users/${user.id}/reset-password`, {
           method: 'POST',
@@ -80,12 +81,11 @@ export default function UsersPage() {
         })
         await refresh()
         modal.success({
-          title: 'Geçici şifre',
+          title: t('Geçici şifre'),
           content: (
             <>
               <Typography.Paragraph>
-                {user.full_name} ({user.username}) için geçici şifre. Kullanıcıya iletin; bu pencere kapanınca bir daha
-                gösterilmez.
+                {t('{name} ({username}) için geçici şifre. Kullanıcıya iletin; bu pencere kapanınca bir daha gösterilmez.', { name: user.full_name, username: user.username })}
               </Typography.Paragraph>
               <Typography.Text code copyable style={{ fontSize: 18 }}>
                 {result.temporary_password}
@@ -99,11 +99,11 @@ export default function UsersPage() {
 
   return (
     <Page
-      title="Kullanıcılar"
-      description="Her çalışan kendi hesabıyla girer ve yalnız kendi işinin ekranlarını görür. İşten ayrılanı silmeyin, pasifleştirin: geçmiş kayıtlarda adı kalır."
+      title={t('Kullanıcılar')}
+      description={t('Her çalışan kendi hesabıyla girer ve yalnız kendi işinin ekranlarını görür. İşten ayrılanı silmeyin, pasifleştirin: geçmiş kayıtlarda adı kalır.')}
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing('new')}>
-          Yeni kullanıcı
+          {t('Yeni kullanıcı')}
         </Button>
       }
     >
@@ -116,27 +116,27 @@ export default function UsersPage() {
         scroll={{ x: 'max-content' }}
         columns={[
           {
-            title: 'Ad soyad',
+            title: t('Ad soyad'),
             dataIndex: 'full_name',
             render: (name: string, user) => (
               <>
                 {name}
-                {user.id === me.id && <Tag style={{ marginLeft: 6 }}>Siz</Tag>}
+                {user.id === me.id && <Tag style={{ marginLeft: 6 }}>{t('Siz')}</Tag>}
                 <div className="muted">{user.username}</div>
               </>
             ),
           },
-          { title: 'Rol', dataIndex: 'role', render: (role: UserRole) => ROLE[role] },
-          { title: 'Araç', dataIndex: 'warehouse_code', render: (code: string | null) => code ?? '—', responsive: ['md'] },
+          { title: t('Rol'), dataIndex: 'role', render: (role: UserRole) => ROLE[role] },
+          { title: t('Araç'), dataIndex: 'warehouse_code', render: (code: string | null) => code ?? '—', responsive: ['md'] },
           {
-            title: 'Durum',
+            title: t('Durum'),
             render: (_, user) =>
               !user.active ? (
-                <Tag>Pasif</Tag>
+                <Tag>{t('Pasif')}</Tag>
               ) : user.must_change_password ? (
-                <Tag color="orange">İlk girişte şifre belirleyecek</Tag>
+                <Tag color="orange">{t('İlk girişte şifre belirleyecek')}</Tag>
               ) : (
-                <Tag color="green">Aktif</Tag>
+                <Tag color="green">{t('Aktif')}</Tag>
               ),
           },
           {
@@ -144,10 +144,10 @@ export default function UsersPage() {
             render: (_, user) => (
               <Space>
                 <Button size="small" onClick={() => setEditing(user)}>
-                  Düzenle
+                  {t('Düzenle')}
                 </Button>
                 <Button size="small" onClick={() => reset(user)}>
-                  Şifre sıfırla
+                  {t('Şifre sıfırla')}
                 </Button>
               </Space>
             ),
@@ -156,7 +156,7 @@ export default function UsersPage() {
       />
 
       <FormModal<EditValues>
-        title={editing === 'new' ? 'Yeni kullanıcı' : `Düzenle: ${editing ? editing.full_name : ''}`}
+        title={editing === 'new' ? t('Yeni kullanıcı') : t('Düzenle: {name}', { name: editing ? editing.full_name : '' })}
         open={editing !== null}
         onClose={() => setEditing(null)}
         initialValues={
@@ -169,38 +169,38 @@ export default function UsersPage() {
         {editing === 'new' && (
           <Form.Item
             name="username"
-            label="Kullanıcı adı"
-            extra="Küçük harf, rakam, nokta; ör. ayse.demir"
+            label={t('Kullanıcı adı')}
+            extra={t('Küçük harf, rakam, nokta; ör. ayse.demir')}
             rules={[
-              { required: true, message: 'Kullanıcı adını yazın.' },
-              { pattern: /^[a-z0-9._]{3,50}$/, message: 'Yalnız küçük harf (Türkçe karakter yok), rakam, nokta ve alt çizgi; en az 3 karakter.' },
+              { required: true, message: t('Kullanıcı adını yazın.') },
+              { pattern: /^[a-z0-9._]{3,50}$/, message: t('Yalnız küçük harf (Türkçe karakter yok), rakam, nokta ve alt çizgi; en az 3 karakter.') },
             ]}
           >
             <Input autoComplete="off" autoCapitalize="off" />
           </Form.Item>
         )}
-        <Form.Item name="full_name" label="Ad soyad" rules={[{ required: true, message: 'Adı yazın.' }]}>
+        <Form.Item name="full_name" label={t('Ad soyad')} rules={[{ required: true, message: t('Adı yazın.') }]}>
           <Input maxLength={100} />
         </Form.Item>
-        <Form.Item name="role" label="Görevi" rules={[{ required: true }]}>
+        <Form.Item name="role" label={t('Görevi')} rules={[{ required: true }]}>
           <Select options={ROLE_OPTIONS} optionLabelProp="title" />
         </Form.Item>
         <VanField />
         {editing === 'new' ? (
           <Form.Item
             name="password"
-            label="Geçici şifre"
-            extra="En az 8 karakter, harf ve rakam. Kullanıcı ilk girişte değiştirir."
+            label={t('Geçici şifre')}
+            extra={t('En az 8 karakter, harf ve rakam. Kullanıcı ilk girişte değiştirir.')}
             rules={[
-              { required: true, message: 'Geçici şifre yazın.' },
-              { min: 8, message: 'En az 8 karakter.' },
-              { pattern: /^(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d).+$/, message: 'Harf ve rakam birlikte olmalı.' },
+              { required: true, message: t('Geçici şifre yazın.') },
+              { min: 8, message: t('En az 8 karakter.') },
+              { pattern: /^(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d).+$/, message: t('Harf ve rakam birlikte olmalı.') },
             ]}
           >
             <Input.Password autoComplete="new-password" />
           </Form.Item>
         ) : (
-          <Form.Item name="active" label="Hesap açık" valuePropName="checked">
+          <Form.Item name="active" label={t('Hesap açık')} valuePropName="checked">
             <Switch />
           </Form.Item>
         )}

@@ -6,6 +6,7 @@ import { api } from '../api/client'
 import type { Lot } from '../api/types'
 import { LOT_STATUS } from '../lib/labels'
 import { navigate } from '../lib/router'
+import { t } from '../lib/i18n'
 
 /** Üst çubukta lot arama: lot numarası ya da ürün adıyla bul, seçince lot kartına git. */
 export function LotSearch() {
@@ -42,8 +43,8 @@ export function LotSearch() {
     >
       <Input
         prefix={<SearchOutlined />}
-        placeholder="Lot no ya da ürün ara…"
-        aria-label="Lot ara"
+        placeholder={t('Lot no ya da ürün ara…')}
+        aria-label={t('Lot ara')}
         allowClear
         onPressEnter={() => options.length === 0 && open(text)}
       />

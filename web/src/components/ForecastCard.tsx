@@ -6,6 +6,7 @@ import type { Forecast, Order } from '../api/types'
 import { formatDateTime, formatMoney, formatPercent, formatQty } from '../lib/format'
 import { Link } from './Link'
 import { Stat } from './Stat'
+import { t } from '../lib/i18n'
 
 function signed(value: string | null | undefined, format: (v: string) => string): string {
   if (value == null) return '—'
@@ -17,10 +18,9 @@ export function ForecastCard({ order }: { order: Order }) {
   const unit = order.base_unit
   if (!forecast) {
     return (
-      <Card size="small" title="Yapay zekâ tahmini (Model A)" style={{ marginBottom: 16 }}>
+      <Card size="small" title={t('Yapay zekâ tahmini (Model A)')} style={{ marginBottom: 16 }}>
         <Typography.Text type="secondary">
-          Bu emir için tahmin kaydı yok (model dosyası yoktu ya da emir yapay zekâ eklenmeden açıldı). İş akışı
-          tahminsiz de çalışır.
+          {t('Bu emir için tahmin kaydı yok (model dosyası yoktu ya da emir yapay zekâ eklenmeden açıldı). İş akışı tahminsiz de çalışır.')}
         </Typography.Text>
       </Card>
     )
@@ -29,45 +29,48 @@ export function ForecastCard({ order }: { order: Order }) {
   return (
     <Card
       size="small"
-      title="Yapay zekâ tahmini (Model A) — tahmin, gerçek, sapma"
-      extra={<Link to="/yapay-zeka">Model değerlendirmesi</Link>}
+      title={t('Yapay zekâ tahmini (Model A) — tahmin, gerçek, sapma')}
+      extra={<Link to="/yapay-zeka">{t('Model değerlendirmesi')}</Link>}
       style={{ marginBottom: 16 }}
     >
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <Stat
-            label="Beklenen miktar (tahmin)"
+            label={t('Beklenen miktar (tahmin)')}
             value={formatQty(forecast.expected_qty, unit)}
-            hint={`Et bazlı verim ${formatPercent(forecast.yield_main_pct)}`}
+            hint={t('Et bazlı verim {v}', { v: formatPercent(forecast.yield_main_pct) })}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Stat
-            label="Gerçekleşen"
-            value={done ? formatQty(order.received_qty, unit) : 'Kabul bekleniyor'}
-            hint={done ? `Sapma ${signed(forecast.qty_deviation, (v) => formatQty(v, unit))}` : undefined}
+            label={t('Gerçekleşen')}
+            value={done ? formatQty(order.received_qty, unit) : t('Kabul bekleniyor')}
+            hint={done ? t('Sapma {v}', { v: signed(forecast.qty_deviation, (v) => formatQty(v, unit)) }) : undefined}
             tone="success"
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Stat label="Tahmini birim maliyet" value={formatMoney(forecast.ekp)} hint="Hammadde değeri + hizmet × tahmini adet" />
+          <Stat label={t('Tahmini birim maliyet')} value={formatMoney(forecast.ekp)} hint={t('Hammadde değeri + hizmet × tahmini adet')} />
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Stat
-            label="Gerçek birim maliyet"
+            label={t('Gerçek birim maliyet')}
             value={done ? formatMoney(order.cost?.ekp_display) : '—'}
-            hint={done ? `Sapma ${signed(forecast.ekp_deviation, formatMoney)}` : undefined}
+            hint={done ? t('Sapma {v}', { v: signed(forecast.ekp_deviation, formatMoney) }) : undefined}
             tone="success"
           />
         </Col>
       </Row>
       <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
-        Referans yöntem (geçmiş ortalama verim): {formatQty(forecast.baseline_qty, unit)} · birim maliyet{' '}
-        {formatMoney(forecast.baseline_ekp)}
+        {t('Referans yöntem (geçmiş ortalama verim): {qty} · birim maliyet {cost}', {
+          qty: formatQty(forecast.baseline_qty, unit),
+          cost: formatMoney(forecast.baseline_ekp),
+        })}
         {done && forecast.baseline_qty_deviation != null && (
-          <> · referans sapması {signed(forecast.baseline_qty_deviation, (v) => formatQty(v, unit))}</>
+          <> · {t('referans sapması {v}', { v: signed(forecast.baseline_qty_deviation, (v) => formatQty(v, unit)) })}</>
         )}
-        . <Tag>{forecast.model_version}</Tag> {formatDateTime(forecast.created_at)} tarihinde, emir açılırken kaydedildi.
+        . <Tag>{forecast.model_version}</Tag>{' '}
+        {t('{at} tarihinde, emir açılırken kaydedildi.', { at: formatDateTime(forecast.created_at) })}
       </Typography.Paragraph>
     </Card>
   )
