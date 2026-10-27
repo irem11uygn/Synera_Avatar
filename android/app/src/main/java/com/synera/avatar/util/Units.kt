@@ -43,11 +43,10 @@ object Quantity {
     /** Kullanıcının yazdığı miktar: "2,5" ya da "2.5" → 2500; geçersiz ya da gramdan inceyse null. */
     fun parseInput(text: String): Long? = parseScaled(text, 3)
 
-    /** Ekranda: 2500 + KG → "2,5 kg"; 85000 + ADET → "85 adet". */
-    fun format(milli: Long, baseUnit: String): String {
-        val unit = if (baseUnit == "ADET") "adet" else "kg"
-        return qtyFormat().format(fromMilli(milli)) + " " + unit
-    }
+    /** Ekranda: 2500 + KG → "2,5 kg"; 85000 + ADET → "85 adet" (İngilizcede "85 pcs"). */
+    fun format(milli: Long, baseUnit: String): String = qtyFormat().format(fromMilli(milli)) + " " + unitLabel(baseUnit)
+
+    fun unitLabel(baseUnit: String): String = if (baseUnit == "ADET") t("adet") else "kg"
 }
 
 private val plainDecimal = Regex("""^\d+([.,]\d+)?$""")
@@ -61,8 +60,9 @@ private fun parseScaled(text: String, scale: Int): Long? {
     return value.movePointRight(scale).setScale(0, RoundingMode.UNNECESSARY).longValueExact()
 }
 
-private val turkish: Locale = Locale.forLanguageTag("tr-TR")
+// Sayı biçimi seçili dile göre: Türkçe 1.543,50 · İngilizce 1,543.50.
+private fun symbols() = DecimalFormatSymbols(Locale.forLanguageTag(if (L.lang == L.EN) "en-GB" else "tr-TR"))
 
-private fun moneyFormat() = DecimalFormat("#,##0.00", DecimalFormatSymbols(turkish))
+private fun moneyFormat() = DecimalFormat("#,##0.00", symbols())
 
-private fun qtyFormat() = DecimalFormat("#,##0.###", DecimalFormatSymbols(turkish))
+private fun qtyFormat() = DecimalFormat("#,##0.###", symbols())

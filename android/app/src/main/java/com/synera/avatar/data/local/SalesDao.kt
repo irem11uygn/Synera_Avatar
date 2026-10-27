@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import com.synera.avatar.util.t
 import kotlinx.coroutines.flow.Flow
 
 /** Satışın kullanılabilir stoku aştığı ya da lotun bloke olduğu durumda kayıt yapılmaz. */
@@ -39,9 +40,9 @@ abstract class SalesDao {
     open suspend fun saveSale(sale: SaleEntity, lines: List<SaleLineEntity>) {
         for ((lotId, lotLines) in lines.groupBy { it.lotId }) {
             val lotNo = lotLines.first().lotNo
-            if (lotStatus(lotId) == "BLOKE") throw SaleNotAllowed("$lotNo lotu bloke (geri çağrıldı); satılamaz.")
+            if (lotStatus(lotId) == "BLOKE") throw SaleNotAllowed(t("{lot} lotu geri çağrıldı; satılamaz.", "lot" to lotNo))
             if (lotLines.sumOf { it.qtyMilli } > (availableMilli(lotId) ?: 0)) {
-                throw SaleNotAllowed("$lotNo lotunda araçta bu kadar kullanılabilir miktar yok.")
+                throw SaleNotAllowed(t("{lot} lotunda araçta bu kadar kullanılabilir miktar yok.", "lot" to lotNo))
             }
         }
         insertSale(sale)
@@ -95,6 +96,7 @@ abstract class SalesDao {
         """
         SELECT sa.clientUuid AS clientUuid, sa.soldAtMillis AS soldAtMillis, sa.syncState AS syncState,
                sa.serverSaleNo AS serverSaleNo, sa.serverMessage AS serverMessage, c.name AS customerName,
+               sa.paymentMethod AS paymentMethod,
                COALESCE(SUM(sl.amountCents), 0) AS totalCents, COUNT(sl.lineNo) AS lineCount
         FROM sale sa
         LEFT JOIN customer c ON c.id = sa.customerId
@@ -105,4 +107,27 @@ abstract class SalesDao {
         """,
     )
     abstract fun observeRecentSales(): Flow<List<SaleSummaryRow>>
+
+    /** Belli bir andan sonraki satışlar (bugünün özeti: çevrimdışıyken de çalışır). */
+    @Query(
+        """
+        SELECT sa.clientUuid AS clientUuid, sa.soldAtMillis AS soldAtMillis, sa.syncState AS syncState,
+               sa.serverSaleNo AS serverSaleNo, sa.serverMessage AS serverMessage, c.name AS customerName,
+               sa.paymentMethod AS paymentMethod,
+               COALESCE(SUM(sl.amountCents), 0) AS totalCents, COUNT(sl.lineNo) AS lineCount
+        FROM sale sa
+        LEFT JOIN customer c ON c.id = sa.customerId
+        LEFT JOIN sale_line sl ON sl.saleUuid = sa.clientUuid
+        WHERE sa.soldAtMillis >= :fromMillis AND sa.syncState <> 'HATA'
+        GROUP BY sa.clientUuid
+        ORDER BY sa.soldAtMillis DESC
+        """,
+    )
+    abstract fun observeSalesSince(fromMillis: Long): Flow<List<SaleSummaryRow>>
+
+    /** Sunucu sıfırlandıysa bekleyen satışlar gönderilmez: lot numaraları başka bir veri kümesine aittir. */
+    @Query(
+        "UPDATE sale SET syncState = 'HATA', serverMessage = :message WHERE syncState = 'BEKLIYOR'",
+    )
+    abstract suspend fun failPending(message: String)
 }

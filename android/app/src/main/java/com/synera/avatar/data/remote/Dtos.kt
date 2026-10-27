@@ -79,6 +79,7 @@ data class PushSaleDto(
     @SerialName("warehouse_id") val warehouseId: Long,
     @SerialName("sold_at") val soldAt: String,
     val lines: List<PushLineDto>,
+    @SerialName("payment_method") val paymentMethod: String? = null,
 )
 
 @Serializable
@@ -104,3 +105,65 @@ data class ApiErrorBody(val error: ApiError)
 
 @Serializable
 data class ApiError(val code: String, val message: String)
+
+@Serializable
+data class DayTotalDto(val key: String, @SerialName("sale_count") val saleCount: Int, val amount: String)
+
+@Serializable
+data class DayReturnDto(
+    @SerialName("return_no") val returnNo: String,
+    @SerialName("customer_name") val customerName: String,
+    @SerialName("lot_no") val lotNo: String,
+    val qty: String,
+    @SerialName("refund_amount") val refundAmount: String,
+)
+
+@Serializable
+data class StockLeftDto(
+    @SerialName("lot_no") val lotNo: String,
+    @SerialName("product_name") val productName: String,
+    @SerialName("base_unit") val baseUnit: String,
+    @SerialName("expiry_date") val expiryDate: String? = null,
+    val qty: String,
+)
+
+/** Gün sonu (GET /sync/day-end): satış elemanının kendi satışları, iadeleri ve aracında kalan mal. */
+@Serializable
+data class DayEndDto(
+    val day: String,
+    @SerialName("sale_count") val saleCount: Int,
+    @SerialName("sales_amount") val salesAmount: String,
+    @SerialName("refund_amount") val refundAmount: String,
+    @SerialName("net_amount") val netAmount: String,
+    @SerialName("by_payment") val byPayment: List<DayTotalDto>,
+    val returns: List<DayReturnDto>,
+    @SerialName("stock_left") val stockLeft: List<StockLeftDto>,
+)
+
+@Serializable
+data class CountLineDto(@SerialName("lot_no") val lotNo: String, @SerialName("counted_qty") val countedQty: String)
+
+@Serializable
+data class StockCountRequest(
+    @SerialName("warehouse_id") val warehouseId: Long,
+    val note: String? = null,
+    val lines: List<CountLineDto>,
+)
+
+@Serializable
+data class CountResultLineDto(
+    @SerialName("lot_no") val lotNo: String,
+    @SerialName("product_name") val productName: String,
+    @SerialName("base_unit") val baseUnit: String,
+    @SerialName("system_qty") val systemQty: String,
+    @SerialName("counted_qty") val countedQty: String,
+    val difference: String,
+)
+
+@Serializable
+data class StockCountResponse(
+    @SerialName("count_no") val countNo: String,
+    val lines: List<CountResultLineDto>,
+    @SerialName("shortage_value") val shortageValue: String,
+    @SerialName("surplus_lines") val surplusLines: Int,
+)

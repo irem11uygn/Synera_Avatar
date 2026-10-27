@@ -1,10 +1,12 @@
 package com.synera.avatar.data.remote
 
 import android.util.Log
+import com.synera.avatar.util.t
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.HttpException
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.create
@@ -25,9 +27,18 @@ interface AvatarApi {
 
     @POST("api/v1/sync/push")
     suspend fun push(@Header("Authorization") bearer: String, @Body body: PushRequest): PushResponse
+
+    @POST("api/v1/auth/logout")
+    suspend fun logout(@Header("Authorization") bearer: String): Response<Unit>
+
+    @GET("api/v1/sync/day-end")
+    suspend fun dayEnd(@Header("Authorization") bearer: String, @Query("day") day: String): DayEndDto
+
+    @POST("api/v1/stock-counts")
+    suspend fun stockCount(@Header("Authorization") bearer: String, @Body body: StockCountRequest): StockCountResponse
 }
 
-/** Kullanıcıya gösterilecek, Türkçe mesajlı API hatası. */
+/** Kullanıcıya gösterilecek API hatası (sunucunun mesajı Türkçedir; ağ hataları seçili dilde). */
 class ApiException(message: String, val code: String? = null) : Exception(message)
 
 object ApiClient {
@@ -53,10 +64,10 @@ object ApiClient {
         } catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string()
             val error = body?.let { runCatching { json.decodeFromString<ApiErrorBody>(it).error }.getOrNull() }
-            throw ApiException(error?.message ?: "Sunucu hatası (HTTP ${e.code()}).", error?.code)
+            throw ApiException(error?.message ?: t("Sunucu hatası (HTTP {code}).", "code" to e.code()), error?.code)
         } catch (e: IOException) {
             Log.w(TAG, "Sunucuya ulaşılamadı", e)
-            throw ApiException("Sunucuya ulaşılamadı. Bağlantıyı ve sunucu adresini kontrol edin.", NETWORK)
+            throw ApiException(t("Sunucuya ulaşılamadı. Bağlantıyı ve sunucu adresini kontrol edin."), NETWORK)
         }
 
     /** Ağ hatası kodu: arka plandaki gönderim bu durumda daha sonra yeniden dener. */

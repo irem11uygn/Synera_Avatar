@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.synera.avatar.util.t
 
 data class LoginUiState(
     val serverUrl: String,
@@ -29,13 +30,13 @@ class LoginViewModel(private val repository: AvatarRepository) : ViewModel() {
     fun onPasswordChange(value: String) = _state.update { it.copy(password = value, error = null) }
 
     fun onLocalNetworkDenied() = _state.update {
-        it.copy(error = "Yerel ağdaki sunucuya bağlanmak için \"Yakındaki cihazlar\" iznine onay vermelisiniz.")
+        it.copy(error = t("Yerel ağdaki sunucuya bağlanmak için \"Yakındaki cihazlar\" iznine onay vermelisiniz."))
     }
 
     fun login(onSuccess: () -> Unit) {
         val current = _state.value
         if (current.username.isBlank() || current.password.isBlank()) {
-            _state.update { it.copy(error = "Kullanıcı adı ve parola gerekli.") }
+            _state.update { it.copy(error = t("Kullanıcı adı ve şifre gerekli.")) }
             return
         }
         _state.update { it.copy(loading = true, error = null) }
@@ -47,7 +48,7 @@ class LoginViewModel(private val repository: AvatarRepository) : ViewModel() {
             } catch (e: ApiException) {
                 _state.update { it.copy(loading = false, error = e.message) }
             } catch (e: IllegalArgumentException) {
-                _state.update { it.copy(loading = false, error = "Sunucu adresi geçersiz (ör. http://10.0.2.2:8000).") }
+                _state.update { it.copy(loading = false, error = t("Sunucu adresi geçersiz (ör. http://10.0.2.2:8000).")) }
             }
         }
     }

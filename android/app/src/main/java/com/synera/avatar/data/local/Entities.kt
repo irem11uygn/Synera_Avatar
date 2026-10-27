@@ -61,6 +61,8 @@ data class SaleEntity(
     val serverSaleNo: String? = null,
     /** Sunucunun uyarısı (ör. geri çağrılmış lot) ya da ret nedeni. */
     val serverMessage: String? = null,
+    /** NAKIT, KART, HAVALE, VERESIYE; sürüm 3'ten gelen satışlarda boş. */
+    val paymentMethod: String? = null,
 )
 
 /** Satış satırı: bir satır = bir lot (FR-401). Lot numarası gönderim için satırda da saklanır. */
@@ -104,6 +106,16 @@ data class SaleSummaryRow(
     val serverSaleNo: String?,
     val serverMessage: String?,
     val customerName: String?,
+    val paymentMethod: String?,
     val totalCents: Long,
     val lineCount: Int,
 )
+
+/** Ödeme türü sabitleri (sunucudaki PaymentMethod ile aynı). */
+object Payment {
+    const val CASH = "NAKIT"
+    const val CARD = "KART"
+    const val TRANSFER = "HAVALE"
+    const val CREDIT = "VERESIYE"
+    val ALL = listOf(CASH, CARD, TRANSFER, CREDIT)
+}

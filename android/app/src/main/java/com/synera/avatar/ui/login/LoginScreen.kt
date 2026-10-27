@@ -5,7 +5,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,7 +27,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.synera.avatar.util.L
 import com.synera.avatar.util.LocalNetwork
+import com.synera.avatar.util.t
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, onLoggedIn: () -> Unit) {
@@ -38,13 +43,18 @@ fun LoginScreen(viewModel: LoginViewModel, onLoggedIn: () -> Unit) {
         modifier = Modifier.fillMaxSize().imePadding().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.CenterVertically),
     ) {
-        Text("AVATAR Satış", style = MaterialTheme.typography.headlineMedium)
-        Text("Lot bazlı saha satışı · Synera", style = MaterialTheme.typography.bodyMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Synera", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = { L.select(if (L.lang == L.TR) L.EN else L.TR) }) {
+                Text(if (L.lang == L.TR) "English" else "Türkçe")
+            }
+        }
+        Text(t("Araçtan satış · çevrimdışı da çalışır"), style = MaterialTheme.typography.bodyLarge)
 
         OutlinedTextField(
             value = state.serverUrl,
             onValueChange = viewModel::onServerUrlChange,
-            label = { Text("Sunucu adresi") },
+            label = { Text(t("Sunucu adresi")) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
             modifier = Modifier.fillMaxWidth(),
@@ -52,14 +62,14 @@ fun LoginScreen(viewModel: LoginViewModel, onLoggedIn: () -> Unit) {
         OutlinedTextField(
             value = state.username,
             onValueChange = viewModel::onUsernameChange,
-            label = { Text("Kullanıcı adı") },
+            label = { Text(t("Kullanıcı adı")) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
-            label = { Text("Parola") },
+            label = { Text(t("Şifre")) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -75,10 +85,10 @@ fun LoginScreen(viewModel: LoginViewModel, onLoggedIn: () -> Unit) {
                 }
             },
             enabled = !state.loading,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(52.dp),
         ) {
             if (state.loading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            else Text("Giriş yap")
+            else Text(t("Giriş yap"))
         }
     }
 }

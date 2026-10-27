@@ -17,7 +17,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         SaleEntity::class,
         SaleLineEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,7 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "avatar.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
 
         /** 1 → 2: senkron kaydına sunucu veri kümesi kimliği eklendi. */
@@ -53,6 +53,13 @@ abstract class AppDatabase : RoomDatabase() {
                         "`amountCents` INTEGER NOT NULL, PRIMARY KEY(`saleUuid`, `lineNo`))",
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_sale_line_lotId` ON `sale_line` (`lotId`)")
+            }
+        }
+
+        /** 3 → 4: satışta ödeme türü (gün sonu kasa özeti için). */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sale ADD COLUMN paymentMethod TEXT")
             }
         }
     }

@@ -16,10 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.synera.avatar.sync.SyncWorker
-import com.synera.avatar.ui.home.HomeScreen
-import com.synera.avatar.ui.home.HomeViewModel
+import com.synera.avatar.ui.dayend.DayEndViewModel
 import com.synera.avatar.ui.login.LoginScreen
 import com.synera.avatar.ui.login.LoginViewModel
+import com.synera.avatar.ui.main.MainScreen
+import com.synera.avatar.ui.main.MainViewModel
 import com.synera.avatar.ui.sale.SaleScreen
 import com.synera.avatar.ui.sale.SaleViewModel
 import com.synera.avatar.ui.theme.AvatarTheme
@@ -51,9 +52,11 @@ class MainActivity : ComponentActivity() {
                         }
                         else -> {
                             // Her oturum kendi ViewModel'ini alır; başka kullanıcının verisi taşınmaz.
-                            val home = viewModel(key = "home-$sessionToken") { HomeViewModel(repository) }
-                            HomeScreen(
-                                home,
+                            val main = viewModel(key = "main-$sessionToken") { MainViewModel(repository) }
+                            val dayEnd = viewModel(key = "dayend-$sessionToken") { DayEndViewModel(repository) }
+                            MainScreen(
+                                main,
+                                dayEnd,
                                 onNewSale = {
                                     saleCount++
                                     selling = true

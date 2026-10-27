@@ -9,6 +9,7 @@ import com.synera.avatar.data.remote.PushResultDto
 import com.synera.avatar.data.remote.PushSaleDto
 import com.synera.avatar.util.Money
 import com.synera.avatar.util.Quantity
+import com.synera.avatar.util.t
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -33,6 +34,7 @@ fun toPushRequest(
                 lines = bySale[sale.clientUuid].orEmpty().sortedBy { it.lineNo }.map {
                     PushLineDto(it.lotNo, Quantity.toApiText(it.qtyMilli), Money.toApiText(it.unitPriceCents))
                 },
+                paymentMethod = sale.paymentMethod,
             )
         },
     )
@@ -46,5 +48,5 @@ fun PushResultDto.toOutcome(): SaleOutcome =
         // DUPLICATE: daha önce kaydedilmiş (ör. cevap yolda kayboldu); ilk sonuç geçerli.
         "ACCEPTED", "DUPLICATE" -> SaleOutcome(clientUuid, SyncState.SENT, saleNo, warnings.joinToString(" ").ifEmpty { null })
         "ACCEPTED_WITH_WARNING" -> SaleOutcome(clientUuid, SyncState.SENT, saleNo, warnings.joinToString(" "))
-        else -> SaleOutcome(clientUuid, SyncState.FAILED, null, error?.message ?: "Sunucu satışı reddetti.")
+        else -> SaleOutcome(clientUuid, SyncState.FAILED, null, error?.message ?: t("Sunucu satışı reddetti."))
     }

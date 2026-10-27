@@ -6,10 +6,12 @@ import com.synera.avatar.data.local.CustomerEntity
 import com.synera.avatar.data.local.SaleNotAllowed
 import com.synera.avatar.data.local.VanStockRow
 import com.synera.avatar.data.repo.AvatarRepository
+import com.synera.avatar.data.repo.LotPick
 import com.synera.avatar.data.repo.SaleLineDraft
 import com.synera.avatar.data.repo.SaleRules
 import com.synera.avatar.util.Money
 import com.synera.avatar.util.Quantity
+import com.synera.avatar.util.t
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,18 +20,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
-data class DraftLine(val lot: VanStockRow, val qtyMilli: Long, val unitPriceCents: Long) {
-    val amountCents: Long = SaleRules.amountCents(qtyMilli, unitPriceCents)
+enum class Step { CUSTOMER, PRODUCTS, PAYMENT, SUMMARY }
+
+/** Sepetteki bir ürün; miktar FEFO ile bir ya da birkaç lota bölünmüştür. */
+data class CartLine(
+    val productId: Long,
+    val productName: String,
+    val baseUnit: String,
+    val qtyMilli: Long,
+    val unitPriceCents: Long,
+    val picks: List<LotPick>,
+) {
+    val amountCents: Long = picks.sumOf { SaleRules.amountCents(it.qtyMilli, unitPriceCents) }
 }
 
+/** Satılabilir ürün özeti (ürün seçme listesi). */
+data class ProductChoice(val productId: Long, val name: String, val baseUnit: String, val priceCents: Long?, val sellableMilli: Long, val nearestExpiry: String?)
+
 data class SaleUiState(
+    val step: Step = Step.CUSTOMER,
+    val customerQuery: String = "",
     val customerId: Long? = null,
-    val lines: List<DraftLine> = emptyList(),
-    val selectedLotId: Long? = null,
+    val lines: List<CartLine> = emptyList(),
+    val editingProductId: Long? = null,
     val qtyText: String = "",
     val priceText: String = "",
     val lineError: String? = null,
+    val payment: String? = null,
     val error: String? = null,
     val saving: Boolean = false,
     val saved: Boolean = false,
@@ -37,25 +56,54 @@ data class SaleUiState(
     val totalCents: Long get() = lines.sumOf { it.amountCents }
 }
 
-/** Satış taslağı: müşteri, lot bazında satırlar (FR-401); kayıt cihazda, gönderim arka planda. */
-class SaleViewModel(private val repository: AvatarRepository) : ViewModel() {
+/** Satış sihirbazı: kayıt telefonda yapılır, gönderim arka planda (bağlantı yoksa sonra). */
+class SaleViewModel(private val repository: AvatarRepository, private val today: () -> LocalDate = LocalDate::now) : ViewModel() {
     val customers: StateFlow<List<CustomerEntity>> = repository.observeCustomers().asState(emptyList())
     val stock: StateFlow<List<VanStockRow>> = repository.observeVanStock().asState(emptyList())
 
     private val _ui = MutableStateFlow(SaleUiState())
     val ui: StateFlow<SaleUiState> = _ui.asStateFlow()
 
-    fun selectCustomer(id: Long) = _ui.update { it.copy(customerId = id, error = null) }
+    /** Sepette lot başına ayrılmış miktar. */
+    private fun reserved(lines: List<CartLine>): Map<Long, Long> =
+        lines.flatMap { it.picks }.groupBy { it.lot.lotId }.mapValues { (_, picks) -> picks.sumOf { it.qtyMilli } }
 
-    fun selectLot(row: VanStockRow) = _ui.update {
+    fun productChoices(rows: List<VanStockRow>, lines: List<CartLine>): List<ProductChoice> {
+        val date = today()
+        val held = reserved(lines)
+        return rows.filter { SaleRules.isSellable(it, date) }
+            .groupBy { it.productId }
+            .map { (productId, lots) ->
+                val first = lots.first()
+                ProductChoice(
+                    productId = productId,
+                    name = first.productName,
+                    baseUnit = first.baseUnit,
+                    priceCents = first.salePriceCents,
+                    sellableMilli = lots.sumOf { (it.availableMilli - (held[it.lotId] ?: 0)).coerceAtLeast(0) },
+                    nearestExpiry = lots.mapNotNull { it.expiryDate }.minOrNull(),
+                )
+            }
+            .filter { it.sellableMilli > 0 }
+            .sortedBy { it.name }
+    }
+
+    fun onCustomerQuery(value: String) = _ui.update { it.copy(customerQuery = value) }
+
+    fun selectCustomer(id: Long) = _ui.update { it.copy(customerId = id, error = null, step = Step.PRODUCTS) }
+
+    fun goTo(step: Step) = _ui.update { it.copy(step = step, error = null) }
+
+    fun editProduct(choice: ProductChoice) = _ui.update {
         it.copy(
-            selectedLotId = row.lotId,
-            qtyText = "",
-            // Liste fiyatı (VKP) gelir, satırda değiştirilebilir (architecture.md §15).
-            priceText = row.salePriceCents?.let { cents -> Money.fromCents(cents).toPlainString().replace('.', ',') }.orEmpty(),
+            editingProductId = choice.productId,
+            qtyText = if (choice.baseUnit == "ADET") "1" else "",
+            priceText = choice.priceCents?.let { cents -> Money.fromCents(cents).toPlainString().replace('.', ',') }.orEmpty(),
             lineError = null,
         )
     }
+
+    fun cancelEdit() = _ui.update { it.copy(editingProductId = null, lineError = null) }
 
     fun onQtyChange(value: String) = _ui.update { it.copy(qtyText = value, lineError = null) }
 
@@ -63,36 +111,52 @@ class SaleViewModel(private val repository: AvatarRepository) : ViewModel() {
 
     fun addLine() {
         val state = _ui.value
-        val row = stock.value.firstOrNull { it.lotId == state.selectedLotId } ?: return
+        val productId = state.editingProductId ?: return
+        val lots = stock.value.filter { it.productId == productId }
+        val first = lots.firstOrNull() ?: return
         val qty = Quantity.parseInput(state.qtyText)
-        val inDraft = state.lines.filter { it.lot.lotId == row.lotId }.sumOf { it.qtyMilli }
-        val qtyError = SaleRules.lineError(row.baseUnit, row.status, qty, row.availableMilli, inDraft)
         val price = Money.parseInput(state.priceText)
-        val error = qtyError ?: if (price == null) "Geçerli bir birim fiyat yazın (ör. 24,90)." else null
+        val error = when {
+            qty == null -> t("Geçerli bir miktar yazın (en çok 3 ondalık, binlik ayırıcı olmadan).")
+            qty <= 0 -> t("Miktar sıfırdan büyük olmalı.")
+            first.baseUnit == "ADET" && qty % 1000 != 0L -> t("Bu ürün adet ile satılır; tam sayı girin.")
+            price == null -> t("Geçerli bir birim fiyat yazın (ör. 24,90).")
+            else -> null
+        }
         if (error != null || qty == null || price == null) {
             _ui.update { it.copy(lineError = error) }
             return
         }
-        _ui.update {
-            it.copy(lines = it.lines + DraftLine(row, qty, price), selectedLotId = null, qtyText = "", priceText = "", error = null)
+        val (picks, short) = SaleRules.allocate(lots, productId, qty, today(), reserved(state.lines))
+        if (short > 0) {
+            _ui.update { it.copy(lineError = t("Araçta satılabilir miktar yetmiyor: {qty} eksik.", "qty" to Quantity.format(short, first.baseUnit))) }
+            return
         }
+        val line = CartLine(productId, first.productName, first.baseUnit, qty, price, picks)
+        _ui.update { it.copy(lines = it.lines + line, editingProductId = null, qtyText = "", priceText = "", lineError = null, error = null) }
     }
 
     fun removeLine(index: Int) = _ui.update { it.copy(lines = it.lines.filterIndexed { i, _ -> i != index }) }
+
+    fun selectPayment(method: String) = _ui.update { it.copy(payment = method, error = null, step = Step.SUMMARY) }
 
     fun save() {
         val state = _ui.value
         val customer = state.customerId
         when {
-            customer == null -> _ui.update { it.copy(error = "Müşteri seçin.") }
-            state.lines.isEmpty() -> _ui.update { it.copy(error = "En az bir satır ekleyin.") }
+            customer == null -> _ui.update { it.copy(error = t("Müşteriyi seçin."), step = Step.CUSTOMER) }
+            state.lines.isEmpty() -> _ui.update { it.copy(error = t("En az bir ürün ekleyin."), step = Step.PRODUCTS) }
+            state.payment == null -> _ui.update { it.copy(error = t("Ödeme türünü seçin."), step = Step.PAYMENT) }
             else -> {
                 _ui.update { it.copy(saving = true, error = null) }
                 viewModelScope.launch {
                     try {
                         repository.createSale(
                             customer,
-                            state.lines.map { SaleLineDraft(it.lot.lotId, it.lot.lotNo, it.lot.productId, it.qtyMilli, it.unitPriceCents) },
+                            state.lines.flatMap { line ->
+                                line.picks.map { SaleLineDraft(it.lot.lotId, it.lot.lotNo, line.productId, it.qtyMilli, line.unitPriceCents) }
+                            },
+                            state.payment,
                         )
                         _ui.update { it.copy(saving = false, saved = true) }
                     } catch (e: SaleNotAllowed) {

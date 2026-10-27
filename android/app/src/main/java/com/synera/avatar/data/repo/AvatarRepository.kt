@@ -12,10 +12,18 @@ import com.synera.avatar.data.local.VanStockRow
 import com.synera.avatar.data.remote.ApiClient
 import com.synera.avatar.data.remote.ApiException
 import com.synera.avatar.data.remote.AvatarApi
+import com.synera.avatar.data.remote.CountLineDto
+import com.synera.avatar.data.remote.DayEndDto
 import com.synera.avatar.data.remote.LoginRequest
+import com.synera.avatar.data.remote.StockCountRequest
+import com.synera.avatar.data.remote.StockCountResponse
+import com.synera.avatar.util.Quantity
+import com.synera.avatar.util.t
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
+import java.time.LocalDate
 import java.util.UUID
 
 /** Satışa eklenecek satır (ekrandan). */
@@ -57,13 +65,13 @@ class AvatarRepository(
         val response = ApiClient.call { apiFor(serverUrl).login(LoginRequest(username.trim(), password)) }
         val user = response.user
         if (user.role != "SATIS" || user.warehouseCode == null || user.warehouseId == null) {
-            throw ApiException("Bu uygulama yalnız araç deposu atanmış satış kullanıcıları içindir.")
+            throw ApiException(t("Bu uygulama yalnız araç deposu atanmış satış kullanıcıları içindir."))
         }
         val previous = sessions.lastUsername()
         if (previous != null && previous != user.username) {
             // Gönderilmemiş satış başka kullanıcının adıyla gönderilmesin.
             if (sales.pendingCount() > 0) {
-                throw ApiException("$previous kullanıcısının gönderilmemiş satışları var; önce o kullanıcıyla eşitleyin.")
+                throw ApiException(t("{user} kullanıcısının gönderilmemiş satışları var; önce o kullanıcıyla eşitleyin.", "user" to previous))
             }
             sales.clearAll()
             dao.clearAll()
@@ -80,11 +88,17 @@ class AvatarRepository(
      * Satışı cihazda tek işlemde kaydeder (FR-404): bağlantı gerekmez. Bloke lot ve kullanılabilir
      * miktarı aşan satır kaydedilmez (SaleNotAllowed). Gönderim arka planda başlatılır.
      */
-    suspend fun createSale(customerId: Long, lines: List<SaleLineDraft>): String {
+    suspend fun createSale(customerId: Long, lines: List<SaleLineDraft>, paymentMethod: String? = null): String {
         require(lines.isNotEmpty()) { "Satışta en az bir satır olmalı." }
         val uuid = UUID.randomUUID().toString()
         sales.saveSale(
-            SaleEntity(clientUuid = uuid, customerId = customerId, soldAtMillis = now(), syncState = SyncState.PENDING),
+            SaleEntity(
+                clientUuid = uuid,
+                customerId = customerId,
+                soldAtMillis = now(),
+                syncState = SyncState.PENDING,
+                paymentMethod = paymentMethod,
+            ),
             lines.mapIndexed { index, line ->
                 SaleLineEntity(
                     saleUuid = uuid,
@@ -105,17 +119,32 @@ class AvatarRepository(
     /** Önce bekleyen satışları gönderir, sonra sunucudaki değişiklikleri çeker (ADR-004). */
     suspend fun sync(): SyncReport =
         syncLock.withLock {
-            val session = sessions.current() ?: throw ApiException("Oturum yok; yeniden giriş yapın.", UNAUTHORIZED)
+            val session = sessions.current() ?: throw ApiException(t("Oturum yok; yeniden giriş yapın."), UNAUTHORIZED)
+            val reset = failPendingIfServerReset(session)
             val (sent, failed) = pushPending(session)
-            SyncReport(sent, failed, pullChanges(session))
+            SyncReport(sent, failed + reset, pullChanges(session))
         }
+
+    /**
+     * Sunucu sıfırdan kurulduysa (veri kümesi kimliği değişti) bekleyen satışların lot numaraları artık
+     * başka kayıtlara denk gelebilir; bu satışlar gönderilmez, satış elemanına bildirilir.
+     */
+    private suspend fun failPendingIfServerReset(session: Session): Int {
+        val meta = dao.syncMeta() ?: return 0
+        val pending = sales.pendingCount()
+        if (pending == 0 || meta.datasetId == null) return 0
+        val probe = fetchChanges(session, Long.MAX_VALUE) // yalnız veri kümesi kimliği için; kayıt dönmez
+        if (probe.datasetId == meta.datasetId) return 0
+        sales.failPending(t("Sunucu verisi sıfırlandı; bu satış gönderilmedi. Gerekirse yeniden girin."))
+        return pending
+    }
 
     private suspend fun pushPending(session: Session): Pair<Int, Int> {
         val pending = sales.pendingSales()
         if (pending.isEmpty()) return 0 to 0
         val warehouseId = session.warehouseId ?: run {
             sessions.clearToken()
-            throw ApiException("Oturum bilgisi eski sürümden; satışları göndermek için yeniden giriş yapın.", UNAUTHORIZED)
+            throw ApiException(t("Oturum bilgisi eski sürümden; satışları göndermek için yeniden giriş yapın."), UNAUTHORIZED)
         }
         var sent = 0
         var failed = 0
@@ -161,7 +190,40 @@ class AvatarRepository(
 
     private fun bearer(session: Session) = "Bearer ${session.token}"
 
-    fun logout() = sessions.clearToken()
+    /** Sunucudaki oturum da kapatılır (çalınan telefondaki belirteç geçersiz olsun); ağ yoksa beklemez. */
+    suspend fun logout() {
+        val session = sessions.current()
+        sessions.clearToken()
+        if (session != null) {
+            withTimeoutOrNull(3_000) { runCatching { apiFor(sessions.serverUrl).logout(bearer(session)) } }
+        }
+    }
+
+    /** Satış elemanının bir günlük özeti (sunucudan): ödeme türüne göre toplamlar, iadeler, araçta kalan. */
+    suspend fun dayEnd(day: LocalDate): DayEndDto {
+        val session = sessions.current() ?: throw ApiException(t("Oturum yok; yeniden giriş yapın."), UNAUTHORIZED)
+        return authorized { apiFor(sessions.serverUrl).dayEnd(bearer(session), day.toString()) }
+    }
+
+    /**
+     * Araç sayımı: sayılan miktarlar sunucuya gönderilir; eksik çıkan fire olarak düşülür. Önce bekleyen
+     * satışlar gönderilir (aksi hâlde sayılan miktar satılmamış gibi görünür), sonra araç stoku yenilenir.
+     */
+    suspend fun countVan(counted: Map<String, Long>, note: String?): StockCountResponse {
+        sync()
+        val session = sessions.current() ?: throw ApiException(t("Oturum yok; yeniden giriş yapın."), UNAUTHORIZED)
+        val warehouseId = session.warehouseId ?: throw ApiException(t("Araç deposu bilinmiyor; yeniden giriş yapın."))
+        val request = StockCountRequest(
+            warehouseId = warehouseId,
+            note = note?.trim()?.ifEmpty { null },
+            lines = counted.map { (lotNo, milli) -> CountLineDto(lotNo, Quantity.toApiText(milli)) },
+        )
+        val response = authorized { apiFor(sessions.serverUrl).stockCount(bearer(session), request) }
+        syncLock.withLock { pullChanges(session) }
+        return response
+    }
+
+    fun observeSalesSince(fromMillis: Long): Flow<List<SaleSummaryRow>> = sales.observeSalesSince(fromMillis)
 
     fun observeSyncMeta(): Flow<SyncMetaEntity?> = dao.observeSyncMeta()
 
