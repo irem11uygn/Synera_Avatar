@@ -13,6 +13,8 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
+**Ekran görüntüleri:** Sistemi kurmadan bütün ekranları görmek için [docs/ekran_goruntuleri](docs/ekran_goruntuleri/README.md) (50 görüntü: web ve Android).
+
 ## Önemli tarihler
 
 | Tarih | Olay |
@@ -57,6 +59,7 @@ Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/deve
 | `docs/api.md` | API sözleşmesi: uç noktalar, hata kodları, örnek istek/yanıtlar |
 | `docs/development_plan.md` | İş listesi, takvim, durum günlüğü |
 | `docs/is_bolumu.md` | İki kişilik iş bölümü: gereksinim kapsamı, kim neyin sahibi, takvim, birlikte çalışma |
+| `docs/ekran_goruntuleri/` | Uygulamanın bütün ekranları (web ve Android), açıklamalı galeri |
 | `docs/senkronizasyon.md` | SQLite ↔ MySQL senkronizasyonu: veriler nasıl tutarlı kalır |
 | `reports/ai_degerlendirme.md` | Yapay zekâ değerlendirmesi: yöntem, veri, referansla karşılaştırma, hata, sınırlılıklar |
 | `reports/gorev2_tutarsizliklar.md` | Görev 2 örnek görselindeki iki tutarsızlık ve çözümümüz |

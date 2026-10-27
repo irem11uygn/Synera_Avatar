@@ -182,7 +182,7 @@ Süreler kaba tahmindir (kişi-saat). "Bitti" ölçütü sağlanmadan iş bitmi�
 | 5 | **T-23** Kabul testleri: AT-01…AT-12, AT-15 çalışan sisteme karşı otomatik (`tests/`); izleme süresini ölç | CR-010, NFR-009 | `reports/kabul_testleri.md`'de hepsi yeşil; izleme < 2 sn | 6 |
 | 6 | **CR-012** Görev 2 görselindeki tutarsızlıklar: `reports/gorev2_tutarsizliklar.md` (287,50 ≠ 351,00; parçalar 22 kg) | CR-012 | Hesaplar ve bizim çözümümüz açık | 1 |
 | 7 | **T-26** Temiz kurulum testi kendi bilgisayarında: yalnız README adımlarıyla | NFR-006, AT-14 | Sorunsuz kuruluyor ya da sorunlar bildirildi | 2 |
-| 8 | **GitHub:** `synera-avatar` deposu (gizli), Kişi 1 ortak çalışan; README son hâli, `submission_checklist.md` | CR-001, CR-005 | Gönderim ön izleme ve onayla; teslimde herkese açık | 1 |
+| 8 | **GitHub (yüklemeyi Kişi 2 yapar):** `synera-avatar` deposu kendi hesabında; son gün Kişi 1'in gönderdiği son `main` paketini alır, denetler, yükler, herkese açar, APK'yı Releases'e koyar (`teslim/GITHUB_YUKLEME.md`) | CR-001, CR-005 | İki kişi ön izlemeye birlikte bakar; teslimde depo herkese açık | 1 |
 | 9 | **T-27 (payı)** Video senaryosu, süre provası (≤ 15 dk), yükleme (YouTube liste dışı ya da Drive) | CR-002, CR-003 | Bağlantı oturum kapalı tarayıcıda açılıyor | 3 |
 | | **Toplam** | | | ≈ 22,5 |
 
