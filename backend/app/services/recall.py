@@ -34,6 +34,8 @@ def start_recall(session: Session, *, lot_no: str, reason: str, user_id: int | N
     if not reason.strip():
         raise InvalidInput("Geri çağırma nedeni zorunlu.")
     source = lot_by_no(session, lot_no)
+    # Aynı lot için aynı anda iki başlatma: ikincisi kilidi bekler ve birincinin kaydını görür.
+    session.execute(select(Lot.id).where(Lot.id == source.id).with_for_update())
     existing = session.scalars(
         select(Recall).where(Recall.source_lot_id == source.id, Recall.status == RecallStatus.ACIK)
     ).first()

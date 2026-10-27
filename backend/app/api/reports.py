@@ -9,7 +9,7 @@ from fastapi import APIRouter, Response
 from pydantic import BaseModel
 
 from app.api.csv_export import csv_response
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, WebUser
 from app.services.reports import FILTERS, META, ColumnKind, Report, ReportCode, ReportFilter, build_report
 
 router = APIRouter(prefix="/reports", tags=["raporlar"])
@@ -70,7 +70,7 @@ def _report_out(report: Report) -> ReportOut:
 
 
 @router.get("", response_model=list[ReportInfoOut])
-def list_reports(_: AdminUser) -> list[ReportInfoOut]:
+def list_reports(_: WebUser) -> list[ReportInfoOut]:
     return [
         ReportInfoOut(code=code, title=META[code][0], description=META[code][1], filters=list(FILTERS[code]))
         for code in ReportCode
@@ -81,7 +81,7 @@ def list_reports(_: AdminUser) -> list[ReportInfoOut]:
 def get_report(
     code: ReportCode,
     db: Db,
-    _: AdminUser,
+    _: WebUser,
     date_from: date | None = None,
     date_to: date | None = None,
     product_id: int | None = None,

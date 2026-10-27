@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, ProductionUser, WebUser
 from app.errors import InvalidInput, NotFound
 from app.models import AiForecast, Cutting, CuttingOutput, CuttingRecipe, Product, ProductionOrder
 from app.models.enums import CuttingStatus, ForecastTarget, ProductionStatus
@@ -83,7 +83,7 @@ class EvaluationOut(BaseModel):
 
 
 @router.post("/production-forecast", response_model=ProductionForecastOut)
-def production_forecast(body: ProductionForecastIn, db: Db, _: AdminUser) -> ProductionForecastOut:
+def production_forecast(body: ProductionForecastIn, db: Db, _: ProductionUser) -> ProductionForecastOut:
     """Model A: kayıt açmadan beklenen paket sayısı ve EKP (emir formunda ön izleme)."""
     product = get_or_404(db, Product, body.output_product_id, "Mamul")
     planned = [PlannedLot(lot_by_no(db, i.lot_no), i.qty) for i in body.inputs]
@@ -105,7 +105,7 @@ def production_forecast(body: ProductionForecastIn, db: Db, _: AdminUser) -> Pro
 
 
 @router.post("/cutting-forecast", response_model=CuttingForecastOut)
-def cutting_forecast(body: CuttingForecastIn, db: Db, _: AdminUser) -> CuttingForecastOut:
+def cutting_forecast(body: CuttingForecastIn, db: Db, _: ProductionUser) -> CuttingForecastOut:
     """Model B: kayıt açmadan parça bazında beklenen kg; referans (standart oran) ile yan yana."""
     recipe = get_or_404(db, CuttingRecipe, body.recipe_id, "Reçete")
     lot = lot_by_no(db, body.input_lot_no)
@@ -135,7 +135,7 @@ def cutting_forecast(body: CuttingForecastIn, db: Db, _: AdminUser) -> CuttingFo
 
 
 @router.get("/evaluation", response_model=EvaluationOut)
-def evaluation(db: Db, _: AdminUser) -> EvaluationOut:
+def evaluation(db: Db, _: WebUser) -> EvaluationOut:
     """Model sürümleri, veri özeti, referans ve model hataları; sistemdeki gerçek kayıtlarla karşılaştırma."""
     try:
         metadata = predict.metadata()

@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, StockUser, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Lot, Transfer, TransferLine, Warehouse
 from app.models.enums import TransferReason
@@ -65,7 +65,7 @@ def _transfer_out(db: Db, transfer: Transfer) -> TransferOut:
 
 
 @router.post("", response_model=TransferOut, status_code=201)
-def create(body: TransferIn, db: Db, user: AdminUser) -> TransferOut:
+def create(body: TransferIn, db: Db, user: StockUser) -> TransferOut:
     transfer = create_transfer(
         db,
         from_warehouse_id=body.from_warehouse_id,
@@ -78,5 +78,5 @@ def create(body: TransferIn, db: Db, user: AdminUser) -> TransferOut:
 
 
 @router.get("", response_model=list[TransferOut])
-def list_transfers(db: Db, _: AdminUser) -> list[TransferOut]:
+def list_transfers(db: Db, _: WebUser) -> list[TransferOut]:
     return [_transfer_out(db, t) for t in db.scalars(select(Transfer).order_by(Transfer.id.desc()))]

@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, SalesDeskUser, WebUser
 from app.api.fields import UtcDateTime
 from app.models import CustomerReturn, Lot, OnwardDelivery, Partner, Sale, SaleLine, Warehouse
 from app.services.lookups import get_or_404
@@ -80,7 +80,7 @@ def _return_rows(db: Db, *conditions: object) -> list[ReturnOut]:
 
 
 @router.post("/returns", response_model=ReturnOut, status_code=201)
-def create(body: ReturnIn, db: Db, user: AdminUser) -> ReturnOut:
+def create(body: ReturnIn, db: Db, user: SalesDeskUser) -> ReturnOut:
     """Satılan lot aynı lot numarasıyla depoya geri girer; bloke lota da iade alınır (geri toplama)."""
     record = create_return(
         db,
@@ -94,7 +94,7 @@ def create(body: ReturnIn, db: Db, user: AdminUser) -> ReturnOut:
 
 
 @router.get("/returns", response_model=list[ReturnOut])
-def list_returns(db: Db, _: AdminUser) -> list[ReturnOut]:
+def list_returns(db: Db, _: WebUser) -> list[ReturnOut]:
     return _return_rows(db)
 
 
@@ -112,7 +112,7 @@ def _onward_out(db: Db, delivery: OnwardDelivery) -> OnwardOut:
 
 
 @router.get("/sale-lines/{sale_line_id}/onward-deliveries", response_model=list[OnwardOut])
-def list_onward(sale_line_id: int, db: Db, _: AdminUser) -> list[OnwardOut]:
+def list_onward(sale_line_id: int, db: Db, _: WebUser) -> list[OnwardOut]:
     get_or_404(db, SaleLine, sale_line_id, "Satış satırı")
     deliveries = db.scalars(
         select(OnwardDelivery).where(OnwardDelivery.sale_line_id == sale_line_id).order_by(OnwardDelivery.id)
@@ -121,7 +121,7 @@ def list_onward(sale_line_id: int, db: Db, _: AdminUser) -> list[OnwardOut]:
 
 
 @router.post("/sale-lines/{sale_line_id}/onward-deliveries", response_model=OnwardOut, status_code=201)
-def create_onward(sale_line_id: int, body: OnwardIn, db: Db, user: AdminUser) -> OnwardOut:
+def create_onward(sale_line_id: int, body: OnwardIn, db: Db, user: SalesDeskUser) -> OnwardOut:
     """Müşterinin bildirdiği ikinci kademe teslimat; izleme listesinde "kesin" olarak görünür."""
     delivery = add_onward_delivery(
         db,

@@ -15,6 +15,7 @@ class Settings:
     log_level: str
     seed_profile: str
     seed_dir: Path
+    business_utc_offset_hours: int  # iş günü (üretim tarihi, SKT, gün sonu) yerel saate göre
 
 
 @lru_cache
@@ -27,4 +28,5 @@ def get_settings() -> Settings:
         log_level=os.environ.get("LOG_LEVEL", "INFO"),
         seed_profile=os.environ.get("SEED_PROFILE", "demo"),
         seed_dir=Path(os.environ.get("SEED_DIR", _DEFAULT_SEED_DIR)),
+        business_utc_offset_hours=int(os.environ.get("BUSINESS_UTC_OFFSET_HOURS", "3")),  # Türkiye UTC+3
     )

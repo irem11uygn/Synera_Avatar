@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Lot, LotLink, Partner, Product, StockBalance, StockMovement, User, Warehouse
 from app.models.enums import BaseUnit, DocType, LinkProcess, LotOrigin, LotStatus, MovementType
@@ -95,7 +95,7 @@ def _lot_out(db: Db, lot: Lot) -> dict:
 @router.get("", response_model=list[LotOut])
 def list_lots(
     db: Db,
-    _: AdminUser,
+    _: WebUser,
     product_id: int | None = None,
     status: LotStatus | None = None,
     warehouse_id: int | None = None,
@@ -116,7 +116,7 @@ def list_lots(
 
 
 @router.get("/{lot_no}", response_model=LotDetailOut)
-def get_lot(lot_no: str, db: Db, _: AdminUser) -> dict:
+def get_lot(lot_no: str, db: Db, _: WebUser) -> dict:
     lot = lot_by_no(db, lot_no)
     balances = db.execute(
         select(Warehouse.code, Warehouse.name, StockBalance.qty)
@@ -144,7 +144,7 @@ def get_lot(lot_no: str, db: Db, _: AdminUser) -> dict:
 
 
 @router.get("/{lot_no}/movements", response_model=list[MovementOut])
-def lot_movements(lot_no: str, db: Db, _: AdminUser) -> list[MovementOut]:
+def lot_movements(lot_no: str, db: Db, _: WebUser) -> list[MovementOut]:
     lot = lot_by_no(db, lot_no)
     rows = db.execute(
         select(StockMovement, Warehouse.code, User.full_name)

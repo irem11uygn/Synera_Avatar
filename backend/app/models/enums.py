@@ -4,8 +4,14 @@ from enum import StrEnum
 
 
 class UserRole(StrEnum):
-    YONETICI = "YONETICI"
-    SATIS = "SATIS"
+    """Orta ölçekli işletme: her çalışan yalnız kendi işinin ekranlarını görür."""
+
+    YONETICI = "YONETICI"  # her şey, kullanıcı ve ana veri yönetimi
+    DEPO = "DEPO"  # mal kabul, stok, transfer, fire ve sayım
+    URETIM = "URETIM"  # fason üretim, parçalama, yeniden işleme
+    KALITE = "KALITE"  # izleme, geri çağırma, uyarılar
+    MAGAZA = "MAGAZA"  # dükkân satışı, iade, gün sonu
+    SATIS = "SATIS"  # saha satışı (yalnız Android)
 
 
 class ProductKind(StrEnum):
@@ -137,6 +143,14 @@ class RecallResolution(StrEnum):
 
 class AlertKind(StrEnum):
     GERI_CAGIRMA_IHLALI = "GERI_CAGIRMA_IHLALI"
+    SKT_IHLALI = "SKT_IHLALI"  # son kullanma tarihi geçmiş parti satıldı (çevrimdışı)
+
+
+class PaymentMethod(StrEnum):
+    NAKIT = "NAKIT"
+    KART = "KART"
+    HAVALE = "HAVALE"
+    VERESIYE = "VERESIYE"
 
 
 class AiModel(StrEnum):

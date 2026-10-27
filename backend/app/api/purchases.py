@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, StockUser, WebUser
 from app.models import Lot, Partner, Product, Purchase, PurchaseCost, PurchaseLine
 from app.models.enums import PurchaseCostKind
 from app.services.lookups import get_or_404, main_warehouse
@@ -111,7 +111,7 @@ def _purchase_out(db: Db, purchase: Purchase) -> PurchaseOut:
 
 
 @router.post("", response_model=PurchaseOut, status_code=201)
-def create(body: PurchaseIn, db: Db, user: AdminUser) -> PurchaseOut:
+def create(body: PurchaseIn, db: Db, user: StockUser) -> PurchaseOut:
     purchase = create_purchase(
         db,
         supplier_id=body.supplier_id,
@@ -138,11 +138,11 @@ def create(body: PurchaseIn, db: Db, user: AdminUser) -> PurchaseOut:
 
 
 @router.get("", response_model=list[PurchaseOut])
-def list_purchases(db: Db, _: AdminUser) -> list[PurchaseOut]:
+def list_purchases(db: Db, _: WebUser) -> list[PurchaseOut]:
     purchases = db.scalars(select(Purchase).order_by(Purchase.doc_date.desc(), Purchase.id.desc()))
     return [_purchase_out(db, purchase) for purchase in purchases]
 
 
 @router.get("/{purchase_id}", response_model=PurchaseOut)
-def get_purchase(purchase_id: int, db: Db, _: AdminUser) -> PurchaseOut:
+def get_purchase(purchase_id: int, db: Db, _: WebUser) -> PurchaseOut:
     return _purchase_out(db, get_or_404(db, Purchase, purchase_id, "Alış belgesi"))

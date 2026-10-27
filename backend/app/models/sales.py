@@ -7,7 +7,7 @@ from sqlalchemy import CheckConstraint, Date, ForeignKey, Integer, String, Uniqu
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
-from app.models.enums import SaleChannel
+from app.models.enums import PaymentMethod, SaleChannel
 from app.models.types import MONEY, PRICE, QTY, TIMESTAMP, AuditMixin, IdMixin, db_enum, utcnow
 
 
@@ -24,6 +24,7 @@ class Sale(IdMixin, Base):
     sold_at: Mapped[datetime] = mapped_column(TIMESTAMP)  # cihaz zamanı, yalnız bilgi
     received_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=utcnow)
     recall_violation: Mapped[bool] = mapped_column(default=False)
+    payment_method: Mapped[PaymentMethod | None] = mapped_column(db_enum(PaymentMethod))
 
 
 class SaleLine(IdMixin, Base):

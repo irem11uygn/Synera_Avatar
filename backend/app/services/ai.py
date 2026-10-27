@@ -20,6 +20,7 @@ from decimal import Decimal
 from avatar_ml import predict
 from avatar_ml.features import CuttingFeatures, ProductionFeatures
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.domain.money import round_money, round_percent, round_qty, round_unit_cost
@@ -192,6 +193,8 @@ def forecast_production(session: Session, order: ProductionOrder) -> AiForecast 
             service_unit_price=order.service_unit_price,
             at=order.ordered_at,
         )
+    except SQLAlchemyError:
+        raise  # bağlantı/işlem sorunu iş akışının kendi hatasıdır, yutulmaz
     except Exception:
         logger.exception("Model A tahmini yapılamadı (emir %s); iş akışı sürüyor.", order.order_no)
         return None
@@ -257,6 +260,8 @@ def forecast_cutting(session: Session, cutting: Cutting) -> AiForecast | None:
         result = predict_cutting(
             session, species=cutting.species, input_lot=lot, input_qty=cutting.input_qty, at=cutting.cut_at
         )
+    except SQLAlchemyError:
+        raise  # bağlantı/işlem sorunu iş akışının kendi hatasıdır, yutulmaz
     except Exception:
         logger.exception("Model B tahmini yapılamadı (parçalama %s); iş akışı sürüyor.", cutting.cutting_no)
         return None

@@ -20,7 +20,7 @@ from app.models import Adjustment, StockMovement, Transfer, TransferLine
 from app.models.enums import AdjustmentKind, DocType, MovementType
 from app.models.types import utcnow
 from app.services.ledger import post_movement, reverse_movement
-from app.services.lookups import get_or_404
+from app.services.lookups import get_or_404, warehouse_or_404
 from app.services.numbering import next_document_no
 
 REVERSIBLE = {MovementType.FIRE, MovementType.IADE_GIRIS}
@@ -40,6 +40,7 @@ def create_adjustment(
         raise InvalidInput("Fire miktarı sıfırdan büyük olmalı.")
     if not reason.strip():
         raise InvalidInput("Fire/imha için gerekçe zorunlu.")
+    warehouse_or_404(session, warehouse_id)
     record = Adjustment(
         adj_no=next_document_no(session, "FIR", utcnow().year),
         kind=AdjustmentKind.FIRE,

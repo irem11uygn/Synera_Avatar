@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
 from app.api.csv_export import csv_response
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, QualityUser, WebUser
 from app.api.fields import UtcDateTime
 from app.api.trace import RecipientOut, StockItemOut, TracedLotOut
 from app.models import Alert, Recall
@@ -110,25 +110,25 @@ def _recall_out(view: RecallView) -> RecallOut:
 
 
 @router.post("", response_model=RecallOut, status_code=201)
-def create(body: RecallIn, db: Db, user: AdminUser) -> RecallOut:
+def create(body: RecallIn, db: Db, user: QualityUser) -> RecallOut:
     """Kaynak lot ve bütün türevleri tek işlemde bloke edilir; liste hemen döner."""
     recall = start_recall(db, lot_no=body.lot_no.strip(), reason=body.reason, user_id=user.id)
     return _recall_out(recall_view(db, recall))
 
 
 @router.get("", response_model=list[RecallSummaryOut])
-def list_recalls(db: Db, _: AdminUser) -> list[RecallSummaryOut]:
+def list_recalls(db: Db, _: WebUser) -> list[RecallSummaryOut]:
     recalls = db.scalars(select(Recall).order_by(Recall.id.desc())).all()
     return [RecallSummaryOut.model_validate(_summary(recall_view(db, r))) for r in recalls]
 
 
 @router.get("/{recall_id}", response_model=RecallOut)
-def get_recall(recall_id: int, db: Db, _: AdminUser) -> RecallOut:
+def get_recall(recall_id: int, db: Db, _: WebUser) -> RecallOut:
     return _recall_out(recall_view(db, get_or_404(db, Recall, recall_id, "Geri çağırma")))
 
 
 @router.get("/{recall_id}/export.csv", response_class=Response)
-def export_csv(recall_id: int, db: Db, _: AdminUser) -> Response:
+def export_csv(recall_id: int, db: Db, _: WebUser) -> Response:
     """İletişim listesi: müşteri × lot başına bir satır, ikinci kademe alıcılar ayrı satırlarda."""
     view = recall_view(db, get_or_404(db, Recall, recall_id, "Geri çağırma"))
     header = [
@@ -192,13 +192,13 @@ def export_csv(recall_id: int, db: Db, _: AdminUser) -> Response:
 
 
 @router.post("/{recall_id}/close", response_model=RecallOut)
-def close(recall_id: int, body: RecallCloseIn, db: Db, user: AdminUser) -> RecallOut:
+def close(recall_id: int, body: RecallCloseIn, db: Db, user: QualityUser) -> RecallOut:
     recall = close_recall(db, recall_id, resolution=body.resolution, note=body.note, user_id=user.id)
     return _recall_out(recall_view(db, recall))
 
 
 @alerts_router.get("", response_model=list[AlertOut])
-def list_alerts(db: Db, _: AdminUser, only_open: bool = False) -> list[Alert]:
+def list_alerts(db: Db, _: WebUser, only_open: bool = False) -> list[Alert]:
     query = select(Alert).order_by(Alert.id.desc())
     if only_open:
         query = query.where(Alert.acknowledged_at.is_(None))
@@ -206,5 +206,5 @@ def list_alerts(db: Db, _: AdminUser, only_open: bool = False) -> list[Alert]:
 
 
 @alerts_router.post("/{alert_id}/ack", response_model=AlertOut)
-def acknowledge(alert_id: int, db: Db, _: AdminUser) -> Alert:
+def acknowledge(alert_id: int, db: Db, _: QualityUser) -> Alert:
     return acknowledge_alert(db, alert_id)

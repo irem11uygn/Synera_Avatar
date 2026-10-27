@@ -21,7 +21,7 @@ from app.models import CustomerReturn, OnwardDelivery, Partner, SaleLine, StockM
 from app.models.enums import DocType, MovementType
 from app.models.types import utcnow
 from app.services.ledger import post_movement
-from app.services.lookups import get_or_404, main_warehouse
+from app.services.lookups import get_or_404, main_warehouse, warehouse_or_404
 from app.services.numbering import next_document_no
 from app.services.trace import returned_qty_by_line
 
@@ -35,7 +35,7 @@ def create_return(
     reason: str | None = None,
     user_id: int | None = None,
 ) -> CustomerReturn:
-    line = get_or_404(session, SaleLine, sale_line_id, "Satış satırı")
+    line = _lock_line(session, sale_line_id)
     if qty <= 0:
         raise InvalidInput("İade miktarı sıfırdan büyük olmalı.")
     already = returned_qty_by_line(session, [line.id]).get(line.id, Decimal(0))
@@ -47,12 +47,23 @@ def create_return(
             available=open_qty,
             requested=qty,
         )
+    onward = _onward_total(session, line.id)
+    if onward > open_qty - qty:
+        raise InvalidInput(
+            f"Müşteri bu satırdan {tr_number(onward)} birimin kendi alıcılarına gittiğini bildirmiş; "
+            f"en fazla {tr_number(open_qty - onward)} iade alınabilir. "
+            "Önce müşterinin dağıtım kaydını düzeltin.",
+            available=open_qty - onward,
+            requested=qty,
+        )
     if qty == open_qty:
         value = line.cost_amount - _returned_value(session, line.id)
     else:
         value = round_money(line.cost_amount * qty / line.qty)
 
-    target = warehouse_id if warehouse_id is not None else main_warehouse(session).id
+    target = (
+        warehouse_or_404(session, warehouse_id).id if warehouse_id is not None else main_warehouse(session).id
+    )
     # Hareket, belge kimliği olarak iade kaydının kimliğini taşır: önce kayıt, sonra hareket ve bağı.
     record = CustomerReturn(
         return_no=next_document_no(session, "IAD", utcnow().year),
@@ -91,15 +102,12 @@ def add_onward_delivery(
     source_note: str | None = None,
     user_id: int | None = None,
 ) -> OnwardDelivery:
-    line = get_or_404(session, SaleLine, sale_line_id, "Satış satırı")
+    line = _lock_line(session, sale_line_id)
     get_or_404(session, Partner, recipient_partner_id, "Alıcı")
     if qty <= 0:
         raise InvalidInput("Teslim miktarı sıfırdan büyük olmalı.")
     held = line.qty - returned_qty_by_line(session, [line.id]).get(line.id, Decimal(0))
-    known = sum(
-        session.scalars(select(OnwardDelivery.qty).where(OnwardDelivery.sale_line_id == line.id)).all(),
-        Decimal(0),
-    )
+    known = _onward_total(session, line.id)
     if known + qty > held:
         raise InvalidInput(
             f"Müşteride {tr_number(held)} kaldı; kayıtlı ikinci kademe teslimatlar "
@@ -118,6 +126,27 @@ def add_onward_delivery(
     session.add(delivery)
     session.flush()
     return delivery
+
+
+def _lock_line(session: Session, sale_line_id: int) -> SaleLine:
+    """Aynı satıra aynı anda iki iade/dağıtım girilirse ikincisi birincinin sonucunu görsün."""
+    line = session.execute(
+        select(SaleLine)
+        .where(SaleLine.id == sale_line_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    ).scalar_one_or_none()
+    if line is None:
+        get_or_404(session, SaleLine, sale_line_id, "Satış satırı")
+    assert line is not None
+    return line
+
+
+def _onward_total(session: Session, sale_line_id: int) -> Decimal:
+    values = session.scalars(
+        select(OnwardDelivery.qty).where(OnwardDelivery.sale_line_id == sale_line_id)
+    ).all()
+    return sum(values, Decimal(0))
 
 
 def _returned_value(session: Session, sale_line_id: int) -> Decimal:

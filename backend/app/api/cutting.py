@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, ProductionUser, WebUser
 from app.api.fields import UtcDateTime
 from app.api.purchases import ExtraCostOut
 from app.models import Cutting, CuttingRecipe, Product
@@ -97,17 +97,17 @@ def _recipe_out(db: Db, recipe: CuttingRecipe) -> RecipeOut:
 
 
 @router.get("/cutting-recipes", response_model=list[RecipeOut])
-def list_recipes(db: Db, _: AdminUser) -> list[RecipeOut]:
+def list_recipes(db: Db, _: WebUser) -> list[RecipeOut]:
     return [_recipe_out(db, r) for r in db.scalars(select(CuttingRecipe).order_by(CuttingRecipe.code))]
 
 
 @router.get("/cutting-recipes/{recipe_id}", response_model=RecipeOut)
-def get_recipe(recipe_id: int, db: Db, _: AdminUser) -> RecipeOut:
+def get_recipe(recipe_id: int, db: Db, _: WebUser) -> RecipeOut:
     return _recipe_out(db, get_or_404(db, CuttingRecipe, recipe_id, "Reçete"))
 
 
 @router.post("/cutting-recipes", response_model=RecipeOut, status_code=201)
-def create_recipe(body: RecipeIn, db: Db, _: AdminUser) -> RecipeOut:
+def create_recipe(body: RecipeIn, db: Db, _: ProductionUser) -> RecipeOut:
     recipe = service.create_recipe(
         db,
         code=body.code.strip(),
@@ -268,7 +268,7 @@ def _actuals(body: ActualsIn) -> dict[int, Decimal | None]:
 
 
 @router.post("/cuttings", response_model=CuttingOut, status_code=201)
-def create(body: CuttingIn, db: Db, user: AdminUser) -> CuttingOut:
+def create(body: CuttingIn, db: Db, user: ProductionUser) -> CuttingOut:
     cutting = service.create_cutting(
         db,
         recipe_id=body.recipe_id,
@@ -281,31 +281,31 @@ def create(body: CuttingIn, db: Db, user: AdminUser) -> CuttingOut:
 
 
 @router.get("/cuttings", response_model=list[CuttingOut])
-def list_cuttings(db: Db, _: AdminUser) -> list[CuttingOut]:
+def list_cuttings(db: Db, _: WebUser) -> list[CuttingOut]:
     cuttings = db.scalars(select(Cutting).order_by(Cutting.id.desc()))
     return [_cutting_out(service.cutting_summary(db, c)) for c in cuttings]
 
 
 @router.get("/cuttings/{cutting_id}", response_model=CuttingOut)
-def get_cutting(cutting_id: int, db: Db, _: AdminUser) -> CuttingOut:
+def get_cutting(cutting_id: int, db: Db, _: WebUser) -> CuttingOut:
     return _cutting_out(service.cutting_summary(db, get_or_404(db, Cutting, cutting_id, "Parçalama")))
 
 
 @router.put("/cuttings/{cutting_id}", response_model=CuttingOut)
-def record_actuals(cutting_id: int, body: ActualsIn, db: Db, _: AdminUser) -> CuttingOut:
+def record_actuals(cutting_id: int, body: ActualsIn, db: Db, _: ProductionUser) -> CuttingOut:
     """Fiili kg'ları taslağa kaydeder (deftere yazmaz)."""
     cutting = service.record_actuals(db, cutting_id, actuals=_actuals(body), method=body.method)
     return _cutting_out(service.cutting_summary(db, cutting))
 
 
 @router.post("/cuttings/{cutting_id}/preview", response_model=CuttingOut)
-def preview(cutting_id: int, body: ActualsIn, db: Db, _: AdminUser) -> CuttingOut:
+def preview(cutting_id: int, body: ActualsIn, db: Db, _: ProductionUser) -> CuttingOut:
     """Gönderilen kg'larla denge ve dağıtımı hesaplar; hiçbir şey kaydetmez."""
     cutting = get_or_404(db, Cutting, cutting_id, "Parçalama")
     return _cutting_out(service.cutting_summary(db, cutting, actuals=_actuals(body), method=body.method))
 
 
 @router.post("/cuttings/{cutting_id}/approve", response_model=CuttingOut)
-def approve(cutting_id: int, db: Db, user: AdminUser) -> CuttingOut:
+def approve(cutting_id: int, db: Db, user: ProductionUser) -> CuttingOut:
     cutting = service.approve_cutting(db, cutting_id, user_id=user.id)
     return _cutting_out(service.cutting_summary(db, cutting))

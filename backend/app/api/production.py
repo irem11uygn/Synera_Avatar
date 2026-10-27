@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, ProductionUser, WebUser
 from app.api.fields import UtcDateTime
 from app.domain.money import round_money
 from app.errors import NotFound
@@ -181,7 +181,7 @@ def _order_out(db: Db, order: ProductionOrder) -> OrderOut:
 
 
 @router.post("", response_model=OrderOut, response_model_by_alias=True, status_code=201)
-def create(body: OrderIn, db: Db, user: AdminUser) -> OrderOut:
+def create(body: OrderIn, db: Db, user: ProductionUser) -> OrderOut:
     order = production.create_order(
         db,
         subcontractor_id=body.subcontractor_id,
@@ -195,7 +195,7 @@ def create(body: OrderIn, db: Db, user: AdminUser) -> OrderOut:
 
 
 @router.get("", response_model=list[OrderOut], response_model_by_alias=True)
-def list_orders(db: Db, _: AdminUser) -> list[OrderOut]:
+def list_orders(db: Db, _: WebUser) -> list[OrderOut]:
     orders = db.scalars(
         select(ProductionOrder)
         .where(ProductionOrder.kind == ProductionKind.DIS_URETIM)
@@ -205,7 +205,7 @@ def list_orders(db: Db, _: AdminUser) -> list[OrderOut]:
 
 
 @router.get("/{order_id}", response_model=OrderOut, response_model_by_alias=True)
-def get_order(order_id: int, db: Db, _: AdminUser) -> OrderOut:
+def get_order(order_id: int, db: Db, _: WebUser) -> OrderOut:
     order = get_or_404(db, ProductionOrder, order_id, "Üretim emri")
     if order.kind != ProductionKind.DIS_URETIM:
         raise NotFound("Dış üretim emri bulunamadı (bu kayıt bir yeniden işleme).", id=order_id)
@@ -213,12 +213,12 @@ def get_order(order_id: int, db: Db, _: AdminUser) -> OrderOut:
 
 
 @router.post("/{order_id}/ship", response_model=OrderOut, response_model_by_alias=True)
-def ship(order_id: int, db: Db, user: AdminUser) -> OrderOut:
+def ship(order_id: int, db: Db, user: ProductionUser) -> OrderOut:
     return _order_out(db, production.ship_order(db, order_id, user_id=user.id))
 
 
 @router.post("/{order_id}/complete", response_model=OrderOut, response_model_by_alias=True)
-def complete(order_id: int, body: CompleteIn, db: Db, user: AdminUser) -> OrderOut:
+def complete(order_id: int, body: CompleteIn, db: Db, user: ProductionUser) -> OrderOut:
     order = production.complete_order(
         db,
         order_id,
@@ -236,6 +236,12 @@ def complete(order_id: int, body: CompleteIn, db: Db, user: AdminUser) -> OrderO
     return _order_out(db, order)
 
 
+class CancelIn(BaseModel):
+    note: str | None = Field(default=None, max_length=255)  # sevk edilmiş emirde zorunlu: neden iptal
+
+
 @router.post("/{order_id}/cancel", response_model=OrderOut, response_model_by_alias=True)
-def cancel(order_id: int, db: Db, _: AdminUser) -> OrderOut:
-    return _order_out(db, production.cancel_order(db, order_id))
+def cancel(order_id: int, db: Db, user: ProductionUser, body: CancelIn | None = None) -> OrderOut:
+    """Taslak emir iptal edilir; sevk edilmiş emirde gönderilen hammadde ana depoya iade edilir."""
+    note = body.note if body is not None else None
+    return _order_out(db, production.cancel_order(db, order_id, note=note, user_id=user.id))

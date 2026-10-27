@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.domain.costing import line_amount
@@ -13,6 +14,7 @@ from app.errors import AmountMismatchNoteRequired, InvalidInput, NotFound
 from app.models import Partner, Product, Purchase, PurchaseCost, PurchaseLine
 from app.models.enums import DocType, LotOrigin, MovementType, PurchaseCostKind
 from app.services.ledger import create_lot
+from app.services.lookups import warehouse_or_404
 
 
 @dataclass(frozen=True)
@@ -53,7 +55,17 @@ def create_purchase(
         )
     if not lines:
         raise InvalidInput("Alış belgesinde en az bir satır olmalı.")
-
+    doc_no = doc_no.strip()
+    duplicate = session.scalar(
+        select(Purchase.id).where(Purchase.supplier_id == supplier_id, Purchase.doc_no == doc_no)
+    )
+    if duplicate is not None:
+        raise InvalidInput(
+            f"{supplier.name} tedarikçisinin {doc_no} numaralı belgesi zaten kayıtlı. "
+            "Aynı faturayı ikinci kez girmiyor musunuz?",
+            doc_no=doc_no,
+        )
+    warehouse_or_404(session, warehouse_id)
     purchase = Purchase(
         doc_no=doc_no, supplier_id=supplier_id, doc_date=doc_date, note=note, created_by=user_id
     )

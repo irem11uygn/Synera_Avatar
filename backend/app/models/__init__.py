@@ -10,7 +10,7 @@ from app.models.purchasing import Purchase, PurchaseCost, PurchaseLine
 from app.models.recall import Alert, Recall, RecallLot
 from app.models.sales import CustomerReturn, OnwardDelivery, Sale, SaleLine
 from app.models.sync import SyncCounter
-from app.models.transfers import Adjustment, Transfer, TransferLine
+from app.models.transfers import Adjustment, StockCount, StockCountLine, Transfer, TransferLine
 
 __all__ = [
     "Adjustment",
@@ -39,6 +39,8 @@ __all__ = [
     "Sale",
     "SaleLine",
     "StockBalance",
+    "StockCount",
+    "StockCountLine",
     "StockMovement",
     "SyncCounter",
     "Transfer",

@@ -47,3 +47,26 @@ class Adjustment(IdMixin, AuditMixin, Base):
     qty: Mapped[Decimal] = mapped_column(QTY)
     reason: Mapped[str] = mapped_column(String(255))
     stock_movement_id: Mapped[int | None] = mapped_column(ForeignKey("stock_movements.id"), unique=True)
+
+
+class StockCount(IdMixin, AuditMixin, Base):
+    """Depo ya da araç sayımı: sayılan miktar ile defterdeki bakiye karşılaştırılır."""
+
+    __tablename__ = "stock_counts"
+
+    count_no: Mapped[str] = mapped_column(String(30), unique=True)
+    warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
+    note: Mapped[str | None] = mapped_column(String(255))
+
+
+class StockCountLine(IdMixin, Base):
+    """Eksik çıkan miktar fire kaydıyla düşülür (adjustment_id); fazlası yalnız raporlanır."""
+
+    __tablename__ = "stock_count_lines"
+    __table_args__ = (CheckConstraint("counted_qty >= 0", name="counted_qty_nonnegative"),)
+
+    count_id: Mapped[int] = mapped_column(ForeignKey("stock_counts.id"))
+    lot_id: Mapped[int] = mapped_column(ForeignKey("lots.id"))
+    system_qty: Mapped[Decimal] = mapped_column(QTY)
+    counted_qty: Mapped[Decimal] = mapped_column(QTY)
+    adjustment_id: Mapped[int | None] = mapped_column(ForeignKey("adjustments.id"), unique=True)

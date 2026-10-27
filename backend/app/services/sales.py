@@ -11,20 +11,32 @@ yöneticiye uyarı düşer — mal müşteriye gitmiştir, kaydı reddetmek izin
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import StrEnum
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.domain.clock import business_today
 from app.domain.costing import line_amount
 from app.domain.money import tr_number
 from app.errors import DomainError, Forbidden, InvalidInput, NotFound
 from app.models import Alert, Lot, Partner, Product, Sale, SaleLine, User
-from app.models.enums import AlertKind, BaseUnit, DocType, LotStatus, MovementType, SaleChannel
+from app.models.enums import (
+    AlertKind,
+    BaseUnit,
+    DocType,
+    LotStatus,
+    MovementType,
+    PaymentMethod,
+    SaleChannel,
+    WarehouseKind,
+)
 from app.models.types import utcnow
 from app.services.ledger import post_movement
+from app.services.lookups import warehouse_or_404
 from app.services.numbering import next_document_no
 
 
@@ -49,6 +61,7 @@ class SaleInput:
     warehouse_id: int
     sold_at: datetime
     lines: Sequence[SaleLineInput]
+    payment_method: PaymentMethod | None = None
 
 
 @dataclass(frozen=True)
@@ -99,7 +112,17 @@ def _push_one(session: Session, user: User, device_id: str | None, sale: SaleInp
     )
 
 
-def _record_sale(session: Session, user: User, device_id: str | None, data: SaleInput) -> Sale:
+def _record_sale(
+    session: Session,
+    user: User,
+    device_id: str | None,
+    data: SaleInput,
+    *,
+    channel: SaleChannel = SaleChannel.ANDROID,
+) -> Sale:
+    """Satışı deftere yazar. Android (çevrimdışı olabilir): bloke ya da SKT'si geçmiş parti kayda alınır,
+    ihlal işaretlenir, uyarı düşer — mal müşteriye gitmiştir. Mağaza (web, anlık): bu partiler reddedilir."""
+    offline = channel == SaleChannel.ANDROID
     customer = session.get(Partner, data.customer_id)
     if customer is None or not customer.is_customer:
         raise InvalidInput(
@@ -107,18 +130,21 @@ def _record_sale(session: Session, user: User, device_id: str | None, data: Sale
         )
     if not data.lines:
         raise InvalidInput("Satışta en az bir satır olmalı.")
-    lots = [_sellable_lot(session, line) for line in data.lines]
+    sold_at = data.sold_at.astimezone(UTC).replace(tzinfo=None) if data.sold_at.tzinfo else data.sold_at
+    sale_day = business_today(sold_at)
+    lots = [_sellable_lot(session, line, sale_day=sale_day, offline=offline) for line in data.lines]
 
     sale = Sale(
         client_uuid=data.client_uuid,
         sale_no=next_document_no(session, "SAT", utcnow().year),
-        channel=SaleChannel.ANDROID,
+        channel=channel,
         customer_id=customer.id,
         warehouse_id=data.warehouse_id,
         user_id=user.id,
         device_id=device_id,
-        sold_at=data.sold_at.astimezone(UTC).replace(tzinfo=None) if data.sold_at.tzinfo else data.sold_at,
+        sold_at=sold_at,
         recall_violation=any(lot.status == LotStatus.BLOKE for lot in lots),
+        payment_method=data.payment_method,
     )
     session.add(sale)
     session.flush()
@@ -132,7 +158,7 @@ def _record_sale(session: Session, user: User, device_id: str | None, data: Sale
             doc_type=DocType.SATIS,
             doc_id=sale.id,
             user_id=user.id,
-            allow_blocked=True,  # çevrimdışı satış kaydedilir, ihlal aşağıda işaretlenir
+            allow_blocked=offline,  # çevrimdışı satış kaydedilir, ihlal aşağıda işaretlenir
         )
         session.add(
             SaleLine(
@@ -147,9 +173,9 @@ def _record_sale(session: Session, user: User, device_id: str | None, data: Sale
                 cost_amount=-movement.value,
             )
         )
+        product = session.get(Product, lot.product_id)
+        unit = "adet" if product is not None and product.base_unit == BaseUnit.ADET else "kg"
         if lot.status == LotStatus.BLOKE:
-            product = session.get(Product, lot.product_id)
-            unit = "adet" if product is not None and product.base_unit == BaseUnit.ADET else "kg"
             session.add(
                 Alert(
                     kind=AlertKind.GERI_CAGIRMA_IHLALI,
@@ -162,11 +188,72 @@ def _record_sale(session: Session, user: User, device_id: str | None, data: Sale
                     ),
                 )
             )
+        if _expired(lot, sale_day):
+            session.add(
+                Alert(
+                    kind=AlertKind.SKT_IHLALI,
+                    ref_type="SALE",
+                    ref_id=sale.id,
+                    message=(
+                        f"{sale.sale_no}: son kullanma tarihi geçmiş {lot.lot_no} partisinden "
+                        f"{tr_number(line.qty)} {unit} {customer.name} müşterisine satıldı "
+                        "(çevrimdışı satış). Müşteriyle iletişime geçin."
+                    ),
+                )
+            )
     session.flush()
     return sale
 
 
-def _sellable_lot(session: Session, line: SaleLineInput) -> Lot:
+@dataclass(frozen=True)
+class StoreLineInput:
+    lot_no: str
+    qty: Decimal
+    unit_price: Decimal | None = None  # boşsa ürünün liste fiyatı
+
+
+def create_store_sale(
+    session: Session,
+    user: User,
+    *,
+    customer_id: int,
+    warehouse_id: int,
+    lines: Sequence[StoreLineInput],
+    payment_method: PaymentMethod,
+) -> Sale:
+    """Mağaza (web) satışı: anlık kayıt; bloke ya da SKT'si geçmiş parti satılamaz. Araç stoku
+    telefondan satılır; fasoncu deposu satış yeri değildir."""
+    warehouse = warehouse_or_404(session, warehouse_id)
+    if warehouse.kind != WarehouseKind.ANA:
+        raise InvalidInput("Mağaza satışı yalnız ana depodan yapılır; araç stoku telefondan satılır.")
+    data = SaleInput(
+        client_uuid=str(uuid4()),
+        customer_id=customer_id,
+        warehouse_id=warehouse_id,
+        sold_at=utcnow(),
+        lines=[SaleLineInput(line.lot_no, line.qty, _list_price(session, line)) for line in lines],
+        payment_method=payment_method,
+    )
+    return _record_sale(session, user, None, data, channel=SaleChannel.WEB)
+
+
+def _list_price(session: Session, line: StoreLineInput) -> Decimal:
+    if line.unit_price is not None:
+        return line.unit_price
+    lot = session.scalars(select(Lot).where(Lot.lot_no == line.lot_no)).first()
+    if lot is None:
+        raise NotFound(f"{line.lot_no} lotu bulunamadı.", lot_no=line.lot_no)
+    product = session.get(Product, lot.product_id)
+    if product is None or product.sale_price is None:
+        raise InvalidInput(f"{line.lot_no}: ürünün satış fiyatı tanımlı değil; fiyatı elle yazın.")
+    return product.sale_price
+
+
+def _expired(lot: Lot, day: date) -> bool:
+    return lot.expiry_date is not None and lot.expiry_date < day
+
+
+def _sellable_lot(session: Session, line: SaleLineInput, *, sale_day: date, offline: bool) -> Lot:
     lot = session.scalars(select(Lot).where(Lot.lot_no == line.lot_no)).first()
     if lot is None:
         raise NotFound(f"{line.lot_no} lotu bulunamadı.", lot_no=line.lot_no)
@@ -178,20 +265,35 @@ def _sellable_lot(session: Session, line: SaleLineInput) -> Lot:
         raise InvalidInput(f"{lot.lot_no}: birim fiyat eksi olamaz.")
     if product.base_unit == BaseUnit.ADET and line.qty != line.qty.to_integral_value():
         raise InvalidInput(f"{product.name} adet ile satılır; {tr_number(line.qty)} adet olamaz.")
+    if not offline and _expired(lot, sale_day):
+        raise InvalidInput(
+            f"{lot.lot_no} partisinin son kullanma tarihi geçmiş ({lot.expiry_date:%d.%m.%Y}); satılamaz.",
+            lot_no=lot.lot_no,
+        )
     return lot
 
 
 def _warnings(session: Session, sale: Sale) -> list[str]:
-    if not sale.recall_violation:
-        return []
-    blocked = session.scalars(
-        select(Lot.lot_no)
+    rows = session.execute(
+        select(Lot.lot_no, Lot.status, Lot.expiry_date)
         .join(SaleLine, SaleLine.lot_id == Lot.id)
-        .where(SaleLine.sale_id == sale.id, Lot.status == LotStatus.BLOKE)
+        .where(SaleLine.sale_id == sale.id)
         .order_by(SaleLine.line_no)
     ).all()
-    lots = ", ".join(blocked) or "bloke lot"
-    return [f"Geri çağrılmış lot satıldı ({lots}); satış kaydedildi, ihlal yöneticiye bildirildi."]
+    sale_day = business_today(sale.sold_at)
+    warnings = []
+    if sale.recall_violation:
+        blocked = ", ".join(no for no, status, _ in rows if status == LotStatus.BLOKE) or "bloke lot"
+        warnings.append(
+            f"Geri çağrılmış lot satıldı ({blocked}); satış kaydedildi, ihlal yöneticiye bildirildi."
+        )
+    expired = [no for no, _, expiry in rows if expiry is not None and expiry < sale_day]
+    if expired:
+        warnings.append(
+            f"Son kullanma tarihi geçmiş parti satıldı ({', '.join(expired)}); "
+            "satış kaydedildi, yöneticiye bildirildi."
+        )
+    return warnings
 
 
 # --- Okuma modeli ---
@@ -214,6 +316,7 @@ class SaleLineView:
 class SaleView:
     sale: Sale
     customer_name: str
+    seller_name: str
     lines: list[SaleLineView]
     total_amount: Decimal
     total_cost: Decimal
@@ -221,6 +324,7 @@ class SaleView:
 
 def sale_view(session: Session, sale: Sale) -> SaleView:
     customer = session.get(Partner, sale.customer_id)
+    seller = session.get(User, sale.user_id) if sale.user_id is not None else None
     rows = session.execute(
         select(SaleLine, Lot.lot_no, Product.name, Product.base_unit)
         .join(Lot, Lot.id == SaleLine.lot_id)
@@ -245,6 +349,7 @@ def sale_view(session: Session, sale: Sale) -> SaleView:
     return SaleView(
         sale=sale,
         customer_name=customer.name if customer else "",
+        seller_name=seller.full_name if seller else "",
         lines=lines,
         total_amount=sum((line.amount for line in lines), Decimal("0.00")),
         total_cost=sum((line.cost_amount for line in lines), Decimal("0.00")),

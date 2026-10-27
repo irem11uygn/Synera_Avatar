@@ -47,6 +47,14 @@ def lot_by_no(session: Session, lot_no: str) -> Lot:
     return lot
 
 
+def warehouse_or_404(session: Session, warehouse_id: int) -> Warehouse:
+    """İstemcinin gönderdiği depo kimliği gerçekten var mı (yoksa veritabanı FK hatası yerine 404)."""
+    warehouse = session.get(Warehouse, warehouse_id)
+    if warehouse is None:
+        raise NotFound("Depo bulunamadı.", warehouse_id=warehouse_id)
+    return warehouse
+
+
 def main_warehouse(session: Session) -> Warehouse:
     """Ana depo (sistemde tek ana depo varsayımı; data_model.md)."""
     warehouse = session.scalars(select(Warehouse).where(Warehouse.kind == WarehouseKind.ANA)).first()

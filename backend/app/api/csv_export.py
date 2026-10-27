@@ -27,7 +27,13 @@ def cell(value: object) -> str:
         return value.isoformat()
     if isinstance(value, Enum):
         return str(value.value)
-    return str(value)
+    return _safe_text(str(value))
+
+
+def _safe_text(text: str) -> str:
+    """Excel'de formül olarak çalışabilecek metinler (=, +, -, @, sekme ile başlayan) düz metne çevrilir
+    (OWASP "CSV injection"). Sayısal hücreler bu yola girmez."""
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
 def csv_response(filename: str, header: Sequence[str], rows: Iterable[Sequence[object]]) -> Response:

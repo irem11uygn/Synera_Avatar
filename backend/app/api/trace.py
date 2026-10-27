@@ -6,7 +6,7 @@ from decimal import Decimal
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, WebUser
 from app.api.fields import UtcDateTime
 from app.models.enums import BaseUnit, LinkProcess, LotOrigin, LotStatus, SaleChannel, WarehouseKind
 from app.services.trace import OnwardStatus, trace_backward, trace_forward
@@ -121,12 +121,12 @@ class TraceOut(_Out):
 
 
 @router.get("/forward/{lot_no}", response_model=TraceOut)
-def forward(lot_no: str, db: Db, _: AdminUser) -> TraceOut:
+def forward(lot_no: str, db: Db, _: WebUser) -> TraceOut:
     """Türev lotlar, bizdeki stok, alıcılar (miktar, satış belgesi, iletişim, ikinci kademe)."""
     return TraceOut.model_validate(trace_forward(db, lot_no))
 
 
 @router.get("/backward/{lot_no}", response_model=TraceOut)
-def backward(lot_no: str, db: Db, _: AdminUser) -> TraceOut:
+def backward(lot_no: str, db: Db, _: WebUser) -> TraceOut:
     """Lotu oluşturan bütün lotlar, tedarikçiler ve alış belgeleri, üretim emirleri ve parçalamalar."""
     return TraceOut.model_validate(trace_backward(db, lot_no))

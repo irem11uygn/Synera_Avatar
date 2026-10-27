@@ -15,6 +15,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.domain.clock import business_today
 from app.domain.money import tr_number
 from app.errors import InvalidInput
 from app.models import Lot, Product, ProductionInput, ProductionOrder
@@ -29,7 +30,7 @@ from app.models.enums import (
 )
 from app.models.types import utcnow
 from app.services.ledger import create_lot, post_movement
-from app.services.lookups import get_or_404, main_warehouse
+from app.services.lookups import get_or_404, main_warehouse, warehouse_or_404
 from app.services.lot_graph import link_lots
 from app.services.numbering import next_document_no
 
@@ -66,7 +67,9 @@ def reprocess(
     for item in inputs:
         if item.qty <= 0:
             raise InvalidInput("Girdi miktarı sıfırdan büyük olmalı.")
-    warehouse = warehouse_id if warehouse_id is not None else main_warehouse(session).id
+    warehouse = (
+        warehouse_or_404(session, warehouse_id).id if warehouse_id is not None else main_warehouse(session).id
+    )
 
     now = utcnow()
     order = ProductionOrder(
@@ -109,7 +112,7 @@ def reprocess(
             )
         )
 
-    today = now.date()
+    today = business_today()
     lot = create_lot(
         session,
         lot_no=output_lot_no or f"{product.lot_prefix or product.code}-{order.order_no}",

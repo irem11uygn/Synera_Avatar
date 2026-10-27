@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.deps import Db, require_role
 from app.models import User
-from app.models.enums import BaseUnit, LotStatus, UserRole
+from app.models.enums import BaseUnit, LotStatus, PaymentMethod, UserRole
 from app.services import sales
 from app.services.sync import pull_changes
 
@@ -92,6 +92,7 @@ class PushSaleIn(BaseModel):
     warehouse_id: int
     sold_at: datetime
     lines: list[PushLineIn] = Field(min_length=1, max_length=50)
+    payment_method: PaymentMethod | None = None  # eski uygulama sürümleri göndermez
 
 
 class PushIn(BaseModel):
@@ -130,6 +131,7 @@ def push(body: PushIn, db: Db, user: Annotated[User, Depends(require_role(UserRo
                 warehouse_id=sale.warehouse_id,
                 sold_at=sale.sold_at,
                 lines=[sales.SaleLineInput(line.lot_no, line.qty, line.unit_price) for line in sale.lines],
+                payment_method=sale.payment_method,
             )
             for sale in body.sales
         ],

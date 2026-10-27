@@ -18,20 +18,24 @@
     {"code": "ARAC-01", "name": "Satış aracı 1", "kind": "ARAC"}
   ],
   "products": [
-    {"code": "ET", "name": "Sucukluk et", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "ET", "default_purchase_price": "9.70", "shelf_life_days": 7},
-    {"code": "BAHARAT", "name": "Sucuk baharatı", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "BAH", "default_purchase_price": "24.00", "shelf_life_days": 365},
-    {"code": "BAGIRSAK", "name": "Doğal bağırsak", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "BAG", "default_purchase_price": "11.60", "shelf_life_days": 180},
+    {"code": "ET", "name": "Sucukluk et", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "ET", "default_purchase_price": "9.70", "shelf_life_days": 7, "min_stock": "100"},
+    {"code": "BAHARAT", "name": "Sucuk baharatı", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "BAH", "default_purchase_price": "24.00", "shelf_life_days": 365, "min_stock": "5"},
+    {"code": "BAGIRSAK", "name": "Doğal bağırsak", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "BAG", "default_purchase_price": "11.60", "shelf_life_days": 180, "min_stock": "5"},
     {"code": "KUZU-BUTUN", "name": "Bütün kuzu (karkas)", "kind": "HAMMADDE", "base_unit": "KG", "lot_prefix": "KUZU", "default_purchase_price": "11.50", "shelf_life_days": 5},
-    {"code": "NARIN-SUCUK", "name": "Narin Sucuk 1 kg", "kind": "MAMUL", "base_unit": "ADET", "unit_weight_kg": "1.000", "lot_prefix": "SUC", "sale_price": "24.90", "shelf_life_days": 60},
-    {"code": "KUZU-BUT", "name": "Kuzu but", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "BUT", "sale_price": "22.00", "shelf_life_days": 7},
-    {"code": "KUZU-SIRT", "name": "Kuzu sırt (pirzola)", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "SIRT", "sale_price": "26.00", "shelf_life_days": 7},
-    {"code": "KUZU-OMUZ", "name": "Kuzu omuz", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "OMUZ", "sale_price": "18.00", "shelf_life_days": 7},
-    {"code": "KUZU-KABURGA", "name": "Kuzu kaburga", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KABURGA", "sale_price": "14.00", "shelf_life_days": 7},
-    {"code": "KUZU-KIYMA", "name": "Kuzu kıyma", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KIYMA", "sale_price": "16.00", "shelf_life_days": 3}
+    {"code": "NARIN-SUCUK", "name": "Narin Sucuk 1 kg", "kind": "MAMUL", "base_unit": "ADET", "unit_weight_kg": "1.000", "lot_prefix": "SUC", "sale_price": "24.90", "shelf_life_days": 60, "min_stock": "200"},
+    {"code": "KUZU-BUT", "name": "Kuzu but", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "BUT", "sale_price": "22.00", "shelf_life_days": 7, "min_stock": "10"},
+    {"code": "KUZU-SIRT", "name": "Kuzu sırt (pirzola)", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "SIRT", "sale_price": "26.00", "shelf_life_days": 7, "min_stock": "5"},
+    {"code": "KUZU-OMUZ", "name": "Kuzu omuz", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "OMUZ", "sale_price": "18.00", "shelf_life_days": 7, "min_stock": "5"},
+    {"code": "KUZU-KABURGA", "name": "Kuzu kaburga", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KABURGA", "sale_price": "14.00", "shelf_life_days": 7, "min_stock": "5"},
+    {"code": "KUZU-KIYMA", "name": "Kuzu kıyma", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KIYMA", "sale_price": "16.00", "shelf_life_days": 3, "min_stock": "5"}
   ],
   "users": [
     {"username": "yonetici", "full_name": "Demo Yönetici", "role": "YONETICI", "password": "yonetici123"},
-    {"username": "satis1", "full_name": "Demo Satış Elemanı", "role": "SATIS", "warehouse_code": "ARAC-01", "password": "satis123"}
+    {"username": "satis1", "full_name": "Demo Satış Elemanı", "role": "SATIS", "warehouse_code": "ARAC-01", "password": "satis123"},
+    {"username": "depo1", "full_name": "Demo Depo Sorumlusu", "role": "DEPO", "password": "depo1234"},
+    {"username": "uretim1", "full_name": "Demo Üretim Sorumlusu", "role": "URETIM", "password": "uretim123"},
+    {"username": "kalite1", "full_name": "Demo Kalite Sorumlusu", "role": "KALITE", "password": "kalite123"},
+    {"username": "magaza1", "full_name": "Demo Mağaza Kasası", "role": "MAGAZA", "password": "magaza123"}
   ],
   "cutting_recipes": [
     {

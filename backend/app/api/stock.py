@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, WebUser
 from app.models import Lot, Product, StockBalance, Warehouse
 from app.models.enums import BaseUnit, LotStatus
 
@@ -31,7 +31,7 @@ class StockRowOut(BaseModel):
 
 @router.get("", response_model=list[StockRowOut])
 def list_stock(
-    db: Db, _: AdminUser, warehouse_id: int | None = None, product_id: int | None = None
+    db: Db, _: WebUser, warehouse_id: int | None = None, product_id: int | None = None
 ) -> list[StockRowOut]:
     query = (
         select(StockBalance.qty, Lot, Product, Warehouse)

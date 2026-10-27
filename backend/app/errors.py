@@ -33,6 +33,12 @@ class Forbidden(DomainError):
     http_status = 403
 
 
+class PasswordChangeRequired(Forbidden):
+    """Yönetici şifreyi sıfırladı: kullanıcı yeni şifresini belirlemeden başka işlem yapamaz."""
+
+    code = "PASSWORD_CHANGE_REQUIRED"
+
+
 class NotFound(DomainError):
     code = "NOT_FOUND"
     http_status = 404
@@ -56,3 +62,12 @@ class InvalidState(DomainError):
 
 class DuplicateLotNo(DomainError):
     code = "DUPLICATE_LOT_NO"
+
+
+class TooManyAttempts(DomainError):
+    code = "TOO_MANY_ATTEMPTS"
+    http_status = 429
+
+
+class Conflict(DomainError):
+    code = "CONFLICT"

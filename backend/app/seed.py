@@ -125,6 +125,7 @@ def _load_products(session: Session, rows: list[dict[str, Any]]) -> dict[str, Pr
             default_purchase_price=_dec(row.get("default_purchase_price")),
             sale_price=_dec(row.get("sale_price")),
             shelf_life_days=row.get("shelf_life_days"),
+            min_stock=_dec(row.get("min_stock")),
         )
         for row in rows
     }

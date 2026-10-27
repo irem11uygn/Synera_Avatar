@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, StockUser, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Adjustment, Lot, Warehouse
 from app.models.enums import MovementType
@@ -70,7 +70,7 @@ def _adjustment_rows(db: Db, *conditions: object) -> list[AdjustmentOut]:
 
 
 @router.post("/adjustments", response_model=AdjustmentOut, status_code=201)
-def create(body: AdjustmentIn, db: Db, user: AdminUser) -> AdjustmentOut:
+def create(body: AdjustmentIn, db: Db, user: StockUser) -> AdjustmentOut:
     record = create_adjustment(
         db,
         lot_id=lot_by_no(db, body.lot_no.strip()).id,
@@ -83,12 +83,12 @@ def create(body: AdjustmentIn, db: Db, user: AdminUser) -> AdjustmentOut:
 
 
 @router.get("/adjustments", response_model=list[AdjustmentOut])
-def list_adjustments(db: Db, _: AdminUser) -> list[AdjustmentOut]:
+def list_adjustments(db: Db, _: WebUser) -> list[AdjustmentOut]:
     return _adjustment_rows(db)
 
 
 @router.post("/movements/{movement_id}/reverse", response_model=list[ReversalOut], status_code=201)
-def reverse_one(movement_id: int, body: ReverseIn, db: Db, user: AdminUser) -> list[ReversalOut]:
+def reverse_one(movement_id: int, body: ReverseIn, db: Db, user: StockUser) -> list[ReversalOut]:
     """Hareketi silmeden düzeltir: aslının tam tersi yeni hareket(ler) yazılır (gerekçe zorunlu)."""
     reversals = reverse(db, movement_id, body.reason, user.id)
     lot_ids = [m.lot_id for m in reversals]

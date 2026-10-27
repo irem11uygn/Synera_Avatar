@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.errors import InvalidInput
-from app.models import Partner, Product, Warehouse
+from app.models import Lot, Partner, Product, Warehouse
 from app.models.enums import BaseUnit, WarehouseKind
 
 
@@ -15,6 +15,15 @@ def save_product(session: Session, product: Product | None, fields: dict[str, An
     _check_unique_code(session, Product, fields["code"], product.id if product else None, "Ürün")
     if fields["base_unit"] == BaseUnit.ADET and not fields.get("unit_weight_kg"):
         raise InvalidInput("Adet ile izlenen üründe 1 adedin ağırlığı (kg) girilmeli.")
+    if product is not None and session.scalar(select(Lot.id).where(Lot.product_id == product.id).limit(1)):
+        locked = {"base_unit": "ölçü birimi", "kind": "türü", "unit_weight_kg": "1 adedin ağırlığı"}
+        changed = [label for name, label in locked.items() if fields.get(name) != getattr(product, name)]
+        if changed:
+            raise InvalidInput(
+                f"{product.name} ürününün partileri var; {', '.join(changed)} değiştirilemez "
+                "(kayıtlı miktarların anlamı bozulur). Gerekirse yeni bir ürün kartı açın.",
+                product=product.code,
+            )
     return _save(session, product or Product(), fields)
 
 
@@ -25,6 +34,15 @@ def save_partner(session: Session, partner: Partner | None, fields: dict[str, An
         raise InvalidInput("Bir cari kendisinin şubesi olamaz.")
     if parent_id is not None and session.get(Partner, parent_id) is None:
         raise InvalidInput("Ana firma bulunamadı.", parent_id=parent_id)
+    if parent_id is not None and partner is not None:
+        seen, current = {partner.id}, session.get(Partner, parent_id)
+        while current is not None:
+            if current.id in seen:
+                raise InvalidInput(
+                    "Şube ilişkisi döngü oluşturuyor (bir firma kendi şubesinin şubesi olamaz)."
+                )
+            seen.add(current.id)
+            current = session.get(Partner, current.parent_id) if current.parent_id else None
     saved = _save(session, partner or Partner(), fields)
     if saved.is_subcontractor:
         _ensure_subcontractor_warehouse(session, saved)

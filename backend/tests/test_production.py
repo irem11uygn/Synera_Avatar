@@ -74,7 +74,9 @@ def test_at01_narin_sucuk_end_to_end(client, admin, session):
 
     shipped = ship(client, admin, order)
     assert shipped["status"] == "SEVK_EDILDI"
-    assert balances(client, admin, "ET-2026-001") == {"DIS-FSN-01": D("100")}  # mal hâlâ bizim, fasoncuda
+    assert {k: v for k, v in balances(client, admin, "ET-2026-001").items() if v} == {
+        "DIS-FSN-01": D("100")
+    }  # mal hâlâ bizim, fasoncuda
 
     response = complete(client, admin, order)
     assert response.status_code == 200, response.text
@@ -181,7 +183,21 @@ def test_status_flow_is_enforced(client, admin, session):
     second_ship = client.post(f"{URL}/{order['id']}/ship", headers=admin)
     assert (second_ship.status_code, second_ship.json()["error"]["code"]) == (409, "INVALID_STATE")
     cancel = client.post(f"{URL}/{order['id']}/cancel", headers=admin)
-    assert cancel.json()["error"]["code"] == "INVALID_STATE"
+    assert (cancel.status_code, cancel.json()["error"]["code"]) == (422, "VALIDATION_ERROR")  # neden zorunlu
+    assert complete(client, admin, order).status_code == 200
+    cancel = client.post(f"{URL}/{order['id']}/cancel", headers=admin, json={"note": "deneme"})
+    assert (cancel.status_code, cancel.json()["error"]["code"]) == (409, "INVALID_STATE")
+
+
+def test_shipped_order_cancel_returns_materials(client, admin, session):
+    """Fasoncu üretmediyse sevk edilen hammadde iade transferiyle ana depoya döner, emir iptal olur."""
+    order = created(client, admin, session)
+    ship(client, admin, order)
+    assert {k: v for k, v in balances(client, admin, "ET-2026-001").items() if v} == {"DIS-FSN-01": D("100")}
+    response = client.post(f"{URL}/{order['id']}/cancel", headers=admin, json={"note": "Fasoncu üretemedi"})
+    assert response.status_code == 200, response.text
+    assert response.json()["status"] == "IPTAL"
+    assert {k: v for k, v in balances(client, admin, "ET-2026-001").items() if v} == {"ANA": D("100")}
 
 
 def test_draft_order_can_be_cancelled(client, admin, session):

@@ -13,6 +13,7 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.domain.clock import business_today
 from app.domain.costing import ProductionCost, Profitability, line_amount, production_cost, profitability
 from app.domain.money import round_percent, tr_number
 from app.errors import AmountMismatchNoteRequired, InvalidInput, InvalidState, LotBlocked, NotFound
@@ -178,7 +179,7 @@ def complete_order(
             )
             consumed_value -= movement.value
 
-    today = utcnow().date()
+    today = business_today()
     lot = create_lot(
         session,
         lot_no=output_lot_no or _default_output_lot_no(order, product),
@@ -216,8 +217,41 @@ def complete_order(
     return order
 
 
-def cancel_order(session: Session, order_id: int) -> ProductionOrder:
-    order = _lock_order(session, order_id, expected=ProductionStatus.TASLAK, action="iptal")
+def cancel_order(
+    session: Session, order_id: int, *, note: str | None = None, user_id: int | None = None
+) -> ProductionOrder:
+    """Taslak emir doğrudan iptal edilir. Sevk edilmiş emirde (dış üretici hiç üretmediyse) sevk edilen
+    hammadde dış üretici deposundan ana depoya iade transferiyle geri alınır, sonra emir iptal olur."""
+    order = session.execute(
+        select(ProductionOrder).where(ProductionOrder.id == order_id).with_for_update()
+    ).scalar_one_or_none()
+    if order is None:
+        raise NotFound("Üretim emri bulunamadı.", id=order_id)
+    if order.status == ProductionStatus.SEVK_EDILDI:
+        if not (note or "").strip():
+            raise InvalidInput(
+                "Sevk edilmiş emri iptal etmek için neden yazılmalı (ör. dış üretici üretim yapmadı)."
+            )
+        inputs = _inputs(session, order)
+        create_transfer(
+            session,
+            from_warehouse_id=order.subcontractor_warehouse_id,
+            to_warehouse_id=main_warehouse(session).id,
+            lines=[TransferLineInput(i.lot_id, i.shipped_qty) for i in inputs if i.shipped_qty > 0],
+            reason=TransferReason.DIS_URETIM_IADE,
+            production_order_id=order.id,
+            user_id=user_id,
+        )
+        for item in inputs:
+            item.returned_qty = item.shipped_qty
+        order.service_note = note.strip()
+    elif order.status != ProductionStatus.TASLAK:
+        raise InvalidState(
+            f"{order.order_no} emri '{order.status}' durumunda; "
+            "yalnız taslak ya da sevk edilmiş emir iptal edilebilir.",
+            order_no=order.order_no,
+            status=order.status,
+        )
     order.status = ProductionStatus.IPTAL
     session.flush()
     return order

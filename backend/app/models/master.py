@@ -23,6 +23,7 @@ class User(IdMixin, Base):
     role: Mapped[UserRole] = mapped_column(db_enum(UserRole))
     warehouse_id: Mapped[int | None] = mapped_column(ForeignKey("warehouses.id"))  # satış: araç deposu
     active: Mapped[bool] = mapped_column(default=True)
+    must_change_password: Mapped[bool] = mapped_column(default=False)  # yönetici şifreyi sıfırladıysa
 
 
 class AuthSession(Base):
@@ -52,6 +53,7 @@ class Product(IdMixin, SyncMixin, Base):
     default_purchase_price: Mapped[Decimal | None] = mapped_column(PRICE)  # FR-101; gerçek fiyat lotta
     sale_price: Mapped[Decimal | None] = mapped_column(MONEY)  # VKP, net €/temel birim
     shelf_life_days: Mapped[int | None] = mapped_column(Integer)
+    min_stock: Mapped[Decimal | None] = mapped_column(QTY)  # bunun altına düşünce kritik stok uyarısı
     active: Mapped[bool] = mapped_column(default=True)
 
 

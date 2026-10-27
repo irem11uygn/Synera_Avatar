@@ -7,7 +7,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import AdminUser, Db, PartnerUser, WebUser
 from app.models import Partner, Product, Warehouse
 from app.models.enums import BaseUnit, ProductKind, WarehouseKind
 from app.services.lookups import get_or_404
@@ -26,6 +26,7 @@ class ProductIn(BaseModel):
     default_purchase_price: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=4)
     sale_price: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=2)
     shelf_life_days: int | None = Field(default=None, ge=0)
+    min_stock: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=3)  # kritik stok
     active: bool = True
 
 
@@ -62,7 +63,7 @@ class WarehouseOut(BaseModel):
 
 
 @router.get("/products", response_model=list[ProductOut])
-def list_products(db: Db, _: AdminUser, kind: ProductKind | None = None) -> list[Product]:
+def list_products(db: Db, _: WebUser, kind: ProductKind | None = None) -> list[Product]:
     query = select(Product).order_by(Product.code)
     if kind is not None:
         query = query.where(Product.kind == kind)
@@ -82,7 +83,7 @@ def update_product(product_id: int, body: ProductIn, db: Db, _: AdminUser) -> Pr
 @router.get("/partners", response_model=list[PartnerOut])
 def list_partners(
     db: Db,
-    _: AdminUser,
+    _: WebUser,
     role: Annotated[Literal["supplier", "customer", "subcontractor"] | None, Query()] = None,
 ) -> list[Partner]:
     query = select(Partner).order_by(Partner.code)
@@ -92,15 +93,15 @@ def list_partners(
 
 
 @router.post("/partners", response_model=PartnerOut, status_code=201)
-def create_partner(body: PartnerIn, db: Db, _: AdminUser) -> Partner:
+def create_partner(body: PartnerIn, db: Db, _: PartnerUser) -> Partner:
     return save_partner(db, None, body.model_dump())
 
 
 @router.put("/partners/{partner_id}", response_model=PartnerOut)
-def update_partner(partner_id: int, body: PartnerIn, db: Db, _: AdminUser) -> Partner:
+def update_partner(partner_id: int, body: PartnerIn, db: Db, _: PartnerUser) -> Partner:
     return save_partner(db, get_or_404(db, Partner, partner_id, "Cari"), body.model_dump())
 
 
 @router.get("/warehouses", response_model=list[WarehouseOut])
-def list_warehouses(db: Db, _: AdminUser) -> list[Warehouse]:
+def list_warehouses(db: Db, _: WebUser) -> list[Warehouse]:
     return list(db.scalars(select(Warehouse).order_by(Warehouse.id)))

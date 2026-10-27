@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.api.deps import AdminUser, Db
+from app.api.deps import Db, ProductionUser, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Lot, Product, ProductionInput, ProductionOrder, StockMovement
 from app.models.enums import BaseUnit, DocType, MovementType, ProductionKind
@@ -109,7 +109,7 @@ def _out(db: Db, order: ProductionOrder) -> ReprocessOut:
 
 
 @router.post("", response_model=ReprocessOut, status_code=201)
-def create(body: ReprocessIn, db: Db, user: AdminUser) -> ReprocessOut:
+def create(body: ReprocessIn, db: Db, user: ProductionUser) -> ReprocessOut:
     order = reprocess(
         db,
         inputs=[ReprocessInput(lot_by_no(db, i.lot_no.strip()).id, i.qty) for i in body.inputs],
@@ -125,7 +125,7 @@ def create(body: ReprocessIn, db: Db, user: AdminUser) -> ReprocessOut:
 
 
 @router.get("", response_model=list[ReprocessOut])
-def list_reprocessing(db: Db, _: AdminUser) -> list[ReprocessOut]:
+def list_reprocessing(db: Db, _: WebUser) -> list[ReprocessOut]:
     orders = db.scalars(
         select(ProductionOrder)
         .where(ProductionOrder.kind == ProductionKind.YENIDEN_ISLEME)

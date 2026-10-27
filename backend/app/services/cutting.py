@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.allocation import CuttingLine, allocate_cutting_cost
 from app.domain.balance import WeightBalance, weight_balance
+from app.domain.clock import business_today
 from app.domain.costing import outflow_value, unit_cost
 from app.domain.money import round_qty, tr_number
 from app.errors import InsufficientStock, InvalidInput, InvalidState, LotBlocked, NotFound, WeightImbalance
@@ -278,7 +279,7 @@ def approve_cutting(session: Session, cutting_id: int, *, user_id: int | None = 
 
     input_lot = session.get(Lot, cutting.input_lot_id)
     assert input_lot is not None
-    today = utcnow().date()
+    today = business_today()
     for output in outputs:
         output.allocated_cost = shares[output.id]
         qty = output.actual_qty or Decimal(0)

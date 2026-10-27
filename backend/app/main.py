@@ -13,6 +13,7 @@ from app.api import (
     health,
     lots,
     master,
+    operations,
     production,
     purchases,
     recalls,
@@ -24,6 +25,7 @@ from app.api import (
     sync,
     trace,
     transfers,
+    users,
 )
 from app.api.errors import register_error_handlers
 from app.config import get_settings
@@ -45,6 +47,8 @@ def create_app() -> FastAPI:
     routers = (
         health.router,
         auth.router,
+        users.router,
+        operations.router,
         master.router,
         purchases.router,
         lots.router,
