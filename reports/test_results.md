@@ -389,3 +389,23 @@ Ayrı Compose projesi (`-p avatar-temiz`), API 18100. Geliştirme veritabanına 
 - Web/API'den KUZU-2026-012 geri çağrıldı (GC-2026-002, 6 lot) → telefonda "Verileri güncelle" → but ve sırt lotları kırmızı "BLOKE — satılamaz", "Bloke lot 2".
 - Bulunan ve düzeltilen: sunucu sıfırlanınca telefon eski sunucuya gönderilmiş satışları "Son satışlar"da göstermeye devam ediyordu. Artık veri kümesi değişince gönderilmiş/reddedilmiş satış geçmişi siliniyor, bekleyen satışlar korunuyor. Room sorguları derlemede denetlendi; bu durum emülatörde ayrıca yeniden oluşturulmadı.
 
+## 27 Ekim 2026 (akşam) — yeniden işleme, kabul testleri, paketten temiz kurulum
+
+| Kontrol | Sonuç |
+|---|---|
+| Sunucu testleri (yeniden işleme dahil) | **170 geçti** |
+| Kabul testleri `sh scripts/kabul_testleri.sh` (ayrı kopya, sıfırdan) | **23 geçti**; ET-2026-001 izlemesi 0,043 sn (`reports/kabul_testleri.md`) |
+| Yeniden işleme tarayıcıda | İade gelen 12 paket SUC-2026-045 → YIS-2026-001, yeni lot SUC-YIS-2026-001; değer 217,90 + 3,60 = 221,50 € |
+
+**Paketten temiz kurulum (T-26'nın bu bilgisayardaki provası).** Depo git paketinden ASCII yollu boş bir klasöre klonlandı. Yalnız README adımları izlendi: `.env.example` → `.env`, portlar 18300/18380.
+
+| Adım | Sonuç |
+|---|---|
+| `docker compose up --build -d` | 99 saniyede hazır; sağlık `ok`; demo senaryosu yüklü |
+| Web | Ana sayfa ve derin bağlantı (`/izleme/ET-2026-001`) HTTP 200 |
+| Sunucu ve yapay zekâ testleri | 170 + 4 geçti |
+| Kabul testleri (klondaki betikle) | 23 geçti |
+| Web (`npm ci`, `tsc`, `vitest`) | 16 geçti |
+| Android (`local.properties` yok, `ANDROID_HOME` ile) | Derleme başarılı, 17 test geçti, APK üretildi |
+
+Not: Bu prova T-26'nın yerini tutmaz. Asıl temiz kurulum testi ekip arkadaşının bilgisayarında yapılacak.

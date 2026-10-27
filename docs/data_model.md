@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Sürüm | v0.2 — şema uygulandı (T-06): `backend/app/models/`, ilk göç `backend/migrations/versions/20261024_df3690a4b5d8_ilk_sema.py`; 31 tablo |
-| Tarih | 24 Ekim 2026 |
+| Sürüm | v0.3 — şema uygulandı: `backend/app/models/`; göçler `backend/migrations/versions/` (ilk şema df3690a4b5d8, veri kümesi kimliği e93069315efb, iade/fire hareket bağı a7c41e2d9b10); 31 tablo |
+| Tarih | 27 Ekim 2026 |
 | Karşıladığı teslimat | CR-007 "Veri modeli" |
 | Dayanak | `architecture.md` §3, ADR-006, ADR-008 |
 
@@ -103,7 +103,7 @@ Miktar farkları (FR-109) bu iki tablodan okunur: planned_qty ↔ received_qty (
 |---|---|---|
 | `sales` | client_uuid, sale_no, channel (`ANDROID`/`WEB`), customer_id, warehouse_id, user_id, device_id, sold_at, received_at, recall_violation | client_uuid tekil (tekrar güvenlik, AT-11). sale_no aynı zamanda teslim belgesi (sevkiyat) numarasıdır. |
 | `sale_lines` | sale_id, line_no, product_id, lot_id, qty, unit_price, amount, stock_movement_id, cost_amount | stock_movement_id NOT NULL ve tekil: **bir satır = bir lot = bir hareket** (FR-401). cost_amount = hareketin değeri (brüt kâr için). |
-| `customer_returns` | return_no, sale_line_id, qty, warehouse_id, reason, stock_movement_id | Toplam iade ≤ satış satırı miktarı. |
+| `customer_returns` | return_no, sale_line_id, qty, warehouse_id, reason, stock_movement_id | Toplam iade ≤ satış satırı miktarı (ters kayıtla geri alınan iadeler sayılmaz). Hareket, belge kimliği olarak iadenin kimliğini taşır: kayıt önce eklenir, hareket yazılır, `stock_movement_id` aynı işlemde doldurulur (sütun bu yüzden boş geçilebilir; işlem sonunda her iadenin hareketi vardır). İade değeri satıştaki maliyetin payıdır; satırın son iadesi kalan kuruşları alır. |
 | `onward_deliveries` | sale_line_id, recipient_partner_id, qty, delivered_at, source_note | Müşterinin kendi alıcılarına teslimatı (FR-308). Bizim stokumuzu etkilemez, hareket yazmaz. Toplam ≤ satış satırı miktarı. |
 
 ### 2.7 Transfer ve fire
@@ -112,7 +112,9 @@ Miktar farkları (FR-109) bu iki tablodan okunur: planned_qty ↔ received_qty (
 |---|---|---|
 | `transfers` | transfer_no, from_warehouse_id, to_warehouse_id, reason (`ARAC_YUKLEME`/`DIS_URETIM_SEVK`/`DIS_URETIM_IADE`/`DIGER`), production_order_id, transferred_at | from ≠ to. |
 | `transfer_lines` | transfer_id, lot_id, qty, out_movement_id, in_movement_id | İki hareket de değer 0 taşır. |
-| `adjustments` | adj_no, kind (`FIRE`), lot_id, warehouse_id, qty, reason, stock_movement_id | Stoktaki malın firesi/imhası (işlem firesinden farklı: işlem firesi `cutting_outputs`'ta durur). |
+| `adjustments` | adj_no, kind (`FIRE`), lot_id, warehouse_id, qty, reason, stock_movement_id | Stoktaki malın firesi/imhası (işlem firesinden farklı: işlem firesi `cutting_outputs`'ta durur). Geri çağırma "imha" ile kapatılınca bizdeki stok bu kayıtla düşülür. `stock_movement_id` iadedeki gibi aynı işlemde doldurulur. |
+
+**Yeniden işleme** ayrı tablo kullanmaz: `production_orders` satırıdır (kind `YENIDEN_ISLEME`, belge no `YIS-…`, dış üretici yok, tek adımda `TAMAMLANDI`). Girdiler `production_inputs`, lot bağları `YENIDEN_ISLEME` süreciyle `lot_links`'tedir. Çıktı lotunun kökeni `YENIDEN_ISLEME`, değeri girdiler + ek maliyet (`service_amount`); I-6 aynen geçerlidir.
 
 ### 2.8 Geri çağırma ve uyarılar
 

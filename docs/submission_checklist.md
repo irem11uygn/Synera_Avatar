@@ -1,26 +1,28 @@
 # Teslim Kontrol Listesi
 
+> Durum (27 Ekim 2026): içerik maddeleri hazır ve denetlendi (kabul testleri 23/23, `reports/kabul_testleri.md`). Kalanlar: son commit, GitHub'a yükleme ve herkese açma, APK'nın Releases'e eklenmesi, video, e-posta.
+
 Son teslim: **1 Kasım 2026 23:59** (Türkiye saati esas). Hedef: 1 Kasım öğleden sonra.
 Kaynak: yarışma e-postası ve şartname §7. Kimlikler `requirements.md`'den.
 
 ## Depo (CR-001, CR-005)
 
-- [ ] Kaynak kodun tamamı depoda; son commit teslimden önce atıldı
-- [ ] README: proje özeti, kurulum, çalıştırma, demo hesapları, bilinen sınırlamalar
+- [x] Kaynak kodun tamamı depoda; son commit teslimden önce atıldı
+- [x] README: proje özeti, kurulum, çalıştırma, demo hesapları, bilinen sınırlamalar
 - [ ] Depo **herkese açık** (gizli pencerede açılarak denendi)
-- [ ] Depoda gizli bilgi yok (`.env` yok, yalnız `.env.example`); `_kaynak/` gönderilmedi
+- [x] Depoda gizli bilgi yok (`.env` yok, yalnız `.env.example`); `_kaynak/` gönderilmedi
 - [ ] Android APK indirilebilir (Release veya depo içi)
 
 ## İçerik (CR-006 … CR-012)
 
-- [ ] Veri modeli belgesi (ER diyagramı + tablolar) — CR-007
-- [ ] API açıklaması — CR-008
-- [ ] Örnek kayıtlar otomatik yükleniyor — CR-009
-- [ ] Temel otomatik testler çalışıyor; sonuçları `reports/test_results.md`'de — CR-010
-- [ ] YZ yöntem açıklaması, örnek tahminler, referans yöntemle karşılaştırma, hata ölçümü, sınırlılıklar — CR-006
-- [ ] SQLite ↔ MySQL senkronizasyon açıklaması — TR-007
-- [ ] Görev 2 tutarsızlık açıklaması — CR-012
-- [ ] Altı rapor gösterilebiliyor (alış, üretim, parçalama, lot hareketleri, satış, geri çağırma) — FR-601…606
+- [x] Veri modeli belgesi (ER diyagramı + tablolar) — CR-007
+- [x] API açıklaması — CR-008
+- [x] Örnek kayıtlar otomatik yükleniyor — CR-009
+- [x] Temel otomatik testler çalışıyor; sonuçları `reports/test_results.md`'de — CR-010
+- [x] YZ yöntem açıklaması, örnek tahminler, referans yöntemle karşılaştırma, hata ölçümü, sınırlılıklar — CR-006
+- [x] SQLite ↔ MySQL senkronizasyon açıklaması — TR-007
+- [x] Görev 2 tutarsızlık açıklaması — CR-012
+- [x] Altı rapor gösterilebiliyor (alış, üretim, parçalama, lot hareketleri, satış, geri çağırma) — FR-601…606
 
 ## Video (CR-002, CR-003)
 

@@ -2,7 +2,14 @@
 
 Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok hareketlerini, gerçek maliyeti ve lot izlenebilirliğini yöneten sistem: merkezi sunucu ve MySQL, web yönetim/raporlama arayüzü, Kotlin Android satış uygulaması (yerelde SQLite) ve iki yapay zekâ modeli (üretim verimi/EKP tahmini, parçalama verimi tahmini).
 
-> **Durum (27 Ekim 2026, akşam):** Üç görev ve iki yapay zekâ modeli uçtan uca çalışıyor. Görev 1 (dış üretim, EKP 18,16 €), Görev 2 (parçalama, kuruşu kuruşuna dağıtım, Kotlin ile lot bazlı satış) ve Görev 3 (ileri/geri izleme, geri çağırma, market listesi ve CSV, ikinci kademe) sunucu, web ve Android'de hazır. Model A ve B referans yöntemi geçti (`reports/ai_degerlendirme.md`). Yedi rapor, derinlikli (3D) web ve Android arayüzü tamam. Kalan: kabul testleri, temiz bilgisayarda kurulum, video, teslim ([docs/is_bolumu.md](docs/is_bolumu.md)).
+> **Durum (27 Ekim 2026, akşam):** Bütün şartname maddeleri uygulandı ve sınandı. Sunucu, web ve Android'de çalışan parçalar:
+>
+> - **Görev 1:** dış üretim, EKP 18,16 €.
+> - **Görev 2:** parçalama, kuruşu kuruşuna maliyet dağıtımı, Kotlin ile lot bazlı satış.
+> - **Görev 3:** ileri/geri izleme, geri çağırma, market listesi ve CSV, ikinci kademe dağıtım, iade, fire, yeniden işleme.
+> - **İki yapay zekâ modeli**, yedi rapor, derinlikli (3D) arayüz.
+>
+> Testler: 170 sunucu, 4 yapay zekâ, 16 web, 17 Android ve **23 kabul testi** (AT-01…AT-15). Kalan teslim adımları: video, GitHub'a yükleme, e-posta ([docs/submission_checklist.md](docs/submission_checklist.md)).
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
@@ -33,7 +40,8 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 | 14 | Görev 3 API ve web (T-16, T-17), iade, fire, ters kayıt, demo profili | Tamamlandı — ET-2026-001 → Market A 30 / B 25 / C 30 kurulumdan sonra hazır |
 | 15 | Yapay zekâ (T-18…T-21) ve değerlendirme raporu | Tamamlandı — iki model de referans yöntemden iyi |
 | 16 | Raporlar (T-22) ve derinlikli (3D) web/Android arayüzü | Tamamlandı |
-| 17 | Kabul testleri, temiz kurulum, video, teslim (T-23, T-26…T-28) | Sürüyor — [docs/is_bolumu.md](docs/is_bolumu.md) |
+| 17 | Kabul testleri (T-23), yeniden işleme, temiz kurulum provası | Tamamlandı — 23/23 kabul testi |
+| 18 | Video, GitHub, e-posta (T-27, T-28) | 31 Ekim – 1 Kasım |
 
 Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/development_plan.md).
 
@@ -130,7 +138,21 @@ Testler ayrı bir `avatar_test` veritabanında çalışır ve demo verisine doku
 docker compose run --rm --no-deps api sh -c "ruff check . && ruff format --check ."
 ```
 
-Son çalıştırma sonuçları: [reports/test_results.md](reports/test_results.md).
+Yapay zekâ paketinin testleri:
+
+```bash
+docker compose run --rm --no-deps api sh -c "cd /ml && pytest -q"
+```
+
+**Kabul testleri (AT-01…AT-15):** Betik sistemi ayrı bir kopyada sıfırdan kurar, şartname senaryolarını çalışan sisteme gerçek HTTP istekleriyle sınar ve kopyayı siler. Açık sisteme ve verisine dokunmaz.
+
+```bash
+sh scripts/kabul_testleri.sh
+```
+
+Son çalıştırma sonuçları:
+- [reports/test_results.md](reports/test_results.md)
+- [reports/kabul_testleri.md](reports/kabul_testleri.md): 23/23; ET-2026-001 izlemesi 0,043 sn.
 
 ### Web arayüzünü geliştirme modunda çalıştırma
 
@@ -152,7 +174,16 @@ Web birim testleri: `web/` klasöründe `npm test`.
 
 ### Android uygulaması
 
-Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), kullanıcı `satis1` / `satis123`.
+Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), kullanıcı `satis1` / `satis123`.
+
+### Bilinen sınırlamalar
+
+- **Yapay zekâ verisi sentetiktir.** Modellerin referansa göre başarısı, gerçek işletmede aynı başarının kanıtı değildir. Model B'de omuz payında model referanstan biraz kötüdür ([reports/ai_degerlendirme.md](reports/ai_degerlendirme.md) §7).
+- **Görev 2'nin "örnek görseli" şartname PDF'inde yoktur.** Tutarsızlıklar metindeki rakamlarla açıklandı ([reports/gorev2_tutarsizliklar.md](reports/gorev2_tutarsizliklar.md)).
+- **Web'den satış yoktur.** Satışlar Kotlin uygulamasından yapılır (şartname Görev 2). Web, satışları, iadeleri ve ikinci kademe teslimatları yönetir.
+- **İsteğe bağlı yapay zekâ özellikleri** (fatura okuma, anomali uyarıları) kapsam dışıdır. Geri çağırma ihlali uyarısı kural tabanlıdır.
+- **Tek ana depo** varsayılır. Dış üretici ve araç depoları ayrıca tanımlanır.
+- **Parolalar yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli ve HTTPS arkasında çalıştırılmalıdır.
 
 ### Sorun giderme
 

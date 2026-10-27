@@ -106,3 +106,8 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Belgeler: `docs/senkronizasyon.md`, `reports/gorev2_tutarsizliklar.md`, README'de beş dakikalık senaryo.
 - Testler: 166 sunucu, 4 yapay zekâ, 16 web, 17 Android — hepsi geçti (`reports/test_results.md`).
 
+### 27 Ekim 2026 (üçüncü tur) — yeniden işleme, kabul testleri, teslim hazırlığı
+- Yeniden işleme (FR-303): `POST/GET /reprocessing` ve web ekranı. Girdi lotları tüketilir, yeni lot girdilerine bağlanır, değer = girdiler + ek maliyet.
+- Kabul testleri AT-01…AT-15 çalışan sisteme karşı: `tests/`, `scripts/kabul_testleri.sh` (ayrı kopyada sıfırdan kurulum). Sonuç 23/23, izleme 0,043 sn (`reports/kabul_testleri.md`).
+- Paketten temiz kurulum provası: sunucu 170, yapay zekâ 4, kabul 23, web 16, Android 17 — hepsi geçti; APK üretildi.
+- README: test komutları, bilinen sınırlamalar, APK; `docs/data_model.md` v0.3; teslim kontrol listesi güncellendi.
