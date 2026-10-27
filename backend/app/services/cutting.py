@@ -46,6 +46,7 @@ from app.models.enums import (
     Species,
 )
 from app.models.types import utcnow
+from app.services import ai
 from app.services.ledger import create_lot, post_movement
 from app.services.lookups import get_or_404, main_warehouse
 from app.services.lot_graph import link_lots
@@ -210,6 +211,7 @@ def create_cutting(
         for line in recipe_lines(session, recipe.id)
     )
     session.flush()
+    ai.forecast_cutting(session, cutting)  # Model B: satırların beklenen kg'ı; hata iş akışını durdurmaz
     return cutting
 
 

@@ -740,6 +740,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Reports */
+        get: operations["list_reports_api_v1_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Report */
+        get: operations["get_report_api_v1_reports__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/production-forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Production Forecast
+         * @description Model A: kayıt açmadan beklenen paket sayısı ve EKP (emir formunda ön izleme).
+         */
+        post: operations["production_forecast_api_v1_ai_production_forecast_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/cutting-forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cutting Forecast
+         * @description Model B: kayıt açmadan parça bazında beklenen kg; referans (standart oran) ile yan yana.
+         */
+        post: operations["cutting_forecast_api_v1_ai_cutting_forecast_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/evaluation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Evaluation
+         * @description Model sürümleri, veri özeti, referans ve model hataları; sistemdeki gerçek kayıtlarla karşılaştırma.
+         */
+        get: operations["evaluation_api_v1_ai_evaluation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sync/pull": {
         parameters: {
             query?: never;
@@ -862,6 +956,19 @@ export interface components {
          * @enum {string}
          */
         BaseUnit: "KG" | "ADET";
+        /**
+         * ColumnKind
+         * @enum {string}
+         */
+        ColumnKind: "text" | "qty" | "money" | "unit_cost" | "percent" | "date" | "datetime" | "bool" | "status";
+        /** ColumnOut */
+        ColumnOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            kind: components["schemas"]["ColumnKind"];
+        };
         /** CompleteIn */
         CompleteIn: {
             /** Received Qty */
@@ -917,6 +1024,35 @@ export interface components {
             email: string | null;
             /** Address */
             address: string | null;
+        };
+        /** CuttingForecastIn */
+        CuttingForecastIn: {
+            /** Recipe Id */
+            recipe_id: number;
+            /** Input Lot No */
+            input_lot_no: string;
+            /** Input Qty */
+            input_qty: number | string;
+        };
+        /** CuttingForecastLineOut */
+        CuttingForecastLineOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Standard Kg */
+            standard_kg: string;
+            /** Predicted Kg */
+            predicted_kg: string;
+            /** Share Pct */
+            share_pct: string;
+        };
+        /** CuttingForecastOut */
+        CuttingForecastOut: {
+            /** Model Version */
+            model_version: string;
+            /** Lines */
+            lines: components["schemas"]["CuttingForecastLineOut"][];
         };
         /** CuttingIn */
         CuttingIn: {
@@ -1008,6 +1144,19 @@ export interface components {
          * @enum {string}
          */
         DocType: "ALIS" | "TRANSFER" | "URETIM" | "PARCALAMA" | "SATIS" | "IADE" | "DUZELTME";
+        /** EvaluationOut */
+        EvaluationOut: {
+            /** Available */
+            available: boolean;
+            /** Message */
+            message: string | null;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
+            /** Real */
+            real: components["schemas"]["RealComparisonOut"][];
+        };
         /** ExtraCostIn */
         ExtraCostIn: {
             kind: components["schemas"]["PurchaseCostKind"];
@@ -1023,6 +1172,35 @@ export interface components {
             amount: string;
             /** Note */
             note: string | null;
+        };
+        /**
+         * ForecastOut
+         * @description Model A: emir açılırken kaydedilen tahmin; kabulden sonra gerçekle sapma (FR-502).
+         */
+        ForecastOut: {
+            /** Model Version */
+            model_version: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Expected Qty */
+            expected_qty: string;
+            /** Yield Main Pct */
+            yield_main_pct: string;
+            /** Ekp */
+            ekp: string;
+            /** Baseline Qty */
+            baseline_qty: string;
+            /** Baseline Ekp */
+            baseline_ekp: string;
+            /** Qty Deviation */
+            qty_deviation: string | null;
+            /** Ekp Deviation */
+            ekp_deviation: string | null;
+            /** Baseline Qty Deviation */
+            baseline_qty_deviation: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1306,6 +1484,7 @@ export interface components {
             cost: components["schemas"]["CostOut"] | null;
             sales: components["schemas"]["SalesOut"] | null;
             yield: components["schemas"]["YieldOut"] | null;
+            forecast: components["schemas"]["ForecastOut"] | null;
         };
         /** PartnerIn */
         PartnerIn: {
@@ -1380,6 +1559,13 @@ export interface components {
             /** Qty */
             qty: number | string;
         };
+        /** PlannedLotIn */
+        PlannedLotIn: {
+            /** Lot No */
+            lot_no: string;
+            /** Qty */
+            qty: number | string;
+        };
         /** ProcessRefOut */
         ProcessRefOut: {
             process: components["schemas"]["LinkProcess"];
@@ -1419,6 +1605,40 @@ export interface components {
          * @enum {string}
          */
         ProductKind: "HAMMADDE" | "MAMUL" | "PARCA" | "YAN_URUN";
+        /** ProductionForecastIn */
+        ProductionForecastIn: {
+            /** Subcontractor Id */
+            subcontractor_id: number;
+            /** Output Product Id */
+            output_product_id: number;
+            /** Service Unit Price */
+            service_unit_price?: number | string | null;
+            /** Inputs */
+            inputs: components["schemas"]["PlannedLotIn"][];
+        };
+        /** ProductionForecastOut */
+        ProductionForecastOut: {
+            /** Model Version */
+            model_version: string;
+            /** Expected Qty */
+            expected_qty: string;
+            /** Expected Output Kg */
+            expected_output_kg: string;
+            /** Yield Main Pct */
+            yield_main_pct: string;
+            /** Raw Material Cost */
+            raw_material_cost: string;
+            /** Service Amount */
+            service_amount: string;
+            /** Ekp */
+            ekp: string;
+            /** Baseline Qty */
+            baseline_qty: string;
+            /** Baseline Yield Pct */
+            baseline_yield_pct: string;
+            /** Baseline Ekp */
+            baseline_ekp: string;
+        };
         /**
          * ProductionStatus
          * @enum {string}
@@ -1594,6 +1814,23 @@ export interface components {
          * @enum {string}
          */
         PushStatus: "ACCEPTED" | "ACCEPTED_WITH_WARNING" | "DUPLICATE" | "REJECTED";
+        /** RealComparisonOut */
+        RealComparisonOut: {
+            /** Model */
+            model: string;
+            /** Document No */
+            document_no: string;
+            /** Item */
+            item: string;
+            /** Predicted */
+            predicted: string;
+            /** Actual */
+            actual: string;
+            /** Deviation */
+            deviation: string;
+            /** Unit */
+            unit: string;
+        };
         /** RecallCloseIn */
         RecallCloseIn: {
             resolution: components["schemas"]["RecallResolution"];
@@ -1792,6 +2029,43 @@ export interface components {
             onward_unknown_qty: string;
             /** Recall Violation */
             recall_violation: boolean;
+        };
+        /**
+         * ReportCode
+         * @enum {string}
+         */
+        ReportCode: "purchases" | "production" | "cuttings" | "lot-movements" | "sales" | "recalls" | "integrity";
+        /** ReportInfoOut */
+        ReportInfoOut: {
+            code: components["schemas"]["ReportCode"];
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Filters */
+            filters: string[];
+        };
+        /** ReportOut */
+        ReportOut: {
+            code: components["schemas"]["ReportCode"];
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Filters */
+            filters: string[];
+            /** Columns */
+            columns: components["schemas"]["ColumnOut"][];
+            /** Rows */
+            rows: {
+                [key: string]: string | number | boolean | null;
+            }[];
+            /** Totals */
+            totals: {
+                [key: string]: string | number | boolean | null;
+            };
+            /** Notes */
+            notes: string[];
         };
         /** ReturnIn */
         ReturnIn: {
@@ -3836,6 +4110,150 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reports_api_v1_reports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportInfoOut"][];
+                };
+            };
+        };
+    };
+    get_report_api_v1_reports__code__get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                product_id?: number | null;
+                lot_no?: string | null;
+                format?: "json" | "csv";
+            };
+            header?: never;
+            path: {
+                code: components["schemas"]["ReportCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    production_forecast_api_v1_ai_production_forecast_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionForecastIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionForecastOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cutting_forecast_api_v1_ai_cutting_forecast_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CuttingForecastIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingForecastOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluation_api_v1_ai_evaluation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationOut"];
                 };
             };
         };

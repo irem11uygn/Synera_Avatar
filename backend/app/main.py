@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from app import __version__
 from app.api import (
     adjustments,
+    ai,
     auth,
     cutting,
     health,
@@ -15,6 +16,7 @@ from app.api import (
     production,
     purchases,
     recalls,
+    reports,
     returns,
     sales,
     stock,
@@ -55,6 +57,8 @@ def create_app() -> FastAPI:
         trace.router,
         recalls.router,
         recalls.alerts_router,
+        reports.router,
+        ai.router,
         sync.router,
     )
     for router in routers:

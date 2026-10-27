@@ -31,6 +31,7 @@ from app.models.enums import (
     WarehouseKind,
 )
 from app.models.types import utcnow
+from app.services import ai
 from app.services.ledger import create_lot, post_movement
 from app.services.lookups import get_or_404, main_warehouse
 from app.services.lot_graph import link_lots
@@ -102,6 +103,7 @@ def create_order(
     session.flush()
     session.add_all(ProductionInput(order_id=order.id, lot_id=i.lot_id, planned_qty=i.qty) for i in inputs)
     session.flush()
+    ai.forecast_production(session, order)  # Model A tahmini kaydedilir; hata iş akışını durdurmaz
     return order
 
 

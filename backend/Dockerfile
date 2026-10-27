@@ -1,4 +1,4 @@
-# Derleme bağlamı depo köküdür (docker-compose.yml): ileride ml/ ve data/ da kopyalanacak.
+# Derleme bağlamı depo köküdür (docker-compose.yml): backend/, ml/ ve data/seed kopyalanır.
 FROM python:3.12-slim
 
 # Kod dizini çalışma kullanıcısı için salt okunur kalır; araç önbellekleri /tmp'ye yazılır.
@@ -18,6 +18,9 @@ RUN pip install -r requirements-dev.txt
 COPY backend/ ./
 COPY data/seed /data/seed
 ENV SEED_DIR=/data/seed
+# Yapay zekâ paketi ve eğitilmiş modeller (ml/models); sunucu 'avatar_ml' olarak içe aktarır.
+COPY ml/ /ml/
+ENV PYTHONPATH=/ml
 
 RUN useradd --create-home --uid 10001 appuser
 USER appuser

@@ -2424,6 +2424,284 @@
         }
       }
     },
+    "/api/v1/reports": {
+      "get": {
+        "tags": [
+          "raporlar"
+        ],
+        "summary": "List Reports",
+        "operationId": "list_reports_api_v1_reports_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReportInfoOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Reports Api V1 Reports Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reports/{code}": {
+      "get": {
+        "tags": [
+          "raporlar"
+        ],
+        "summary": "Get Report",
+        "operationId": "get_report_api_v1_reports__code__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReportCode"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "lot_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lot No"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "json",
+                "csv"
+              ],
+              "type": "string",
+              "default": "json",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportOut"
+                }
+              },
+              "text/csv": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/production-forecast": {
+      "post": {
+        "tags": [
+          "yapay zekâ"
+        ],
+        "summary": "Production Forecast",
+        "description": "Model A: kayıt açmadan beklenen paket sayısı ve EKP (emir formunda ön izleme).",
+        "operationId": "production_forecast_api_v1_ai_production_forecast_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionForecastIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionForecastOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/ai/cutting-forecast": {
+      "post": {
+        "tags": [
+          "yapay zekâ"
+        ],
+        "summary": "Cutting Forecast",
+        "description": "Model B: kayıt açmadan parça bazında beklenen kg; referans (standart oran) ile yan yana.",
+        "operationId": "cutting_forecast_api_v1_ai_cutting_forecast_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CuttingForecastIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingForecastOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/ai/evaluation": {
+      "get": {
+        "tags": [
+          "yapay zekâ"
+        ],
+        "summary": "Evaluation",
+        "description": "Model sürümleri, veri özeti, referans ve model hataları; sistemdeki gerçek kayıtlarla karşılaştırma.",
+        "operationId": "evaluation_api_v1_ai_evaluation_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/sync/pull": {
       "get": {
         "tags": [
@@ -2734,6 +3012,43 @@
         ],
         "title": "BaseUnit"
       },
+      "ColumnKind": {
+        "type": "string",
+        "enum": [
+          "text",
+          "qty",
+          "money",
+          "unit_cost",
+          "percent",
+          "date",
+          "datetime",
+          "bool",
+          "status"
+        ],
+        "title": "ColumnKind"
+      },
+      "ColumnOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ColumnKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "kind"
+        ],
+        "title": "ColumnOut"
+      },
       "CompleteIn": {
         "properties": {
           "received_qty": {
@@ -2974,6 +3289,91 @@
           "address"
         ],
         "title": "CustomerOut"
+      },
+      "CuttingForecastIn": {
+        "properties": {
+          "recipe_id": {
+            "type": "integer",
+            "title": "Recipe Id"
+          },
+          "input_lot_no": {
+            "type": "string",
+            "title": "Input Lot No"
+          },
+          "input_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Input Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipe_id",
+          "input_lot_no",
+          "input_qty"
+        ],
+        "title": "CuttingForecastIn"
+      },
+      "CuttingForecastLineOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "standard_kg": {
+            "type": "string",
+            "title": "Standard Kg"
+          },
+          "predicted_kg": {
+            "type": "string",
+            "title": "Predicted Kg"
+          },
+          "share_pct": {
+            "type": "string",
+            "title": "Share Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "standard_kg",
+          "predicted_kg",
+          "share_pct"
+        ],
+        "title": "CuttingForecastLineOut"
+      },
+      "CuttingForecastOut": {
+        "properties": {
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CuttingForecastLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_version",
+          "lines"
+        ],
+        "title": "CuttingForecastOut"
       },
       "CuttingIn": {
         "properties": {
@@ -3316,6 +3716,52 @@
         ],
         "title": "DocType"
       },
+      "EvaluationOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "real": {
+            "items": {
+              "$ref": "#/components/schemas/RealComparisonOut"
+            },
+            "type": "array",
+            "title": "Real"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "message",
+          "metadata",
+          "real"
+        ],
+        "title": "EvaluationOut"
+      },
       "ExtraCostIn": {
         "properties": {
           "kind": {
@@ -3381,6 +3827,87 @@
           "note"
         ],
         "title": "ExtraCostOut"
+      },
+      "ForecastOut": {
+        "properties": {
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expected_qty": {
+            "type": "string",
+            "title": "Expected Qty"
+          },
+          "yield_main_pct": {
+            "type": "string",
+            "title": "Yield Main Pct"
+          },
+          "ekp": {
+            "type": "string",
+            "title": "Ekp"
+          },
+          "baseline_qty": {
+            "type": "string",
+            "title": "Baseline Qty"
+          },
+          "baseline_ekp": {
+            "type": "string",
+            "title": "Baseline Ekp"
+          },
+          "qty_deviation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty Deviation"
+          },
+          "ekp_deviation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ekp Deviation"
+          },
+          "baseline_qty_deviation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Qty Deviation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_version",
+          "created_at",
+          "expected_qty",
+          "yield_main_pct",
+          "ekp",
+          "baseline_qty",
+          "baseline_ekp",
+          "qty_deviation",
+          "ekp_deviation",
+          "baseline_qty_deviation"
+        ],
+        "title": "ForecastOut",
+        "description": "Model A: emir açılırken kaydedilen tahmin; kabulden sonra gerçekle sapma (FR-502)."
       },
       "HTTPValidationError": {
         "properties": {
@@ -4304,6 +4831,16 @@
                 "type": "null"
               }
             ]
+          },
+          "forecast": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ForecastOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -4330,7 +4867,8 @@
           "inputs",
           "cost",
           "sales",
-          "yield"
+          "yield",
+          "forecast"
         ],
         "title": "OrderOut"
       },
@@ -4557,6 +5095,32 @@
         ],
         "title": "PlannedInputIn"
       },
+      "PlannedLotIn": {
+        "properties": {
+          "lot_no": {
+            "type": "string",
+            "title": "Lot No"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lot_no",
+          "qty"
+        ],
+        "title": "PlannedLotIn"
+      },
       "ProcessRefOut": {
         "properties": {
           "process": {
@@ -4710,6 +5274,106 @@
           "YAN_URUN"
         ],
         "title": "ProductKind"
+      },
+      "ProductionForecastIn": {
+        "properties": {
+          "subcontractor_id": {
+            "type": "integer",
+            "title": "Subcontractor Id"
+          },
+          "output_product_id": {
+            "type": "integer",
+            "title": "Output Product Id"
+          },
+          "service_unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Unit Price"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedLotIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Inputs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subcontractor_id",
+          "output_product_id",
+          "inputs"
+        ],
+        "title": "ProductionForecastIn"
+      },
+      "ProductionForecastOut": {
+        "properties": {
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "expected_qty": {
+            "type": "string",
+            "title": "Expected Qty"
+          },
+          "expected_output_kg": {
+            "type": "string",
+            "title": "Expected Output Kg"
+          },
+          "yield_main_pct": {
+            "type": "string",
+            "title": "Yield Main Pct"
+          },
+          "raw_material_cost": {
+            "type": "string",
+            "title": "Raw Material Cost"
+          },
+          "service_amount": {
+            "type": "string",
+            "title": "Service Amount"
+          },
+          "ekp": {
+            "type": "string",
+            "title": "Ekp"
+          },
+          "baseline_qty": {
+            "type": "string",
+            "title": "Baseline Qty"
+          },
+          "baseline_yield_pct": {
+            "type": "string",
+            "title": "Baseline Yield Pct"
+          },
+          "baseline_ekp": {
+            "type": "string",
+            "title": "Baseline Ekp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_version",
+          "expected_qty",
+          "expected_output_kg",
+          "yield_main_pct",
+          "raw_material_cost",
+          "service_amount",
+          "ekp",
+          "baseline_qty",
+          "baseline_yield_pct",
+          "baseline_ekp"
+        ],
+        "title": "ProductionForecastOut"
       },
       "ProductionStatus": {
         "type": "string",
@@ -5273,6 +5937,49 @@
           "REJECTED"
         ],
         "title": "PushStatus"
+      },
+      "RealComparisonOut": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "document_no": {
+            "type": "string",
+            "title": "Document No"
+          },
+          "item": {
+            "type": "string",
+            "title": "Item"
+          },
+          "predicted": {
+            "type": "string",
+            "title": "Predicted"
+          },
+          "actual": {
+            "type": "string",
+            "title": "Actual"
+          },
+          "deviation": {
+            "type": "string",
+            "title": "Deviation"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "document_no",
+          "item",
+          "predicted",
+          "actual",
+          "deviation",
+          "unit"
+        ],
+        "title": "RealComparisonOut"
       },
       "RecallCloseIn": {
         "properties": {
@@ -5915,6 +6622,140 @@
           "recall_violation"
         ],
         "title": "RecipientOut"
+      },
+      "ReportCode": {
+        "type": "string",
+        "enum": [
+          "purchases",
+          "production",
+          "cuttings",
+          "lot-movements",
+          "sales",
+          "recalls",
+          "integrity"
+        ],
+        "title": "ReportCode"
+      },
+      "ReportInfoOut": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ReportCode"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "filters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Filters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "description",
+          "filters"
+        ],
+        "title": "ReportInfoOut"
+      },
+      "ReportOut": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ReportCode"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "filters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Filters"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ColumnOut"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "totals": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Totals"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "description",
+          "filters",
+          "columns",
+          "rows",
+          "totals",
+          "notes"
+        ],
+        "title": "ReportOut"
       },
       "ReturnIn": {
         "properties": {

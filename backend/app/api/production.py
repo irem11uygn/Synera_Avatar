@@ -9,9 +9,11 @@ from sqlalchemy import select
 
 from app.api.deps import AdminUser, Db
 from app.api.fields import UtcDateTime
+from app.domain.money import round_money
 from app.models import ProductionOrder
-from app.models.enums import BaseUnit, ProductionStatus
+from app.models.enums import BaseUnit, ForecastTarget, ProductionStatus
 from app.services import production
+from app.services.ai import first_forecast
 from app.services.lookups import get_or_404, lot_by_no
 
 router = APIRouter(prefix="/production-orders", tags=["dış üretim"])
@@ -81,6 +83,21 @@ class YieldOut(BaseModel):
     yield_main_pct: Decimal
 
 
+class ForecastOut(BaseModel):
+    """Model A: emir açılırken kaydedilen tahmin; kabulden sonra gerçekle sapma (FR-502)."""
+
+    model_version: str
+    created_at: UtcDateTime
+    expected_qty: Decimal
+    yield_main_pct: Decimal
+    ekp: Decimal
+    baseline_qty: Decimal
+    baseline_ekp: Decimal
+    qty_deviation: Decimal | None  # gerçek − tahmin
+    ekp_deviation: Decimal | None  # gerçek EKP − tahmini EKP
+    baseline_qty_deviation: Decimal | None
+
+
 class OrderOut(BaseModel):
     id: int
     order_no: str
@@ -105,6 +122,27 @@ class OrderOut(BaseModel):
     cost: CostOut | None
     sales: SalesOut | None
     yield_: YieldOut | None = Field(serialization_alias="yield")
+    forecast: ForecastOut | None
+
+
+def _forecast_out(db: Db, order: ProductionOrder, actual_ekp: Decimal | None) -> ForecastOut | None:
+    record = first_forecast(db, ForecastTarget.URETIM_EMRI, order.id)
+    if record is None:
+        return None
+    p = {key: Decimal(value) for key, value in record.prediction.items()}
+    received = order.received_qty
+    return ForecastOut(
+        model_version=record.model_version,
+        created_at=record.created_at,
+        expected_qty=p["expected_qty"],
+        yield_main_pct=p["yield_main_pct"],
+        ekp=round_money(p["ekp"]),
+        baseline_qty=p["baseline_qty"],
+        baseline_ekp=round_money(p["baseline_ekp"]),
+        qty_deviation=received - p["expected_qty"] if received is not None else None,
+        ekp_deviation=round_money(actual_ekp - p["ekp"]) if actual_ekp is not None else None,
+        baseline_qty_deviation=received - p["baseline_qty"] if received is not None else None,
+    )
 
 
 def _order_out(db: Db, order: ProductionOrder) -> OrderOut:
@@ -137,6 +175,7 @@ def _order_out(db: Db, order: ProductionOrder) -> OrderOut:
         if s.sales and s.product.sale_price
         else None,
         yield_=YieldOut(**vars(s.yield_)) if s.yield_ else None,
+        forecast=_forecast_out(db, order, s.cost.ekp if s.cost else None),
     )
 
 

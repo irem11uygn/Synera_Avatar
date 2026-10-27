@@ -1,0 +1,357 @@
+{
+  "trained_at": "2026-10-27T11:10:48Z",
+  "seed": 2026,
+  "data": {
+    "production_rows": 240,
+    "cutting_rows": 300,
+    "period": "2024-11-02 – 2026-10-15",
+    "source": "data/synthetic/ (avatar_ml.data_gen, sabit tohum)"
+  },
+  "split": "Kronolojik: ilk %80 eğitim, son %20 test; model seçimi eğitim kısmında 5 katlı zaman sıralı çapraz doğrulama. Sunulan model aynı yöntemle bütün veride yeniden eğitildi.",
+  "model_a": {
+    "version": "A-1.0.0",
+    "target": "Et bazlı verim (mamul kg / et kg); paket sayısı ve EKP bundan hesaplanır",
+    "algorithm": "HistGradientBoosting",
+    "cv_mae": {
+      "Ridge": 0.011397,
+      "HistGradientBoosting": 0.009964
+    },
+    "features": [
+      "meat_kg",
+      "inv_meat_kg",
+      "spice_ratio",
+      "casing_ratio",
+      "meat_age_days",
+      "month_sin",
+      "month_cos",
+      "subcontractor=FSN-01",
+      "subcontractor=FSN-02",
+      "subcontractor=FSN-03",
+      "meat_supplier=TED-ET",
+      "meat_supplier=TED-ET-2",
+      "meat_supplier=TED-ET-3"
+    ],
+    "rows": {
+      "train": 192,
+      "test": 48
+    },
+    "baseline": "Eğitim verisindeki ortalama et bazlı verim (%83.07)",
+    "test": {
+      "baseline": {
+        "yield_mae_pp": 1.327,
+        "packages_mae": 1.812,
+        "packages_mape_pct": 1.558,
+        "ekp_mae_eur": 0.2027,
+        "ekp_mape_pct": 1.087
+      },
+      "model": {
+        "yield_mae_pp": 1.01,
+        "packages_mae": 1.229,
+        "packages_mape_pct": 0.98,
+        "ekp_mae_eur": 0.1267,
+        "ekp_mape_pct": 0.686
+      },
+      "improvement_pct": {
+        "yield_mae_pp": 23.9,
+        "packages_mae": 32.2,
+        "packages_mape_pct": 37.1,
+        "ekp_mae_eur": 37.5,
+        "ekp_mape_pct": 36.9
+      }
+    },
+    "samples": [
+      {
+        "order_no": "SYN-URT-0233",
+        "order_date": "2026-09-23",
+        "subcontractor": "FSN-02",
+        "meat_supplier": "TED-ET",
+        "meat_kg": 80.0,
+        "actual_packages": 64,
+        "baseline_packages": 66,
+        "model_packages": 63,
+        "actual_ekp": 19.3,
+        "model_ekp": 19.52
+      },
+      {
+        "order_no": "SYN-URT-0234",
+        "order_date": "2026-09-26",
+        "subcontractor": "FSN-02",
+        "meat_supplier": "TED-ET",
+        "meat_kg": 185.0,
+        "actual_packages": 152,
+        "baseline_packages": 153,
+        "model_packages": 153,
+        "actual_ekp": 18.48,
+        "model_ekp": 18.4
+      },
+      {
+        "order_no": "SYN-URT-0235",
+        "order_date": "2026-09-28",
+        "subcontractor": "FSN-01",
+        "meat_supplier": "TED-ET-2",
+        "meat_kg": 215.0,
+        "actual_packages": 179,
+        "baseline_packages": 178,
+        "model_packages": 180,
+        "actual_ekp": 17.73,
+        "model_ekp": 17.66
+      },
+      {
+        "order_no": "SYN-URT-0236",
+        "order_date": "2026-10-02",
+        "subcontractor": "FSN-02",
+        "meat_supplier": "TED-ET",
+        "meat_kg": 155.0,
+        "actual_packages": 126,
+        "baseline_packages": 128,
+        "model_packages": 126,
+        "actual_ekp": 18.7,
+        "model_ekp": 18.7
+      },
+      {
+        "order_no": "SYN-URT-0237",
+        "order_date": "2026-10-07",
+        "subcontractor": "FSN-02",
+        "meat_supplier": "TED-ET-3",
+        "meat_kg": 90.0,
+        "actual_packages": 74,
+        "baseline_packages": 74,
+        "model_packages": 74,
+        "actual_ekp": 18.09,
+        "model_ekp": 18.09
+      },
+      {
+        "order_no": "SYN-URT-0238",
+        "order_date": "2026-10-14",
+        "subcontractor": "FSN-03",
+        "meat_supplier": "TED-ET-2",
+        "meat_kg": 75.0,
+        "actual_packages": 62,
+        "baseline_packages": 62,
+        "model_packages": 62,
+        "actual_ekp": 18.43,
+        "model_ekp": 18.43
+      },
+      {
+        "order_no": "SYN-URT-0239",
+        "order_date": "2026-10-14",
+        "subcontractor": "FSN-01",
+        "meat_supplier": "TED-ET-2",
+        "meat_kg": 110.0,
+        "actual_packages": 89,
+        "baseline_packages": 91,
+        "model_packages": 89,
+        "actual_ekp": 19.23,
+        "model_ekp": 19.23
+      },
+      {
+        "order_no": "SYN-URT-0240",
+        "order_date": "2026-10-15",
+        "subcontractor": "FSN-01",
+        "meat_supplier": "TED-ET",
+        "meat_kg": 135.0,
+        "actual_packages": 115,
+        "baseline_packages": 112,
+        "model_packages": 114,
+        "actual_ekp": 17.93,
+        "model_ekp": 18.04
+      }
+    ]
+  },
+  "model_b": {
+    "version": "B-1.0.0",
+    "target": "Parça payları (but, sırt, omuz, kaburga, kıyma, fire); toplamı 1'e ölçeklenir, × giriş kg",
+    "algorithm": "HistGradientBoosting",
+    "cv_mae": {
+      "Ridge": 0.005899,
+      "HistGradientBoosting": 0.005846
+    },
+    "features": [
+      "input_kg",
+      "month_sin",
+      "month_cos",
+      "spring",
+      "species=KECI",
+      "species=KOYUN",
+      "species=KUZU",
+      "supplier=TED-KUZU",
+      "supplier=TED-KUZU-2"
+    ],
+    "rows": {
+      "train": 240,
+      "test": 60
+    },
+    "baseline": "Reçetedeki standart oran × giriş ağırlığı (KUZU-STD)",
+    "test": {
+      "baseline": {
+        "mae_kg": 0.2124,
+        "mape_pct": 5.191,
+        "mae_kg_by_part": {
+          "KUZU-BUT": 0.2918,
+          "KUZU-SIRT": 0.2204,
+          "KUZU-OMUZ": 0.1503,
+          "KUZU-KABURGA": 0.1339,
+          "KUZU-KIYMA": 0.2178,
+          "FIRE": 0.2599
+        }
+      },
+      "model": {
+        "mae_kg": 0.1353,
+        "mape_pct": 3.356,
+        "mae_kg_by_part": {
+          "KUZU-BUT": 0.1875,
+          "KUZU-SIRT": 0.1316,
+          "KUZU-OMUZ": 0.158,
+          "KUZU-KABURGA": 0.1171,
+          "KUZU-KIYMA": 0.1098,
+          "FIRE": 0.1082
+        }
+      },
+      "improvement_pct": {
+        "mae_kg": 36.3,
+        "mape_pct": 35.3
+      }
+    },
+    "samples": [
+      {
+        "cutting_no": "SYN-PRC-0298",
+        "species": "KUZU",
+        "supplier": "TED-KUZU",
+        "input_kg": 22.14,
+        "parts": [
+          {
+            "part": "KUZU-BUT",
+            "actual_kg": 6.07,
+            "baseline_kg": 5.98,
+            "model_kg": 5.99
+          },
+          {
+            "part": "KUZU-SIRT",
+            "actual_kg": 3.63,
+            "baseline_kg": 3.76,
+            "model_kg": 3.72
+          },
+          {
+            "part": "KUZU-OMUZ",
+            "actual_kg": 4.46,
+            "baseline_kg": 4.43,
+            "model_kg": 4.54
+          },
+          {
+            "part": "KUZU-KABURGA",
+            "actual_kg": 2.49,
+            "baseline_kg": 2.66,
+            "model_kg": 2.65
+          },
+          {
+            "part": "KUZU-KIYMA",
+            "actual_kg": 2.82,
+            "baseline_kg": 2.66,
+            "model_kg": 2.66
+          },
+          {
+            "part": "FIRE",
+            "actual_kg": 2.67,
+            "baseline_kg": 2.66,
+            "model_kg": 2.59
+          }
+        ]
+      },
+      {
+        "cutting_no": "SYN-PRC-0299",
+        "species": "KUZU",
+        "supplier": "TED-KUZU",
+        "input_kg": 27.58,
+        "parts": [
+          {
+            "part": "KUZU-BUT",
+            "actual_kg": 7.19,
+            "baseline_kg": 7.45,
+            "model_kg": 7.61
+          },
+          {
+            "part": "KUZU-SIRT",
+            "actual_kg": 4.59,
+            "baseline_kg": 4.69,
+            "model_kg": 4.55
+          },
+          {
+            "part": "KUZU-OMUZ",
+            "actual_kg": 5.59,
+            "baseline_kg": 5.52,
+            "model_kg": 5.6
+          },
+          {
+            "part": "KUZU-KABURGA",
+            "actual_kg": 3.46,
+            "baseline_kg": 3.31,
+            "model_kg": 3.22
+          },
+          {
+            "part": "KUZU-KIYMA",
+            "actual_kg": 3.37,
+            "baseline_kg": 3.31,
+            "model_kg": 3.31
+          },
+          {
+            "part": "FIRE",
+            "actual_kg": 3.38,
+            "baseline_kg": 3.31,
+            "model_kg": 3.28
+          }
+        ]
+      },
+      {
+        "cutting_no": "SYN-PRC-0300",
+        "species": "KUZU",
+        "supplier": "TED-KUZU",
+        "input_kg": 30.33,
+        "parts": [
+          {
+            "part": "KUZU-BUT",
+            "actual_kg": 8.09,
+            "baseline_kg": 8.19,
+            "model_kg": 8.05
+          },
+          {
+            "part": "KUZU-SIRT",
+            "actual_kg": 4.83,
+            "baseline_kg": 5.16,
+            "model_kg": 4.95
+          },
+          {
+            "part": "KUZU-OMUZ",
+            "actual_kg": 6.09,
+            "baseline_kg": 6.07,
+            "model_kg": 6.22
+          },
+          {
+            "part": "KUZU-KABURGA",
+            "actual_kg": 3.68,
+            "baseline_kg": 3.64,
+            "model_kg": 3.67
+          },
+          {
+            "part": "KUZU-KIYMA",
+            "actual_kg": 3.8,
+            "baseline_kg": 3.64,
+            "model_kg": 3.69
+          },
+          {
+            "part": "FIRE",
+            "actual_kg": 3.84,
+            "baseline_kg": 3.64,
+            "model_kg": 3.76
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Veri sentetiktir: etkiler data_gen.py'de bizim yazdığımız varsayımlardır. Ölçülen başarı, gerçek işletmede aynı başarının kanıtı değildir; model, varsayılan etkileri ne kadar geri bulabildiğini gösterir.",
+    "Eğitim verisi küçüktür (240 üretim, 300 parçalama); yeni bir dış üretici ya da tedarikçi eğitimde görülmemişse model onu ortalama gibi değerlendirir.",
+    "Gözlenmeyen etkenler (etin yağ oranı, makine ayarı, işçilik) gürültü olarak kalır; bu yüzden hata sıfıra inmez.",
+    "Tahmin yalnız planlama ve sapma takibi içindir. İzleme ve geri çağırma hiçbir yerde tahmin kullanmaz; yalnız kayıtlara dayanır (CON-003).",
+    "Gerçek emirler biriktikçe aynı kodla yeniden eğitilmeli ve referans yöntemle tekrar karşılaştırılmalıdır."
+  ]
+}
