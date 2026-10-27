@@ -4,14 +4,15 @@ Kotlin Android satış/operasyon uygulaması: lot seçerek satış, yerel SQLite
 
 **Teknoloji:** Kotlin 2.4.21, Android Gradle Plugin 9.4.1 (Kotlin'i kendisi derler — built-in Kotlin), Gradle 9.8.2, Jetpack Compose (BOM 2026.09.00), Room 2.8.5 + KSP, Retrofit 3 + kotlinx.serialization (`docs/decisions/ADR-003`). compileSdk / targetSdk 37, minSdk 26.
 
-**Durum (T-13, iskelet):** Giriş ekranı, ana ekran (eşitleme durumu, ürün/müşteri sayısı, araç deposu stoku, bloke lot işareti), sunucudan değişiklikleri çekme (`/api/v1/sync/pull`), yerel Room/SQLite tabloları. Satış ekranı ve satışların sunucuya gönderilmesi T-14 ve T-15'te.
+**Durum (T-13…T-15):** Giriş; ana ekran (eşitleme durumu, araç deposu stoku, bloke lot işareti, gönderilmeyi bekleyen satışlar, son satışlar); satış ekranı (müşteri, ilk biten önerili lot listesi, miktar ve fiyat, bloke lot engeli). Satış önce telefona (Room/SQLite, sürüm 3) kaydedilir; eşitleme önce gönderir (`/api/v1/sync/push`), sonra çeker (`/api/v1/sync/pull`). Bağlantı yoksa WorkManager bağlantı gelince gönderir.
 
 | Klasör | Amaç |
 |---|---|
 | `app/src/main/java/.../data/local` | Room tabloları ve DAO (para: kuruş, miktar: binde bir birim — ADR-006) |
 | `.../data/remote` | Retrofit arayüzü, API veri sınıfları, Türkçe hata mesajı çevirisi |
 | `.../data/repo` | Oturum saklama, sunucu yanıtının yerel tablolara çevrilmesi, depo (repository) |
-| `.../ui` | Compose ekranları ve ViewModel'ler |
+| `.../ui` | Compose ekranları ve ViewModel'ler (giriş, ana ekran, satış) |
+| `.../sync` | Arka planda gönderim işi (WorkManager) |
 | `.../util` | Para/miktar dönüşümleri, yerel ağ izni kararı |
 | `app/src/test` | JVM birim testleri |
 

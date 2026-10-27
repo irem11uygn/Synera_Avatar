@@ -2,7 +2,7 @@
 
 Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok hareketlerini, gerçek maliyeti ve lot izlenebilirliğini yöneten sistem: merkezi sunucu ve MySQL, web yönetim/raporlama arayüzü, Kotlin Android satış uygulaması (yerelde SQLite) ve iki yapay zekâ modeli (üretim verimi/EKP tahmini, parçalama verimi tahmini).
 
-> **Durum (24 Ekim 2026):** Çekirdek hazır: veritabanı, stok defteri, lot ağı, maliyet motoru; giriş ve Android'e veri çekme uçları. Android uygulamasının iskeleti emülatörde çalışıyor (giriş, eşitleme, araç stoku). İş ekranları (dış üretim, parçalama, satış, geri çağırma) henüz yok.
+> **Durum (27 Ekim 2026):** Görev 1 (dış üretim, EKP) ve Görev 2 (parçalama, maliyet dağıtımı) sunucuda ve web'de uçtan uca çalışıyor; Kotlin uygulamasıyla lot bazlı satış çevrimdışı da yapılabiliyor ve bağlantı gelince sunucuya gönderiliyor. Görev 3 (izleme, geri çağırma), iki YZ modeli ve raporlar yapım aşamasında. İki kişilik iş bölümü: [docs/is_bolumu.md](docs/is_bolumu.md).
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
@@ -27,7 +27,10 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 | 8 | Veritabanı şeması (T-06) | Tamamlandı — 31 tablo, defter tetikleyicileri, örnek ana veriler |
 | 9 | Stok defteri, lot ağı, maliyet motoru (T-07, T-08) | Tamamlandı — şartname rakamları testlerle doğrulandı |
 | 10 | Android iskeleti (T-13) | Tamamlandı — giriş, eşitleme, araç stoku; emülatörde uçtan uca denendi |
-| 11+ | Görev ekranları ve API'leri, Android satış, YZ, raporlar, teslim | Başlanmadı |
+| 11 | Görev 1 API ve web (T-09, T-10) | Tamamlandı — URT-2026-045 senaryosu arayüzden yürüyor |
+| 12 | Görev 2 API ve web (T-11, T-12) | Tamamlandı — şartname dağıtım rakamları birebir |
+| 13 | Android satış ve gönderim (T-14, T-15) | Tamamlandı — çevrimdışı satış, tekrar güvenli gönderim |
+| 14 | Görev 3, YZ modelleri, raporlar, kabul testleri, teslim | Sürüyor — [docs/is_bolumu.md](docs/is_bolumu.md) |
 
 Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/development_plan.md).
 
@@ -42,6 +45,7 @@ Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/deve
 | `docs/data_model.md` | Veri modeli: ER diyagramı, tablolar, hareket türleri, değişmezler, Android yerel tabloları |
 | `docs/api.md` | API sözleşmesi: uç noktalar, hata kodları, örnek istek/yanıtlar |
 | `docs/development_plan.md` | İş listesi, takvim, durum günlüğü |
+| `docs/is_bolumu.md` | İki kişilik iş bölümü: gereksinim kapsamı, kim neyin sahibi, takvim, birlikte çalışma |
 | `docs/testing_strategy.md` | Test seviyeleri, şartname kabul testleri, gereksinim–test eşlemesi |
 | `docs/submission_checklist.md` | Teslim kontrol listesi |
 | `docs/decisions/` | Karar kayıtları (ADR) |
@@ -77,6 +81,8 @@ docker compose up --build -d
 | http://localhost:8000/api/v1/health | Servis ve veritabanı durumu |
 
 Parolaların varsayılan değerleri yalnız yerel kullanım içindir. Değiştirmek için `.env.example` dosyasını `.env` adıyla kopyalayıp düzenleyin.
+
+**8000 ya da 8080 portu başka bir uygulamada kullanılıyorsa** `.env` içinde `API_PORT` ve `WEB_PORT` değiştirilir (ör. 18000 ve 18080); adresler de buna göre değişir.
 
 İlk açılışta veritabanı şeması kurulur ve boş veritabanına örnek kayıtlar (`data/seed/base.json`) yüklenir: ana veriler ve şartname senaryosunun hammadde lotları (ET-2026-001 vb.). Bütün firma ve kişi adları uydurmadır.
 
@@ -115,11 +121,15 @@ npm install
 npm run dev
 ```
 
-Arayüz http://localhost:5173 adresinde açılır; `/api` istekleri yerel API'ye (8000) yönlendirilir.
+Arayüz http://localhost:5173 adresinde açılır; `/api` istekleri yerel API'ye yönlendirilir (port `API_PORT` ortam değişkeninden, yoksa 8000).
+
+API değişince web tiplerini yenilemek için (API çalışırken, depo kökünden): `sh scripts/api_tipleri_yenile.sh`.
+
+Web birim testleri: `web/` klasöründe `npm test`.
 
 ### Android uygulaması
 
-Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000`, kullanıcı `satis1` / `satis123`.
+Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), kullanıcı `satis1` / `satis123`.
 
 ### Sorun giderme
 

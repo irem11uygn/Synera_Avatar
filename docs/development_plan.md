@@ -115,14 +115,17 @@ Kulvarlar: **B** Backend · **W** Web · **A** Android · **Y** Yapay zekâ · *
 - **Ekip 2 kişi (24 Ekim).** 8 günde (25 Ekim – 1 Kasım) kişi başı ≈ 39 saat, yani günde ≈ 5 saat demek; pay az. Ekibin zamanı inceleme, deneme, Android Studio'daki işler, karar ve video çekimine gider. Yine de pay az olduğu için §5'teki kısma sırası **baştan uygulanır**: T-24 (bonus) ve FR-406 plandan çıkarıldı. Yeniden zaman kalırsa geri alınır.
 - **Kritik yol:** T-02 → T-03 → T-04 → T-06 → T-07 → T-09 → T-14 → T-15 → T-23 → T-27 → T-28. Bu zincirdeki her gecikme teslimi doğrudan kaydırır.
 
-### Rol dağılımı (öneri — 2 kişi)
+### Rol dağılımı (27 Ekim'den itibaren — ayrıntı: [is_bolumu.md](is_bolumu.md))
 
-| Kişi | Kulvarlar | İşler | Ek sorumluluk |
+T-13…T-15 (Android) ve T-06…T-12 bitti; kalan işler birbirinin dosyalarına en az dokunacak biçimde bölündü.
+
+| Kişi | Kulvarlar | Kalan işler | Ek sorumluluk |
 |---|---|---|---|
-| **Kişi 1** | Sunucu (B), Web (W), Yapay zekâ (Y) | T-06…T-12, T-16…T-22 | **Entegrasyon sorumlusu:** API sözleşmesinin sahibi; her akşam birleştirme + kabul testleri |
-| **Kişi 2** | Android (A), Entegrasyon/teslim (E) | T-13…T-15, T-23, T-25…T-28 | Android Studio ortamı, kabul testleri, demo senaryosu ve video |
+| **Kişi 1 — Caner** | Sunucu (B), Web (W), Android bakım | T-16, T-17, demo profili (FR-309), eksik hareketler (iade, fire, ters kayıt), T-22, T-25 (belgeler), APK | **Entegrasyon sorumlusu:** `main` dalı, her akşam birleştirme, API sözleşmesi |
+| **Kişi 2 — ekip arkadaşı** | Yapay zekâ (Y), Entegrasyon/teslim (E) | T-18…T-21, YZ raporu, T-23, T-26 (kendi bilgisayarında temiz kurulum), video senaryosu | Kabul testleri, kurulum testi |
+| İkisi birlikte | — | T-27 video, T-28 teslim, T-02 açık sorular | — |
 
-Gerekçe: Android en uzun ve en bağımsız kulvar (kritik yolda T-14, T-15); bir kişinin baştan sona odaklanması gerekiyor. Sunucu, web ve YZ aynı dilde ve aynı API üzerinde olduğu için tek kişide toplanması geçiş maliyetini düşürür. Kişi adları ekip tarafından yazılacak.
+Gerekçe: YZ (`ml/`) ve kabul testleri (`tests/`) kendi klasörlerinde, sunucuya tek bir sözleşmeyle (`is_bolumu.md` §6) bağlanıyor. Projeye sonradan katılan kişi, var olan defter ve lot ağı koduna dokunmadan çalışabiliyor. Görev 3 ise defter ve lot ağıyla iç içe; onu bu kodu yazan kulvar alıyor.
 
 ## 5. Geride kalırsak kapsam kısma sırası
 
@@ -151,3 +154,4 @@ Gerekçe: Android en uzun ve en bağımsız kulvar (kritik yolda T-14, T-15); bi
 | 24 Ekim 2026 (11) | T-11 tamamlandı: parçalama — reçete (Σ oran = 1, fire ürünsüz ve maliyetsiz, değer yönteminde €/kg zorunlu), taslak → tartım → ön izleme (kaydetmeden) → onay; ağırlık dengesi toleranslı; dağıtım iki yöntemle (AT-03 birebir: 123,41/83,34/72,12/33,66/38,47 ve 111,68/63,82/79,77/47,87/47,86); fire girilmeden onay reddi (AT-04); parça lotları (`BUT-PRC-2026-012` …), lot bağları, SKT girdi lotunu geçmez; kısmi parçalamada orantılı maliyet. Sunucu mesajlarındaki sayılar Türkçe biçime çevrildi ("3.000 kg" yanlış okunuyordu). 126 test. | T-12 parçalama web ekranları (Kişi 1), T-14 Android satış (Kişi 2) |
 | 24 Ekim 2026 (12) | T-12 tamamlandı: parçalama web ekranları — liste, yeni parçalama (reçete → ana depodaki giriş lotu → ağırlık), tartım ekranı (her girişte sunucudan kaydetmeden ön izleme: denge göstergesi, iki yöntemle pay ve €/kg), onay ve sonuç (dağıtım dökümü, parça lotları), reçete listesi ve yeni reçete (oranlar yüzde, toplam %100 denetimi). Görev 2 uçtan uca arayüzden yürüyor. | T-14 Android satış (Kişi 2), T-16 izleme ve geri çağırma API (Kişi 1) |
 | 24 Ekim 2026 (13) | T-14 ve T-15 tamamlandı: Android satış (müşteri, lot seçimi FEFO, bloke lot engeli, cihazda tek işlemde kayıt; Room sürüm 3) ve gönderim (önce gönder sonra çek; WorkManager ağ gelince gönderir). Sunucuda `POST /sync/push` (AT-11: aynı satış iki kez → tek kayıt; yetersiz stokta yalnız o satış reddedilir; AT-12: çevrimdışı bloke lot satışı kaydedilir, ihlal işaretlenir, uyarı düşer) ve `GET /sales`. Emülatörde Market A 30 / B 25 adet satıldı (maliyetler 544,76 / 453,97 €), uçak modundaki iki satış bağlantı gelince gönderildi. 134 sunucu, 17 Android testi. | T-16 izleme ve geri çağırma API (Kişi 1), T-17 web ekranları |
+| 27 Ekim 2026 (14) | İki kişilik iş bölümü yapıldı (`is_bolumu.md`): bütün gereksinimlerin kapsamı çıkarıldı (biten / kısmen / eksik ve sahibi), dosya sahipliği, iki kulvar arası YZ sözleşmesi, günlük birleştirme (git paketi), "bitti" tanımı ve 1 Kasım'a kadar takvim. Ekip arkadaşı için kurulum paketi hazırlandı. Testler yeniden çalıştırıldı: 134 sunucu, 16 web, 17 Android. Bulgu: 8000 portu bu bilgisayarda başka bir projede; `API_PORT`/`WEB_PORT` ile değiştirilebiliyor. | Kişi 1: T-16 + demo profili; Kişi 2: kurulum + T-18 |

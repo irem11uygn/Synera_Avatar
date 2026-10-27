@@ -84,3 +84,10 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Sunucu: `POST /sync/push` (UUID ile tekrar güvenli, satış başına alt işlem, çevrimdışı bloke lot satışında ihlal uyarısı), `GET /sales`.
 - Android: satış ekranı (müşteri, ilk biten önerili lot listesi, miktar ve fiyat, bloke lot engeli), cihazda tek işlemde kayıt (Room sürüm 3), kullanılabilir miktar = sunucu bakiyesi − bekleyen satışlar, son satışlar ve durumları, WorkManager 2.12.0 ile arka planda gönderim.
 - 134 sunucu testi (AT-11, AT-12 dahil), 17 Android birim testi; emülatörde bağlantılı ve uçak modunda satış denendi (`reports/test_results.md`).
+
+### 27 Ekim 2026 — iki kişilik iş bölümü
+- `docs/is_bolumu.md`: bütün gereksinimlerin kapsamı (biten / kısmen / eksik ve sahibi), dosya sahipliği, YZ kulvarıyla sunucu arasındaki sözleşme, git paketiyle günlük birleştirme, "bitti" tanımı, 1 Kasım'a kadar takvim.
+- README, `android/README.md`, `ml/README.md` ve geliştirme planındaki rol tablosu bugünkü duruma getirildi.
+- `scripts/api_tipleri_yenile.sh`: API tanımını (`docs/openapi.json`) ve web tiplerini tek komutla yeniler.
+- Web geliştirme sunucusu API portunu `API_PORT` değişkeninden okuyor (8000 doluysa).
+- Testler yeniden çalıştırıldı: 134 sunucu, 16 web, 17 Android — hepsi geçti.
