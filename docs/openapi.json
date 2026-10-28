@@ -3184,6 +3184,78 @@
         }
       }
     },
+    "/api/v1/alerts/subscriptions": {
+      "get": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "My Subscriptions",
+        "description": "Kendi alarm e-postası aboneliklerim (değiştirmediklerim rolün varsayılanı).",
+        "operationId": "my_subscriptions_api_v1_alerts_subscriptions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "Update Subscriptions",
+        "description": "Yalnız gönderilen türler değişir; görülemeyen tür (ör. hatalı giriş, yönetici dışı) 422.",
+        "operationId": "update_subscriptions_api_v1_alerts_subscriptions_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/alerts/summary": {
       "get": {
         "tags": [
@@ -4112,6 +4184,125 @@
         }
       }
     },
+    "/api/v1/reports/{code}/email": {
+      "post": {
+        "tags": [
+          "raporlar"
+        ],
+        "summary": "Email Report",
+        "description": "Raporu CSV ekiyle e-postayla gönderir (202: giden kutusuna alındı, istek SMTP'yi beklemez).\n\nSüzgeçler `GET /reports/{code}` ile aynıdır. Alıcı: aktif kullanıcı ya da izinli alan adı.\nKullanıcı başına dakikada en çok 5 gönderim.",
+        "operationId": "email_report_api_v1_reports__code__email_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReportCode"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "lot_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lot No"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportEmailIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportEmailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
     "/api/v1/ai/production-forecast": {
       "post": {
         "tags": [
@@ -4479,7 +4670,9 @@
           "BLOKE_STOK",
           "VERIM_SAPMASI",
           "FIYAT_ARTISI",
-          "HATALI_GIRIS"
+          "HATALI_GIRIS",
+          "SKT_YAKLASIYOR",
+          "SAYIM_FARKI"
         ],
         "title": "AlertKind"
       },
@@ -9958,6 +10151,71 @@
         ],
         "title": "ReportCode"
       },
+      "ReportEmailIn": {
+        "properties": {
+          "recipients": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Recipients"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipients"
+        ],
+        "title": "ReportEmailIn"
+      },
+      "ReportEmailOut": {
+        "properties": {
+          "message_id": {
+            "type": "integer",
+            "title": "Message Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MailStatus"
+          },
+          "recipients": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recipients"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "attachment": {
+            "type": "string",
+            "title": "Attachment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message_id",
+          "status",
+          "recipients",
+          "subject",
+          "attachment"
+        ],
+        "title": "ReportEmailOut"
+      },
       "ReportInfoOut": {
         "properties": {
           "code": {
@@ -11217,6 +11475,96 @@
           "lines"
         ],
         "title": "StoreSaleIn"
+      },
+      "SubscriptionIn": {
+        "properties": {
+          "alert_type": {
+            "$ref": "#/components/schemas/AlertKind"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "alert_type",
+          "enabled"
+        ],
+        "title": "SubscriptionIn"
+      },
+      "SubscriptionOut": {
+        "properties": {
+          "alert_type": {
+            "$ref": "#/components/schemas/AlertKind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "alert_type",
+          "label",
+          "enabled",
+          "is_default"
+        ],
+        "title": "SubscriptionOut"
+      },
+      "SubscriptionsIn": {
+        "properties": {
+          "subscriptions": {
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Subscriptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subscriptions"
+        ],
+        "title": "SubscriptionsIn"
+      },
+      "SubscriptionsOut": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "subscriptions": {
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionOut"
+            },
+            "type": "array",
+            "title": "Subscriptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "subscriptions"
+        ],
+        "title": "SubscriptionsOut"
       },
       "SupplierRefOut": {
         "properties": {

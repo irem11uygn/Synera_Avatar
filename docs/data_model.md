@@ -210,5 +210,8 @@ Kullanılabilir miktar = `stock.qty_milli` − Σ (sync_state = `BEKLIYOR` olan 
 | `audit_events` | Yalnız eklenen günlük: zaman, kullanıcı (ya da hatalı girişte yazılan ad), önem, işlem kodu, açıklama, ilgili kayıt, adres |
 | `app_settings` | Yöneticinin değiştirdiği ayarlar (`alarm.yield_z`, `alarm.price_increase_pct`, `alarm.failed_logins`); kayıt yoksa varsayılan |
 | `mail_outbox` | Giden kutusu: alıcılar, konu, metin, tür (ALARM/RAPOR), durum (KUYRUKTA/GONDERILDI/HATA), deneme sayısı, son hata, ilgili alarm |
+| `mail_outbox.html`, `attachment_name`, `attachment_mime`, `attachment`, `dedup_key` | Göç `d7f3b9a2c4e1`: HTML gövde, tek ek (rapor CSV'si), tekilleştirme anahtarı `ALERT:<alarm>:<adres>` (tekil) |
+| `alert_subscriptions` | Kullanıcı × alarm türü, açık/kapalı (birincil anahtar ikisi). Kayıt yoksa rolün varsayılanı |
+| `alerts.kind` (yeni değerler) | SKT_YAKLASIYOR, SAYIM_FARKI |
 
-Toplam 36 tablo.
+Toplam 37 tablo.

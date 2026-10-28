@@ -22,12 +22,12 @@ EXPECTED_TABLES = {
     "transfers", "transfer_lines", "adjustments", "stock_counts", "stock_count_lines",
     "recalls", "recall_lots", "alerts",
     "ai_forecasts", "sync_counter",
-    "audit_events", "app_settings", "mail_outbox",
+    "audit_events", "app_settings", "mail_outbox", "alert_subscriptions",
 }  # fmt: skip
 
 
-def test_migration_creates_all_36_tables(engine):
-    assert len(EXPECTED_TABLES) == 36
+def test_migration_creates_all_37_tables(engine):
+    assert len(EXPECTED_TABLES) == 37
     assert set(inspect(engine).get_table_names()) == EXPECTED_TABLES | {"alembic_version"}
 
 

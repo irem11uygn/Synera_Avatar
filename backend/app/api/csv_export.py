@@ -36,14 +36,19 @@ def _safe_text(text: str) -> str:
     return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
-def csv_response(filename: str, header: Sequence[str], rows: Iterable[Sequence[object]]) -> Response:
+def csv_text(header: Sequence[str], rows: Iterable[Sequence[object]]) -> str:
+    """BOM'lu CSV metni: indirme ve e-posta eki aynı biçimde."""
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=";", lineterminator="\r\n")
     writer.writerow(header)
     for row in rows:
         writer.writerow([cell(value) for value in row])
+    return "﻿" + buffer.getvalue()
+
+
+def csv_response(filename: str, header: Sequence[str], rows: Iterable[Sequence[object]]) -> Response:
     return Response(
-        content="﻿" + buffer.getvalue(),
+        content=csv_text(header, rows),
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

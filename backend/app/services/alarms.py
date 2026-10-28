@@ -14,25 +14,32 @@ Kurallar:
 - Alış fiyatı artışı: aynı ürünün bir önceki alışına göre artış eşikten fazlaysa.
 - Bloke lotta stok: geri çağrılmış lotta hâlâ stok varsa (imha ya da serbest bırakma kararı bekliyor).
 
-Kritik alarm yönetici ve kaliteye, uyarı yöneticiye e-postayla gider (giden kutusu, bkz. mail.py).
+- Son kullanma: elimizdeki (ana depo, araç) lotun SKT'si 3 gün içinde ya da geçmiş.
+
+Alarm e-postası abonelere gider (services/subscriptions.py: yönetici bütün türlere, diğer roller kendi
+işini ilgilendiren türlere); her alıcıya ayrı e-posta, aynı alarm aynı adrese bir kez (dedup_key).
 Alarm aynı zamanda denetim günlüğüne yazılır.
 """
 
+import html
 import logging
 import math
 import statistics
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, timedelta
 from decimal import Decimal
+from urllib.parse import quote
 
 from avatar_ml import predict
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.domain.clock import business_zone
+from app import mailer
+from app.config import get_settings
+from app.domain.clock import business_today, business_zone
 from app.domain.money import round_percent, tr_number
-from app.errors import Forbidden
+from app.errors import Forbidden, InvalidInput
 from app.models import (
     AiForecast,
     Alert,
@@ -47,7 +54,12 @@ from app.models import (
     PurchaseLine,
     Recall,
     RecallLot,
+    Sale,
+    SaleLine,
+    StockBalance,
+    StockCount,
     User,
+    Warehouse,
 )
 from app.models.enums import (
     AlertKind,
@@ -60,11 +72,13 @@ from app.models.enums import (
     RecipeLineType,
     Severity,
     UserRole,
+    WarehouseKind,
 )
 from app.models.types import utcnow
-from app.services import app_settings, audit, mail
+from app.services import app_settings, audit, mail, subscriptions
 from app.services.app_settings import Thresholds
 from app.services.production import order_summary
+from app.services.subscriptions import visible_kinds
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +95,8 @@ KIND_LABEL = {
     AlertKind.VERIM_SAPMASI: "Verim sapması",
     AlertKind.FIYAT_ARTISI: "Alış fiyatı artışı",
     AlertKind.HATALI_GIRIS: "Art arda hatalı giriş",
+    AlertKind.SKT_YAKLASIYOR: "Son kullanma tarihi yaklaşan lot",
+    AlertKind.SAYIM_FARKI: "Sayım farkı",
 }
 SEVERITY_LABEL = {Severity.BILGI: "Bilgi", Severity.UYARI: "Uyarı", Severity.KRITIK: "Kritik"}
 
@@ -92,16 +108,15 @@ ACK_ROLES = {
     AlertKind.BLOKE_STOK: frozenset({R.YONETICI, R.KALITE, R.DEPO}),
     AlertKind.BLOKE_SATIS_DENEMESI: frozenset({R.YONETICI, R.KALITE, R.MAGAZA}),
     AlertKind.HATALI_GIRIS: frozenset({R.YONETICI}),
+    AlertKind.SKT_YAKLASIYOR: frozenset({R.YONETICI, R.KALITE, R.DEPO, R.MAGAZA}),
+    AlertKind.SAYIM_FARKI: frozenset({R.YONETICI, R.DEPO}),
 }
-ADMIN_ONLY = {AlertKind.HATALI_GIRIS}  # hangi hesabın denendiği yalnız yöneticiye görünür
+EXPIRY_WARNING_DAYS = 3  # ana sayfadaki "dolmak üzere" süresiyle aynı
+OWN_STOCK = (WarehouseKind.ANA, WarehouseKind.ARAC)
 
 
 def can_acknowledge(user: User, alert: Alert) -> bool:
     return user.role in ACK_ROLES.get(alert.kind, _ACK_DEFAULT)
-
-
-def visible_kinds(user: User) -> list[AlertKind]:
-    return [kind for kind in AlertKind if user.role == R.YONETICI or kind not in ADMIN_ONLY]
 
 
 def raise_alarm(
@@ -115,7 +130,7 @@ def raise_alarm(
     rule_key: str | None = None,
     user: User | None = None,
 ) -> Alert | None:
-    """Alarmı açar, denetim günlüğüne yazar, e-postasını kuyruğa koyar. Aynı rule_key varsa None."""
+    """Alarmı açar, denetim günlüğüne yazar, abonelere e-postasını kuyruğa koyar. Aynı rule_key varsa None."""
     if rule_key and session.scalar(select(Alert.id).where(Alert.rule_key == rule_key)) is not None:
         return None
     alert = Alert(
@@ -141,17 +156,170 @@ def raise_alarm(
         ref_type="ALERT",
         ref_id=alert.id,
     )
-    recipients = mail.alarm_recipients(session, severity)
-    if recipients:
-        mail.queue(
-            session,
-            recipients=recipients,
-            subject=f"[Synera] {SEVERITY_LABEL[severity]} alarm: {KIND_LABEL[kind]}",
-            body=f"{message}\n\nZaman: {datetime.now(business_zone()):%d.%m.%Y %H:%M}\nAlarm no: {alert.id}",
-            kind="ALARM",
-            alert_id=alert.id,
-        )
+    notify(session, alert)
     return alert
+
+
+def notify(session: Session, alert: Alert) -> list[str]:
+    """Abonelere e-posta: her alıcıya ayrı (birbirini görmez); aynı alarm aynı adrese bir kez gider."""
+    subject, html_body, text = alert_mail(session, alert)
+    queued: list[str] = []
+    for subscriber in subscriptions.subscribers(session, alert.kind):
+        email = (subscriber.email or "").strip()
+        try:
+            message = mail.queue(
+                session,
+                recipients=[email],
+                subject=subject,
+                body=text,
+                html=html_body,
+                kind="ALARM",
+                alert_id=alert.id,
+                dedup_key=f"ALERT:{alert.id}:{email.lower()}"[:150],
+            )
+        except InvalidInput:  # kayıtlı adres bozuksa iş durmaz; günlüğe yazılır
+            logger.warning(
+                "Alarm e-postası kuyruğa alınamadı: geçersiz adres %r (kullanıcı %s)", email, subscriber.id
+            )
+            continue
+        if message is not None:
+            queued.append(email)
+    return queued
+
+
+def alert_mail(session: Session, alert: Alert) -> tuple[str, str, str]:
+    """Konu, HTML ve düz metin. Konu: [AVATAR UYARI] <başlık>; gövde: özet, lot/ürün, bağlantı."""
+    title = KIND_LABEL[alert.kind]
+    when = alert.created_at.replace(tzinfo=UTC).astimezone(business_zone())
+    rows = [
+        ("Önem", SEVERITY_LABEL[alert.severity]),
+        ("Zaman", f"{when:%d.%m.%Y %H:%M}"),
+        ("Alarm no", str(alert.id)),
+        *_alert_context(session, alert),
+    ]
+    base = get_settings().web_base_url
+    path, link_label = _alert_link(session, alert)
+    esc = html.escape
+    table = mailer.html_rows(rows)
+    html_body = (
+        '<div style="font-family:Segoe UI,Arial,sans-serif;color:#102a2a;max-width:640px">'
+        '<div style="background:#0d9488;color:#ffffff;padding:14px 18px;border-radius:10px 10px 0 0">'
+        "<strong>AVATAR · Synera uyarısı</strong></div>"
+        '<div style="border:1px solid #dbe7e5;border-top:0;padding:18px;border-radius:0 0 10px 10px">'
+        f'<h2 style="margin:0 0 8px;font-size:18px">{esc(title)}</h2>'
+        f'<p style="margin:0 0 14px">{esc(alert.message)}</p>'
+        f'<table style="border-collapse:collapse;font-size:14px">{table}</table>'
+        f'<p style="margin:18px 0 6px"><a href="{esc(base + path)}" style="background:#0d9488;color:#ffffff;'
+        f'padding:10px 16px;border-radius:8px;text-decoration:none">{esc(link_label)}</a></p>'
+        '<p style="font-size:13px;color:#5f7372">'
+        f'Alarm merkezi: <a href="{esc(base)}/alarmlar">{esc(base)}/alarmlar</a></p>'
+        "</div></div>"
+    )
+    text = "\n".join(
+        [
+            title,
+            "",
+            alert.message,
+            "",
+            *(f"{k}: {v}" for k, v in rows),
+            "",
+            f"{link_label}: {base}{path}",
+            f"Alarm merkezi: {base}/alarmlar",
+        ]
+    )
+    return f"[AVATAR UYARI] {title}", html_body, text
+
+
+def _unit(product: Product | None) -> str:
+    return "adet" if product is not None and product.base_unit == BaseUnit.ADET else "kg"
+
+
+def _alert_context(session: Session, alert: Alert) -> list[tuple[str, str]]:
+    """Uyarının ilgili olduğu lot, ürün ve belge bilgisi (e-postada tablo)."""
+    ref, ref_id = alert.ref_type, alert.ref_id
+    if ref == "LOT" and (lot := session.get(Lot, ref_id)):
+        product = session.get(Product, lot.product_id)
+        rows = [
+            ("Lot", lot.lot_no),
+            ("Ürün", product.name if product else "?"),
+            ("Kalan", f"{tr_number(lot.remaining_qty)} {_unit(product)}"),
+        ]
+        if lot.expiry_date:
+            rows.append(("Son kullanma", f"{lot.expiry_date:%d.%m.%Y}"))
+        return rows
+    if ref == "RECALL" and (recall := session.get(Recall, ref_id)):
+        lot = session.get(Lot, recall.source_lot_id)
+        product = session.get(Product, lot.product_id) if lot else None
+        return [
+            ("Geri çağırma", recall.recall_no),
+            ("Kaynak lot", lot.lot_no if lot else "?"),
+            ("Ürün", product.name if product else "?"),
+        ]
+    if ref == "SALE" and (sale := session.get(Sale, ref_id)):
+        customer = session.get(Partner, sale.customer_id)
+        lots = session.execute(
+            select(Lot.lot_no, Product.name)
+            .join(SaleLine, SaleLine.lot_id == Lot.id)
+            .join(Product, Product.id == SaleLine.product_id)
+            .where(SaleLine.sale_id == sale.id)
+        ).all()
+        return [
+            ("Satış", sale.sale_no),
+            ("Müşteri", customer.name if customer else "?"),
+            ("Lot / ürün", ", ".join(f"{no} — {name}" for no, name in lots)),
+        ]
+    if ref == "PRODUCTION_ORDER" and (order := session.get(ProductionOrder, ref_id)):
+        product = session.get(Product, order.output_product_id)
+        lot = session.get(Lot, order.output_lot_id) if order.output_lot_id else None
+        return [
+            ("Üretim emri", order.order_no),
+            ("Mamul", product.name if product else "?"),
+            ("Mamul lotu", lot.lot_no if lot else "—"),
+        ]
+    if ref == "CUTTING" and (cutting := session.get(Cutting, ref_id)):
+        lot = session.get(Lot, cutting.input_lot_id)
+        product = session.get(Product, lot.product_id) if lot else None
+        return [
+            ("Parçalama", cutting.cutting_no),
+            ("Giriş lotu", lot.lot_no if lot else "?"),
+            ("Ürün", product.name if product else "?"),
+        ]
+    if ref == "PURCHASE" and (purchase := session.get(Purchase, ref_id)):
+        supplier = session.get(Partner, purchase.supplier_id)
+        lots = session.execute(
+            select(Lot.lot_no, Product.name)
+            .join(PurchaseLine, PurchaseLine.lot_id == Lot.id)
+            .join(Product, Product.id == PurchaseLine.product_id)
+            .where(PurchaseLine.purchase_id == purchase.id)
+        ).all()
+        return [
+            ("Belge", purchase.doc_no),
+            ("Tedarikçi", supplier.name if supplier else "?"),
+            ("Lot / ürün", ", ".join(f"{no} — {name}" for no, name in lots)),
+        ]
+    if ref == "STOCK_COUNT" and (count := session.get(StockCount, ref_id)):
+        warehouse = session.get(Warehouse, count.warehouse_id)
+        return [
+            ("Sayım", count.count_no),
+            ("Depo", f"{warehouse.code} — {warehouse.name}" if warehouse else "?"),
+        ]
+    if ref == "USER" and (account := session.get(User, ref_id)):
+        return [("Hesap", account.username)]
+    return []
+
+
+def _alert_link(session: Session, alert: Alert) -> tuple[str, str]:
+    ref, ref_id = alert.ref_type, alert.ref_id
+    if ref == "LOT" and (lot := session.get(Lot, ref_id)):
+        return f"/lotlar/{quote(lot.lot_no)}", "Lot kartını aç"
+    return {
+        "RECALL": (f"/geri-cagirma/{ref_id}", "Geri çağırmayı aç"),
+        "SALE": ("/satislar", "Satışları aç"),
+        "PRODUCTION_ORDER": (f"/uretim/{ref_id}", "Üretim emrini aç"),
+        "CUTTING": (f"/parcalama/{ref_id}", "Parçalamayı aç"),
+        "PURCHASE": ("/alislar", "Mal kabulü aç"),
+        "STOCK_COUNT": ("/sayim", "Sayımları aç"),
+    }.get(ref, ("/alarmlar", "Alarm merkezini aç"))
 
 
 def acknowledge(session: Session, user: User, alert: Alert) -> Alert:
@@ -184,6 +352,37 @@ def recall_started(session: Session, recall: Recall, user: User | None, lot_no: 
         f"Neden: {recall.reason}",
         ref_type="RECALL",
         ref_id=recall.id,
+        user=user,
+    )
+
+
+def stock_count_difference(
+    session: Session,
+    user: User,
+    *,
+    count_id: int,
+    count_no: str,
+    warehouse_code: str,
+    differences: list[tuple[str, str, str, Decimal]],
+    shortage_value: Decimal,
+) -> None:
+    """Sayımda sistemle sayılan farklıysa: (lot, ürün, birim, fark) listesiyle uyarı."""
+    if not differences:
+        return
+    shown = "; ".join(
+        f"{lot_no} {name}: {'+' if d > 0 else ''}{tr_number(d)} {unit}"
+        for lot_no, name, unit, d in differences[:6]
+    )
+    more = f" ve {len(differences) - 6} lot daha" if len(differences) > 6 else ""
+    raise_alarm(
+        session,
+        AlertKind.SAYIM_FARKI,
+        Severity.UYARI,
+        f"{count_no} ({warehouse_code}) sayımında {len(differences)} lotta fark: {shown}{more}. "
+        f"Eksik değeri {tr_number(shortage_value, 2)} €. Eksik fire olarak düşüldü; "
+        "fazlanın kaynağını araştırın.",
+        ref_type="STOCK_COUNT",
+        ref_id=count_id,
         user=user,
     )
 
@@ -259,7 +458,13 @@ class RuleRun:
 def run_rules(session: Session, user: User | None = None) -> RuleRun:
     th = app_settings.thresholds(session)
     run = RuleRun()
-    for name, rule in (("verim", _yield_rules), ("fiyat", _price_rules), ("bloke", _blocked_stock_rules)):
+    rules = (
+        ("verim", _yield_rules),
+        ("fiyat", _price_rules),
+        ("bloke", _blocked_stock_rules),
+        ("skt", _expiry_rules),
+    )
+    for name, rule in rules:
         try:
             with session.begin_nested():
                 checked, created, notes = rule(session, th, user)
@@ -439,6 +644,55 @@ def _blocked_stock_rules(
             ref_type="LOT",
             ref_id=lot.id,
             rule_key=f"BLOKE_STOK:{recall.id}:{lot.id}",
+            user=user,
+        )
+        if alert:
+            created.append(alert)
+    return len(rows), created, []
+
+
+def _expiry_rules(session: Session, th: Thresholds, user: User | None) -> tuple[int, list[Alert], list[str]]:
+    """Elimizdeki (ana depo, araç) satışa açık lotlarda SKT 3 gün içinde ya da geçmişse."""
+    today = business_today()
+    rows = session.execute(
+        select(Lot, Product, func.sum(StockBalance.qty), func.group_concat(Warehouse.code))
+        .join(StockBalance, StockBalance.lot_id == Lot.id)
+        .join(Warehouse, Warehouse.id == StockBalance.warehouse_id)
+        .join(Product, Product.id == Lot.product_id)
+        .where(
+            Warehouse.kind.in_(OWN_STOCK),
+            StockBalance.qty > 0,
+            Lot.status == LotStatus.AKTIF,
+            Lot.expiry_date.is_not(None),
+            Lot.expiry_date <= today + timedelta(days=EXPIRY_WARNING_DAYS),
+        )
+        .group_by(Lot.id, Product.id)
+    ).all()
+    created: list[Alert] = []
+    for lot, product, qty, warehouses in rows:
+        days = (lot.expiry_date - today).days
+        held = f"elde {tr_number(qty)} {_unit(product)} ({warehouses})"
+        if days < 0:
+            text = (
+                f"{lot.lot_no} ({product.name}) son kullanma tarihi "
+                f"{lot.expiry_date:%d.%m.%Y} geçti; {held}. "
+                "Satılamaz: rafından ayırın, fire/imha kaydı girin."
+            )
+        else:
+            when = "bugün" if days == 0 else f"{days} gün sonra"
+            text = (
+                f"{lot.lot_no} ({product.name}) son kullanma tarihi "
+                f"{lot.expiry_date:%d.%m.%Y} ({when}); {held}. "
+                "Önce bunu satın (ilk dolan ilk çıkar)."
+            )
+        alert = raise_alarm(
+            session,
+            AlertKind.SKT_YAKLASIYOR,
+            Severity.UYARI,
+            text,
+            ref_type="LOT",
+            ref_id=lot.id,
+            rule_key=f"SKT:{lot.id}:{lot.expiry_date:%Y%m%d}:{'gecti' if days < 0 else 'yakin'}",
             user=user,
         )
         if alert:

@@ -130,7 +130,35 @@ Bu şifreler yalnız yerel demo içindir. Yönetici **Kullanıcılar** ekranınd
 
 **Dil:** Web'de üst çubuktaki **TR / EN** seçimi, telefonda sağ üstteki menü. Seçim hatırlanır.
 
-**E-posta (isteğe bağlı):** Alarm ve rapor e-postaları önce giden kutusuna yazılır. `.env` içinde `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` tanımlanırsa arka planda gönderilir; tanımlı değilse **Yönetim → Alarm ve e-posta ayarları / Rapor gönder** ekranlarında "Kuyrukta" görünür ve kullanıcı isterse kendi e-posta programında açar. Demo kullanıcılarının e-postaları gerçek değildir (`@synera.example`).
+**E-posta:** Varsayılan olarak yerel test kutusu Mailpit'e gider (http://localhost:8025); ayrıntı aşağıda, "E-posta bildirimleri". Demo kullanıcılarının e-postaları gerçek değildir (`@synera.example`).
+
+### E-posta bildirimleri
+
+Uyarılar ve raporlar e-postayla gider. E-posta önce giden kutusuna yazılır; işlem kaydedildiği anda arka plandaki gönderici uyanır ve gönderir, olmazsa yeniden dener. API isteği e-posta sunucusunu beklemez; her gönderimin sonucu (gönderildi / gönderilemedi, alıcı, zaman, hata) **Rapor gönder (e-posta) → Giden kutusu**'nda görünür.
+
+- **Uyarı e-postası:** Bir alarm açıldığı anda o türe abone olan kullanıcılara gider. Türler: SKT yaklaşan lot, sayım farkı, geri çağırma, bloke lot satış denemesi, fiyat artışı, verim sapması vb. Her alıcıya ayrı e-posta gider ve aynı alarm aynı adrese bir kez gider. Konu: `[AVATAR UYARI] <başlık>`. Gövdede özet, lot/ürün bilgisi ve web arayüzüne bağlantı var.
+- **Abonelik:** Yönetici bütün türlere abonedir; diğer roller kendi işini ilgilendiren türlere abonedir. Herkes kendi tercihini `GET/PUT /api/v1/alerts/subscriptions` ile görür ve değiştirir. E-posta adresi kullanıcı kartındadır (Yönetim → Kullanıcılar).
+- **Rapor e-postası:** `POST /api/v1/reports/{kod}/email`, ör. `{"recipients": ["kalite@synera.example"], "note": "..."}` → 202. Rapor CSV eki olarak gider; süzgeçler `GET /reports/{kod}` ile aynıdır.
+  - Alıcılar yalnız sistemdeki aktif kullanıcılar ya da `ALLOWED_EMAIL_DOMAINS`'teki alan adları olabilir; başka adres 422 döner (açık posta rölesi yok).
+  - Kullanıcı başına dakikada en çok 5 gönderim yapılabilir.
+
+| Değişken | Varsayılan | Ne |
+|---|---|---|
+| `SMTP_HOST` | `mailpit` | E-posta sunucusu. Boş bırakılırsa e-posta kapanır, e-postalar "Kuyrukta" bekler |
+| `SMTP_PORT` | `1025` | 587 (STARTTLS) ya da 465 (TLS) de olur |
+| `SMTP_USER`, `SMTP_PASS` | boş | Doluysa STARTTLS + giriş yapılır. Şifre yalnız `.env`'de durur |
+| `MAIL_FROM` | `AVATAR Synera <avatar@synera.example>` | Gönderen |
+| `ALLOWED_EMAIL_DOMAINS` | boş | Rapor e-postası için kullanıcılar dışında izinli alan adları, virgülle |
+| `WEB_BASE_URL` | `http://localhost:8080` | E-postalardaki bağlantıların adresi |
+| `MAILPIT_UI_PORT`, `MAILPIT_SMTP_PORT` | `8025`, `1025` | Mailpit'in bilgisayardaki portları |
+
+**Yerelde deneme (Mailpit):** `docker compose up -d` Mailpit'i de açar. Mailpit bir test kutusudur; dışarıya hiçbir e-posta gitmez. Gönderilenler http://localhost:8025 adresinde görünür.
+
+1. Web'e `yonetici` ile girin.
+2. **Raporlar → Rapor gönder (e-posta)** ekranından ya da API'den bir rapor gönderin.
+3. Geri çağırma başlatın.
+
+İkisi de birkaç saniye içinde Mailpit'te görünür.
 
 ### Şartname senaryosunu 5 dakikada denemek
 
@@ -206,7 +234,7 @@ Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). De
 - **Sayımda fazla çıkan mal stoka eklenmez;** kaynağı araştırılıp ilgili belge düzeltilmelidir (eksik çıkan mal fire olarak düşülür).
 - **Faturadan doldur yalnız metinle çalışır** (kural tabanlı; PDF ya da fotoğraf okumaz). Öneri hiçbir zaman kendiliğinden kaydedilmez; lot numarası metinde yoksa boş bırakılır.
 - **Verim sapması alarmı** modelin test hatasına dayanır (σ = MAE × √(π/2)); veri sentetik olduğu için eşik gerçek işletmede yeniden ayarlanmalıdır (Yönetim → Alarm ve e-posta ayarları).
-- **E-posta** için SMTP sunucusu gerekir; tanımlı değilse e-postalar gönderilmez, giden kutusunda bekler.
+- **E-posta:** varsayılan Mailpit yalnız yerel test içindir; gerçek gönderim için `.env`'de SMTP sunucusu tanımlanmalıdır. Rapor ekinde PDF yok, CSV var. Gönderim sınırı sunucu belleğinde tutulur (tek sunucu süreci için).
 - **Tek ana depo** varsayılır. Dış üretici ve araç depoları ayrıca tanımlanır.
 - **Şifreler yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli ve HTTPS arkasında çalıştırılmalıdır. Hatalı giriş sınırı sunucu belleğinde tutulur (tek sunucu süreci için).
 

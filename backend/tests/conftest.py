@@ -25,6 +25,7 @@ from app.main import create_app  # noqa: E402
 from app.models import Lot, Product, StockMovement, Warehouse  # noqa: E402
 from app.models.enums import DocType, LotOrigin, MovementType  # noqa: E402
 from app.seed import load_profile  # noqa: E402
+from app.services import report_mail  # noqa: E402
 from app.services.auth import limiter  # noqa: E402
 from tests.helpers import alembic_config, by_code  # noqa: E402
 
@@ -46,10 +47,12 @@ def engine() -> Engine:
 
 @pytest.fixture(autouse=True)
 def _login_limiter() -> Iterator[None]:
-    """Hatalı giriş sayacı süreç belleğinde tutulur; testler birbirini etkilemesin."""
+    """Hatalı giriş ve rapor e-postası sayaçları süreç belleğinde tutulur; testler birbirini etkilemesin."""
     limiter.reset()
+    report_mail.limiter.reset()
     yield
     limiter.reset()
+    report_mail.limiter.reset()
 
 
 @pytest.fixture

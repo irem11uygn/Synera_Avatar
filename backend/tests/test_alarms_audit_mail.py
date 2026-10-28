@@ -1,12 +1,13 @@
 """Alarm merkezi, kural motoru, denetim günlüğü, e-posta giden kutusu, fatura metni ve hesaplayıcılar."""
 
 import smtplib
+from dataclasses import replace
 from decimal import Decimal as D
 
 import pytest
 from sqlalchemy import func, select
 
-from app.config import SmtpSettings
+from app.config import SmtpSettings, get_settings
 from app.demo import build_demo_scenario
 from app.models import (
     AiForecast,
@@ -52,10 +53,11 @@ def test_three_failed_logins_raise_one_critical_alarm_and_mail(client, session):
     assert len(events) == 3 and all(e.username == "kalite1" for e in events)
     [alert] = _alerts(session, AlertKind.HATALI_GIRIS)
     assert alert.severity == Severity.KRITIK and "kalite1" in alert.message
-    # Kritik alarm e-postası: yönetici ve kalite (e-postası tanımlı olanlar), kuyrukta.
+    # Hatalı giriş alarmı yalnız yöneticiye görünür; e-postası da yalnız yöneticiye (abonelik varsayılanı).
     [message] = [m for m in _mails(session) if m.alert_id == alert.id]
     assert message.status == MailStatus.KUYRUKTA
-    assert set(message.recipients.split(", ")) == {"yonetici@synera.example", "kalite@synera.example"}
+    assert message.recipients == "yonetici@synera.example"
+    assert message.subject == "[AVATAR UYARI] Art arda hatalı giriş"
 
     client.post(f"{API}/auth/login", json={"username": "kalite1", "password": "yanlis"})
     assert len(_alerts(session, AlertKind.HATALI_GIRIS)) == 1  # 4. deneme yeni alarm açmaz
@@ -135,9 +137,10 @@ def test_recall_start_raises_critical_alarm_and_mail(client, admin, session):
     assert started.status_code == 201
     [alert] = _alerts(session, AlertKind.GERI_CAGIRMA)
     assert alert.severity == Severity.KRITIK and "ET-2026-001" in alert.message
-    [message] = [m for m in _mails(session) if m.alert_id == alert.id]
-    assert "yonetici@synera.example" in message.recipients and "kalite@synera.example" in message.recipients
-    assert message.subject.startswith("[Synera] Kritik alarm")
+    # Her aboneye ayrı e-posta: yönetici (bütün türler) ve kalite (geri çağırma varsayılanı).
+    messages = [m for m in _mails(session) if m.alert_id == alert.id]
+    assert {m.recipients for m in messages} == {"yonetici@synera.example", "kalite@synera.example"}
+    assert all(m.subject == "[AVATAR UYARI] Geri çağırma başlatıldı" for m in messages)
 
 
 # --- Fiyat artışı kuralı ve eşikler ---
@@ -220,13 +223,14 @@ def test_yield_deviation_alarm_from_model_forecast(client, admin, session):
 def test_demo_scenario_alone_raises_no_rule_alarm(client, admin, session):
     build_demo_scenario(session)
     run = client.post(f"{API}/alerts/run-rules", headers=admin).json()
-    assert run["created"] == [], run
+    # Kural alarmı yok; yalnız SKT'si 3 gün içinde dolan parça lotu olabilir (tarih kurulum gününe göre).
+    assert {a["kind"] for a in run["created"]} <= {"SKT_YAKLASIYOR"}, run
 
 
 # --- E-posta ---
 
 
-def test_report_mail_is_queued_and_outbox_is_scoped(client, admin, session):
+def test_report_mail_is_queued_and_outbox_is_scoped(client, admin, session, monkeypatch):
     store = auth_header(client, "magaza1", "magaza123")
     recipients = client.get(f"{API}/mail/recipients", headers=store).json()
     assert {
@@ -254,6 +258,9 @@ def test_report_mail_is_queued_and_outbox_is_scoped(client, admin, session):
     assert sent["body"].startswith("Rapor") and "Synera" in sent["body"]
     assert [m["id"] for m in client.get(f"{API}/mail/outbox", headers=store).json()] == [sent["id"]]
     assert sent["id"] in [m["id"] for m in client.get(f"{API}/mail/outbox", headers=admin).json()]
+    assert client.get(f"{API}/mail/status", headers=store).json()["host"] == "mailpit"  # varsayılan
+    # E-posta kapalıyken (SMTP_HOST boş): durum "tanımlı değil", elle gönderme reddedilir.
+    monkeypatch.setattr("app.api.mail.get_settings", lambda: replace(get_settings(), smtp=None))
     status = client.get(f"{API}/mail/status", headers=store).json()
     assert status["smtp_configured"] is False
     assert client.post(f"{API}/mail/deliver", headers=admin).json()["error"]["code"] == "INVALID_STATE"
@@ -274,7 +281,7 @@ class _FakeSmtp:
 
 
 def test_deliver_pending_marks_sent_and_failed(session):
-    settings = SmtpSettings("smtp.test", 587, None, None, "synera@test", True, 30)
+    settings = SmtpSettings("smtp.test", 587, None, None, "synera@test", 30)
     mail.queue(session, recipients=["a@example.com"], subject="Bir", body="1", kind="RAPOR")
     mail.queue(session, recipients=["red@example.com"], subject="İki", body="2", kind="RAPOR")
     fake = _FakeSmtp(fail_for="red@")

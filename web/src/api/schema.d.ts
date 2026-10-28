@@ -972,6 +972,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/alerts/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Subscriptions
+         * @description Kendi alarm e-postası aboneliklerim (değiştirmediklerim rolün varsayılanı).
+         */
+        get: operations["my_subscriptions_api_v1_alerts_subscriptions_get"];
+        /**
+         * Update Subscriptions
+         * @description Yalnız gönderilen türler değişir; görülemeyen tür (ör. hatalı giriş, yönetici dışı) 422.
+         */
+        put: operations["update_subscriptions_api_v1_alerts_subscriptions_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/alerts/summary": {
         parameters: {
             query?: never;
@@ -1280,6 +1304,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/{code}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Email Report
+         * @description Raporu CSV ekiyle e-postayla gönderir (202: giden kutusuna alındı, istek SMTP'yi beklemez).
+         *
+         *     Süzgeçler `GET /reports/{code}` ile aynıdır. Alıcı: aktif kullanıcı ya da izinli alan adı.
+         *     Kullanıcı başına dakikada en çok 5 gönderim.
+         */
+        post: operations["email_report_api_v1_reports__code__email_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ai/production-forecast": {
         parameters: {
             query?: never;
@@ -1432,7 +1479,7 @@ export interface components {
          * AlertKind
          * @enum {string}
          */
-        AlertKind: "GERI_CAGIRMA_IHLALI" | "SKT_IHLALI" | "GERI_CAGIRMA" | "BLOKE_SATIS_DENEMESI" | "BLOKE_STOK" | "VERIM_SAPMASI" | "FIYAT_ARTISI" | "HATALI_GIRIS";
+        AlertKind: "GERI_CAGIRMA_IHLALI" | "SKT_IHLALI" | "GERI_CAGIRMA" | "BLOKE_SATIS_DENEMESI" | "BLOKE_STOK" | "VERIM_SAPMASI" | "FIYAT_ARTISI" | "HATALI_GIRIS" | "SKT_YAKLASIYOR" | "SAYIM_FARKI";
         /** AlertOut */
         AlertOut: {
             /** Id */
@@ -3079,6 +3126,25 @@ export interface components {
          * @enum {string}
          */
         ReportCode: "purchases" | "production" | "cuttings" | "lot-movements" | "sales" | "recalls" | "integrity";
+        /** ReportEmailIn */
+        ReportEmailIn: {
+            /** Recipients */
+            recipients: string[];
+            /** Note */
+            note?: string | null;
+        };
+        /** ReportEmailOut */
+        ReportEmailOut: {
+            /** Message Id */
+            message_id: number;
+            status: components["schemas"]["MailStatus"];
+            /** Recipients */
+            recipients: string[];
+            /** Subject */
+            subject: string;
+            /** Attachment */
+            attachment: string;
+        };
         /** ReportInfoOut */
         ReportInfoOut: {
             code: components["schemas"]["ReportCode"];
@@ -3492,6 +3558,34 @@ export interface components {
             payment_method: components["schemas"]["PaymentMethod"];
             /** Lines */
             lines: components["schemas"]["StoreLineIn"][];
+        };
+        /** SubscriptionIn */
+        SubscriptionIn: {
+            alert_type: components["schemas"]["AlertKind"];
+            /** Enabled */
+            enabled: boolean;
+        };
+        /** SubscriptionOut */
+        SubscriptionOut: {
+            alert_type: components["schemas"]["AlertKind"];
+            /** Label */
+            label: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Is Default */
+            is_default: boolean;
+        };
+        /** SubscriptionsIn */
+        SubscriptionsIn: {
+            /** Subscriptions */
+            subscriptions: components["schemas"]["SubscriptionIn"][];
+        };
+        /** SubscriptionsOut */
+        SubscriptionsOut: {
+            /** Email */
+            email: string | null;
+            /** Subscriptions */
+            subscriptions: components["schemas"]["SubscriptionOut"][];
         };
         /** SupplierRefOut */
         SupplierRefOut: {
@@ -5884,6 +5978,59 @@ export interface operations {
             };
         };
     };
+    my_subscriptions_api_v1_alerts_subscriptions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionsOut"];
+                };
+            };
+        };
+    };
+    update_subscriptions_api_v1_alerts_subscriptions_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     summary_api_v1_alerts_summary_get: {
         parameters: {
             query?: never;
@@ -6373,6 +6520,51 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    email_report_api_v1_reports__code__email_post: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                product_id?: number | null;
+                lot_no?: string | null;
+            };
+            header?: never;
+            path: {
+                code: components["schemas"]["ReportCode"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportEmailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportEmailOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

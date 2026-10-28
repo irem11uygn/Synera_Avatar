@@ -387,3 +387,12 @@ Ekip aksini söylemedikçe bu varsayılanlar geçerlidir:
 - **Hesaplayıcılar** `app/domain` fonksiyonlarını (EKP, kâr/marj, en büyük kalan yöntemiyle dağıtım, ağırlık dengesi) doğrudan çağırır; kayıt açmaz.
 - **Faturadan doldur** kural tabanlıdır (düzenli ifade + ürün adı/kod eşleşmesi + benzerlik); sayıyı Türkçe ve İngilizce yazımla okur, SKT'yi belge tarihinden ayırır, tutar ≠ miktar × fiyat ise uyarır. Öneri kaydedilmez; lot numarası bulunamazsa uydurulmaz.
 - **Görünüm.** Turkuaz geçişli menü, buzlu cam yüzey (`backdrop-filter`, desteklemeyen tarayıcıda opak yüzey), fareyle eğilen kart (dokunmatikte ve azaltılmış harekette kapalı; başlangıçta da dönüşüm verilir ki üzerine gelince katman sırası değişmesin), elle çizilmiş SVG grafikler (kategorik renkler renk körlüğü denetiminden geçti; her grafikte tablo görünümü).
+
+## E-posta bildirimleri (28 Ekim 2026, üçüncü tur)
+
+- **Mailer** (`app/mailer.py`) yalnız standart kütüphaneyle çalışır (smtplib, email). HTML + düz metin karşılığı ve tek ek gönderir. SMTP_USER doluysa STARTTLS + giriş yapar, 465'te doğrudan TLS kullanır. Hata fırlatmaz: hatayı günlüğe yazar ve sonucu döner.
+- **Gerçek zamanlı gönderim.** E-posta isteğin işlemiyle giden kutusuna yazılır. SQLAlchemy `after_commit` olayı göndericiyi (`MailWorker`) hemen uyandırır; kaydedilmemiş bir işin e-postası gitmez. Başarısız gönderim `MAIL_INTERVAL_S` aralığıyla, en çok 5 kez yeniden denenir. Sonuç aynı satırda kalır: durum, deneme, `sent_at`, `last_error`.
+- **Abonelik** (`alert_subscriptions`, `services/subscriptions.py`). Kayıt yoksa rolün varsayılanı geçerlidir: yönetici bütün türler; kalite geri çağırma, ihlal, SKT, bloke ve verim; depo bloke stok, fiyat, SKT ve sayım; üretim verim; mağaza bloke satış ve SKT. Kullanıcının göremediği tür (hatalı giriş, yönetici dışı) e-postayla da gitmez.
+- **Tekilleştirme.** Her alıcıya ayrı satır yazılır; `mail_outbox.dedup_key = ALERT:<alarm>:<adres>` tekildir, aynı alarm aynı adrese ikinci kez yazılmaz.
+- **Açık posta rölesi yok.** Rapor e-postasının alıcısı yalnız aktif kullanıcı ya da izinli alan adı olabilir; kullanıcı başına dakikada 5 gönderim. Eski `POST /mail` ucu davranışını korur (bkz. bilinen sınırlamalar).
+- **Yeni uyarı türleri:** `SKT_YAKLASIYOR` (kural motoru; ana depo/araçta satışa açık lot, SKT ≤ 3 gün ya da geçmiş) ve `SAYIM_FARKI` (sayım kaydedilince).

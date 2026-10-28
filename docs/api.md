@@ -176,6 +176,8 @@ Hepsi `?date_from=&date_to=&product_id=&lot_no=&format=csv` süzgeçlerini kabul
 | POST | `/calc/ekp` | web | Kayıtsız EKP hesabı (gerçek kayıtla aynı fonksiyonlar), kâr/marj ve uyarılar |
 | POST | `/calc/cutting` | web | Kayıtsız parçalama maliyet dağıtımı, fire, ağırlık dengesi |
 | POST | `/purchases/parse-text` | Y, D | Fatura/irsaliye metninden mal kabul önerisi; hiçbir şey kaydetmez |
+| POST | `/reports/{code}/email` | web | `{recipients[1..20], note?}` + `GET /reports/{code}` süzgeçleri → **202**: rapor CSV ekiyle giden kutusuna; alıcı aktif kullanıcı ya da `ALLOWED_EMAIL_DOMAINS` (değilse 422, `details.rejected`); kullanıcı başına dakikada 5 (429) |
+| GET / PUT | `/alerts/subscriptions` | web | Kendi alarm e-postası aboneliklerim: `{email, subscriptions: [{alert_type, label, enabled, is_default}]}`; PUT `{subscriptions: [{alert_type, enabled}]}` yalnız gönderilenleri değiştirir; görülemeyen tür 422 |
 
 Hatalı giriş `401 UNAUTHORIZED` olarak yanıtlanır ama yanıt hata fırlatılmadan döner: denetim kaydı ve gerekirse alarm kalıcı olur. Mağazada bloke lot satışı `409 LOT_BLOCKED` döner; satışın yarım yazılanları geri alınır, alarm kalır.
 

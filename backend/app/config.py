@@ -16,33 +16,41 @@ class Settings:
     seed_profile: str
     seed_dir: Path
     business_utc_offset_hours: int  # iş günü (üretim tarihi, SKT, gün sonu) yerel saate göre
-    smtp: "SmtpSettings | None"  # tanımlı değilse e-postalar giden kutusunda "kuyrukta" bekler
+    smtp: "SmtpSettings | None"  # None: e-posta kapalı (SMTP_HOST boş), e-postalar giden kutusunda bekler
+    allowed_email_domains: tuple[str, ...]  # rapor e-postasında kullanıcılar dışında izinli alan adları
+    web_base_url: str  # e-postalardaki bağlantılar için web arayüzünün adresi
 
 
 @dataclass(frozen=True)
 class SmtpSettings:
     host: str
     port: int
-    username: str | None
+    username: str | None  # doluysa STARTTLS + giriş yapılır
     password: str | None
     sender: str
-    starttls: bool
-    interval_s: int  # giden kutusu kaç saniyede bir taranır
+    interval_s: int  # arka plan göndericisi en geç kaç saniyede bir kuyruğa bakar
 
 
 def _smtp_settings() -> SmtpSettings | None:
-    host = os.environ.get("SMTP_HOST", "").strip()
+    # Varsayılan docker-compose'daki Mailpit (yerel test kutusu); SMTP_HOST= (boş) e-postayı kapatır.
+    host = os.environ.get("SMTP_HOST", "mailpit").strip()
     if not host:
         return None
     return SmtpSettings(
         host=host,
-        port=int(os.environ.get("SMTP_PORT", "587")),
+        port=int(os.environ.get("SMTP_PORT", "1025")),
         username=os.environ.get("SMTP_USER") or None,
-        password=os.environ.get("SMTP_PASSWORD") or None,
-        sender=os.environ.get("SMTP_FROM") or os.environ.get("SMTP_USER") or "synera@localhost",
-        starttls=os.environ.get("SMTP_STARTTLS", "true").lower() not in ("0", "false", "hayir"),
+        # SMTP_PASSWORD ve SMTP_FROM: aynı gün önce kullanılan adlar, geriye uyum için okunur.
+        password=os.environ.get("SMTP_PASS") or os.environ.get("SMTP_PASSWORD") or None,
+        sender=os.environ.get("MAIL_FROM")
+        or os.environ.get("SMTP_FROM")
+        or "AVATAR Synera <avatar@localhost>",
         interval_s=int(os.environ.get("MAIL_INTERVAL_S", "30")),
     )
+
+
+def _domains(raw: str) -> tuple[str, ...]:
+    return tuple(d.strip().lower().lstrip("@") for d in raw.split(",") if d.strip())
 
 
 @lru_cache
@@ -57,4 +65,6 @@ def get_settings() -> Settings:
         seed_dir=Path(os.environ.get("SEED_DIR", _DEFAULT_SEED_DIR)),
         business_utc_offset_hours=int(os.environ.get("BUSINESS_UTC_OFFSET_HOURS", "3")),  # Türkiye UTC+3
         smtp=_smtp_settings(),
+        allowed_email_domains=_domains(os.environ.get("ALLOWED_EMAIL_DOMAINS", "")),
+        web_base_url=os.environ.get("WEB_BASE_URL", "http://localhost:8080").rstrip("/"),
     )

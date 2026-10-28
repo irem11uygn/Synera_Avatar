@@ -6,10 +6,12 @@ from enum import Enum
 from typing import Literal
 
 from fastapi import APIRouter, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from app.api.csv_export import csv_response
+from app.api.csv_export import csv_response, csv_text
 from app.api.deps import Db, WebUser
+from app.models.enums import MailStatus
+from app.services import audit, mail, report_mail
 from app.services.reports import FILTERS, META, ColumnKind, Report, ReportCode, ReportFilter, build_report
 
 router = APIRouter(prefix="/reports", tags=["raporlar"])
@@ -102,3 +104,75 @@ def get_report(
             ([row.get(c.key) for c in report.columns] for row in report.rows),
         )
     return _report_out(report)
+
+
+class ReportEmailIn(BaseModel):
+    recipients: list[str] = Field(min_length=1, max_length=20)
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class ReportEmailOut(BaseModel):
+    message_id: int
+    status: MailStatus
+    recipients: list[str]
+    subject: str
+    attachment: str
+
+
+@router.post("/{code}/email", response_model=ReportEmailOut, status_code=202, responses={422: {}, 429: {}})
+def email_report(
+    code: ReportCode,
+    body: ReportEmailIn,
+    db: Db,
+    user: WebUser,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    product_id: int | None = None,
+    lot_no: str | None = None,
+) -> ReportEmailOut:
+    """Raporu CSV ekiyle e-postayla gönderir (202: giden kutusuna alındı, istek SMTP'yi beklemez).
+
+    Süzgeçler `GET /reports/{code}` ile aynıdır. Alıcı: aktif kullanıcı ya da izinli alan adı.
+    Kullanıcı başına dakikada en çok 5 gönderim.
+    """
+    report_mail.limiter.check(user.id)
+    recipients = report_mail.allowed_recipients(db, body.recipients)
+    filters = ReportFilter(
+        date_from=date_from, date_to=date_to, product_id=product_id, lot_no=(lot_no or "").strip() or None
+    )
+    report = build_report(db, code, filters)
+    attachment = report_mail.csv_attachment(
+        report,
+        csv_text(
+            [c.label for c in report.columns],
+            ([row.get(c.key) for c in report.columns] for row in report.rows),
+        ),
+    )
+    subject, html_body, text = report_mail.report_mail(report, filters, user, body.note, attachment)
+    message = mail.queue(
+        db,
+        recipients=recipients,
+        subject=subject,
+        body=text,
+        html=html_body,
+        attachment=attachment,
+        kind="RAPOR",
+        user=user,
+    )
+    assert message is not None  # tekilleştirme anahtarı yok
+    audit.log(
+        db,
+        "RAPOR_EPOSTA",
+        f"{report.title} ({code.value}) e-postayla gönderildi → {', '.join(recipients)}",
+        user=user,
+        ref_type="MAIL",
+        ref_id=message.id,
+    )
+    report_mail.limiter.record(user.id)
+    return ReportEmailOut(
+        message_id=message.id,
+        status=message.status,
+        recipients=recipients,
+        subject=message.subject,
+        attachment=attachment.filename,
+    )

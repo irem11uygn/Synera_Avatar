@@ -1,4 +1,4 @@
-"""Alarm merkezi: liste, zil özeti, okundu işaretleme, kuralları çalıştırma, eşikler."""
+"""Alarm merkezi: liste, zil özeti, okundu işaretleme, kuralları çalıştırma, eşikler, e-posta abonelikleri."""
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
@@ -8,7 +8,7 @@ from app.api.deps import AdminUser, Db, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Alert, User
 from app.models.enums import AlertKind, Severity
-from app.services import alarms, app_settings, audit
+from app.services import alarms, app_settings, audit, subscriptions
 from app.services.lookups import get_or_404
 
 router = APIRouter(prefix="/alerts", tags=["alarm"])
@@ -86,6 +86,54 @@ def list_alerts(
     if severity:
         query = query.where(Alert.severity == severity)
     return [alert_out(db, user, a) for a in db.scalars(query)]
+
+
+class SubscriptionOut(BaseModel):
+    alert_type: AlertKind
+    label: str
+    enabled: bool
+    is_default: bool  # kullanıcı değiştirmedi, rolün varsayılanı
+
+
+class SubscriptionsOut(BaseModel):
+    email: str | None  # boşsa e-posta gitmez (yönetici kullanıcı kartına yazar)
+    subscriptions: list[SubscriptionOut]
+
+
+class SubscriptionIn(BaseModel):
+    alert_type: AlertKind
+    enabled: bool
+
+
+class SubscriptionsIn(BaseModel):
+    subscriptions: list[SubscriptionIn] = Field(min_length=1, max_length=50)
+
+
+def _subscriptions_out(db: Db, user: User) -> SubscriptionsOut:
+    return SubscriptionsOut(
+        email=user.email,
+        subscriptions=[
+            SubscriptionOut(
+                alert_type=kind, label=alarms.KIND_LABEL[kind], enabled=enabled, is_default=default
+            )
+            for kind, enabled, default in subscriptions.subscriptions(db, user)
+        ],
+    )
+
+
+@router.get("/subscriptions", response_model=SubscriptionsOut)
+def my_subscriptions(db: Db, user: WebUser) -> SubscriptionsOut:
+    """Kendi alarm e-postası aboneliklerim (değiştirmediklerim rolün varsayılanı)."""
+    return _subscriptions_out(db, user)
+
+
+@router.put("/subscriptions", response_model=SubscriptionsOut)
+def update_subscriptions(body: SubscriptionsIn, db: Db, user: WebUser) -> SubscriptionsOut:
+    """Yalnız gönderilen türler değişir; görülemeyen tür (ör. hatalı giriş, yönetici dışı) 422."""
+    changes = subscriptions.update(db, user, [(s.alert_type, s.enabled) for s in body.subscriptions])
+    if changes:
+        audit.log(db, "ABONELIK", "Alarm e-postası abonelikleri: " + "; ".join(changes), user=user)
+    return _subscriptions_out(db, user)
 
 
 @router.get("/summary", response_model=AlertSummaryOut)

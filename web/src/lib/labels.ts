@@ -137,6 +137,8 @@ export const ALERT_KIND: Record<AlertKind, string> = {
   VERIM_SAPMASI: t('Verim sapması'),
   FIYAT_ARTISI: t('Alış fiyatı artışı'),
   HATALI_GIRIS: t('Art arda hatalı giriş'),
+  SKT_YAKLASIYOR: t('Son kullanma tarihi yaklaşan lot'),
+  SAYIM_FARKI: t('Sayım farkı'),
 }
 
 export const MAIL_STATUS: Record<MailStatus, string> = {
@@ -178,6 +180,8 @@ export const AUDIT_ACTION: Record<string, string> = {
   KURAL: t('Alarm kuralları'),
   AYAR: t('Ayar'),
   EPOSTA: t('E-posta'),
+  RAPOR_EPOSTA: t('Rapor e-postası'),
+  ABONELIK: t('E-posta aboneliği'),
   URUN: t('Ürün'),
   CARI: t('Cari'),
 }

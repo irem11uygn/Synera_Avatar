@@ -58,7 +58,7 @@ export default function AlertsPage() {
   return (
     <Page
       title={t('Alarm merkezi')}
-      description={t('Sistemin kendiliğinden açtığı alarmlar: verim beklenenden çok farklı, alış fiyatı birden arttı, bloke lotta stok kaldı, geri çağırma başladı, bloke lot satılmak istendi, art arda hatalı giriş. Kritik alarmlar yönetici ve kaliteye e-postayla da gider.')}
+      description={t('Sistemin kendiliğinden açtığı alarmlar: verim beklenenden çok farklı, alış fiyatı birden arttı, bloke lotta stok kaldı, son kullanma tarihi yaklaştı, sayımda fark çıktı, geri çağırma başladı, bloke lot satılmak istendi, art arda hatalı giriş. Alarm e-postası, o türe abone olanlara anında gider (yönetici bütün türlere abonedir).')}
       extra={
         <>
           {user.role === 'YONETICI' && (

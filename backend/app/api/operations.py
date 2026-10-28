@@ -280,6 +280,24 @@ def create_count(body: StockCountIn, db: Db, user: CountUser) -> StockCountOut:
         ref_type="STOCK_COUNT",
         ref_id=count.id,
     )
+    alarms.stock_count_difference(
+        db,
+        user,
+        count_id=count.id,
+        count_no=out.count_no,
+        warehouse_code=out.warehouse_code,
+        differences=[
+            (
+                line.lot_no,
+                line.product_name,
+                "adet" if line.base_unit == BaseUnit.ADET else "kg",
+                line.difference,
+            )
+            for line in out.lines
+            if line.difference != 0
+        ],
+        shortage_value=sum((line.shortage_value for line in short), Decimal(0)),
+    )
     return out
 
 

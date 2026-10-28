@@ -463,3 +463,23 @@ Not: Bu prova T-26'nın yerini tutmaz. Asıl temiz kurulum testi ekip arkadaşı
 - Fiyat artışı alarmında fiyat "10,9 €" yazıyordu → iki basamak ("10,90 €").
 - Telefon genişliğinde (375 px) ana sayfa ve panel tek sütun, yatay taşma yok.
 - Ekran görüntüleri yeniden çekildi: 52 web (yeni 8) + 14 Android (emülatör Medium_Phone, turkuaz üst çubuk; satış SAT-2026-0107 Market B 1,5 kg sırt 39,00 € nakit, gönderildi) (`docs/ekran_goruntuleri`).
+
+## 28 Ekim 2026 (üçüncü tur) — e-posta bildirimleri
+
+### Otomatik testler
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **252 geçti** (yeni 15 `tests/test_email_notifications.py`: HTML + düz metin + ek, STARTTLS/giriş yalnız SMTP_USER doluysa, SMTP hatası günlüğe yazılıp döner, girişsiz 401 ve telefon rolü 403, izinsiz/pasif/geçersiz alıcı ve 21 alıcı 422, izinli alan adı 202, CSV eki ve not kaçışı, denetim kaydı, istek SMTP'yi beklemez, dakikada 5 sınırı (kullanıcı başına), giden kutusundan teslim, rol varsayılan abonelikleri, abonelik güncelleme ve yetkisiz tür 422, aboneye göre süzme, tekilleştirme, sayım farkı ve SKT uyarıları) |
+| Biçim | `ruff check` + `ruff format --check` | Temiz |
+| Web | `npm test`, `tsc -b`, `oxlint` | 30 geçti; derleme ve lint temiz |
+| Kabul (sıfırdan kurulum) | `sh scripts/kabul_testleri.sh` | **23/23**; ET-2026-001 ileri izleme 0,020 sn (Mailpit bu kopyada çalışmıyor: e-postalar "Gönderilemedi" olur, iş akışı etkilenmez) |
+
+Bulunan sorun: Test oturumunda Alembic'in `logging.fileConfig`'i önceden oluşmuş günlükçüleri kapatıyordu; "SMTP hatası günlüğe yazılır" testi tek başına geçip toplu çalıştırmada düşüyordu. Testte günlükçü açık tutuldu; üretimde göç ayrı süreçte çalıştığı için etkisi yok.
+
+### Mailpit ile canlı deneme (demo yığını, API 18300, Mailpit 8025)
+- Yönetici girişinde kural motoru SKT yaklaşan lot uyarısı açtı; e-posta 0,12 sn içinde Mailpit'teydi.
+- `POST /reports/sales/email` → 202. E-posta `rapor_sales.csv` ekiyle (text/csv, 8 satır), notla ve HTML + düz metin olarak geldi.
+- İzinsiz alıcı (`yabanci@kotu.example`) → 422, `details.rejected`. Aynı dakikada 6. gönderim → 429.
+- Sayım farkı (ET-2026-002, −0,5 kg): uyarı e-postası 0,34 sn içinde abonelere ayrı ayrı gitti (yönetici, depo). Konu `[AVATAR UYARI] Sayım farkı`; gövdede sayım no, depo, eksik değeri ve `http://localhost:18380/sayim` bağlantısı vardı. Mailpit'te HTML görünümü düzgündü.
+- Giden kutusunda bütün satırlar "Gönderildi".

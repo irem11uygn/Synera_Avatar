@@ -150,6 +150,8 @@ class AlertKind(StrEnum):
     VERIM_SAPMASI = "VERIM_SAPMASI"  # üretim/parçalama verimi beklenenden çok farklı (z-skoru)
     FIYAT_ARTISI = "FIYAT_ARTISI"  # alış fiyatı bir önceki alışa göre eşikten fazla arttı
     HATALI_GIRIS = "HATALI_GIRIS"  # art arda hatalı giriş denemesi
+    SKT_YAKLASIYOR = "SKT_YAKLASIYOR"  # elimizdeki lotun son kullanma tarihi yaklaştı ya da geçti
+    SAYIM_FARKI = "SAYIM_FARKI"  # depo/araç sayımında sistemle sayılan farklı
 
 
 class Severity(StrEnum):

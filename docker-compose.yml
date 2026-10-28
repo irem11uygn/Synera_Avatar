@@ -35,18 +35,28 @@ services:
       TEST_DATABASE_URL: mysql+pymysql://avatar:${DB_PASSWORD:-avatar_yerel}@db:3306/avatar_test?charset=utf8mb4
       SEED_PROFILE: ${SEED_PROFILE:-demo}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      # E-posta (isteğe bağlı): SMTP_HOST boşsa e-postalar giden kutusunda "kuyrukta" bekler.
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
+      # E-posta: varsayılan aşağıdaki Mailpit (yerel test kutusu, dışarı e-posta gitmez).
+      # SMTP_HOST= (boş) e-postayı kapatır; e-postalar giden kutusunda "Kuyrukta" bekler.
+      SMTP_HOST: ${SMTP_HOST-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
       SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:-}
-      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-AVATAR Synera <avatar@synera.example>}
+      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS:-}
+      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:8080}
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "${API_PORT:-8000}:8000"
+
+  # Yerel e-posta test kutusu: gönderilen e-postalar http://localhost:8025 adresinde görünür.
+  # Sunucu ona bağımlı değildir; Mailpit kapalıyken e-postalar "Gönderilemedi" olur ve yeniden denenir.
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
 
   web:
     build: ./web

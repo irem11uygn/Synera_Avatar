@@ -131,3 +131,11 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Görünüm: turkuaz geçişli menü, buzlu cam kartlar, fareyle eğilen 3B kartlar, izometrik 3B sütunlar; azaltılmış hareket tercihinde kapanır. Android üst çubuğu da turkuaz.
 - Kullanıcılara e-posta alanı. Göç `c5e8a1f0d2b6` (36 tablo: `audit_events`, `app_settings`, `mail_outbox`).
 - Testler: 237 sunucu, 30 web, 22 Android (`reports/test_results.md`).
+
+### 28 Ekim 2026 (üçüncü tur) — e-posta bildirimleri
+- Mailer modülü (`app/mailer.py`, yalnız standart kütüphane): HTML + düz metin, tek ek, STARTTLS + giriş yalnız SMTP_USER doluysa; hata günlüğe yazılır, API düşmez; sonuç giden kutusunda.
+- Gerçek zamanlı gönderim: giden kutusuna yazan işlem kaydedilince gönderici hemen uyanır; başarısızsa yeniden dener.
+- `POST /api/v1/reports/{kod}/email` (202): rapor CSV ekiyle; alıcı yalnız aktif kullanıcı ya da `ALLOWED_EMAIL_DOMAINS`, aksi 422; kullanıcı başına dakikada 5; denetim günlüğü.
+- Alarm e-postası abonelere (`alert_subscriptions`, rol varsayılanları), her alıcıya ayrı, aynı alarm aynı adrese bir kez; konu `[AVATAR UYARI] <başlık>`, gövdede lot/ürün ve web bağlantısı. Uçlar `GET/PUT /api/v1/alerts/subscriptions`.
+- Yeni uyarılar: SKT yaklaşan/geçen lot, sayım farkı. Göç `d7f3b9a2c4e1` (37 tablo).
+- docker-compose'a Mailpit (`axllent/mailpit:v1.32.0`, 8025 arayüz, 1025 SMTP); `.env.example` yeni değişkenlerle. Değişken adları `SMTP_PASS`, `MAIL_FROM` (eski `SMTP_PASSWORD`, `SMTP_FROM` de okunur).
