@@ -24,7 +24,7 @@ class MailStatusOut(BaseModel):
     sender: str | None
 
 
-class RecipientOut(BaseModel):
+class MailRecipientOut(BaseModel):
     name: str
     email: str
     group: Literal["Kullanıcı", "Müşteri", "Tedarikçi", "Dış üretici"]
@@ -83,11 +83,11 @@ def status(_: WebUser) -> MailStatusOut:
     )
 
 
-@router.get("/recipients", response_model=list[RecipientOut])
-def recipients(db: Db, _: WebUser) -> list[RecipientOut]:
+@router.get("/recipients", response_model=list[MailRecipientOut])
+def recipients(db: Db, _: WebUser) -> list[MailRecipientOut]:
     """E-postası tanımlı aktif kullanıcılar ve cari kartlar (müşteri, tedarikçi, dış üretici)."""
     rows = [
-        RecipientOut(name=u.full_name, email=u.email, group="Kullanıcı", role=u.role)
+        MailRecipientOut(name=u.full_name, email=u.email, group="Kullanıcı", role=u.role)
         for u in db.scalars(select(User).where(User.active, User.email.is_not(None)).order_by(User.full_name))
         if u.email
     ]
@@ -95,7 +95,7 @@ def recipients(db: Db, _: WebUser) -> list[RecipientOut]:
         if not p.email:
             continue
         group = "Müşteri" if p.is_customer else "Dış üretici" if p.is_subcontractor else "Tedarikçi"
-        rows.append(RecipientOut(name=p.name, email=p.email, group=group, role=None))
+        rows.append(MailRecipientOut(name=p.name, email=p.email, group=group, role=None))
     return rows
 
 

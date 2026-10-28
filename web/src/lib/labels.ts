@@ -2,11 +2,13 @@
 // burada eksik kalırsa derlemeyi durdurur.
 
 import type {
+  AlertKind,
   AllocationMethod,
   CuttingStatus,
   LinkProcess,
   LotOrigin,
   LotStatus,
+  MailStatus,
   MovementType,
   OnwardStatus,
   OrderStatus,
@@ -17,6 +19,7 @@ import type {
   RecallStatus,
   RecipeLineType,
   SaleChannel,
+  Severity,
   Species,
   TransferReason,
   WarehouseKind,
@@ -121,6 +124,62 @@ export const PAYMENT_METHOD: Record<PaymentMethod, string> = {
   KART: t('Kredi kartı'),
   HAVALE: t('Havale / EFT'),
   VERESIYE: t('Veresiye (açık hesap)'),
+}
+
+export const SEVERITY: Record<Severity, string> = { BILGI: t('Bilgi'), UYARI: t('Uyarı'), KRITIK: t('Kritik') }
+
+export const ALERT_KIND: Record<AlertKind, string> = {
+  GERI_CAGIRMA_IHLALI: t('Geri çağrılmış ürün satıldı'),
+  SKT_IHLALI: t('SKT’si geçmiş ürün satıldı'),
+  GERI_CAGIRMA: t('Geri çağırma başlatıldı'),
+  BLOKE_SATIS_DENEMESI: t('Bloke lot satış denemesi'),
+  BLOKE_STOK: t('Bloke lotta stok var'),
+  VERIM_SAPMASI: t('Verim sapması'),
+  FIYAT_ARTISI: t('Alış fiyatı artışı'),
+  HATALI_GIRIS: t('Art arda hatalı giriş'),
+}
+
+export const MAIL_STATUS: Record<MailStatus, string> = {
+  KUYRUKTA: t('Kuyrukta'),
+  GONDERILDI: t('Gönderildi'),
+  HATA: t('Gönderilemedi'),
+}
+
+/** Denetim günlüğündeki işlem kodlarının adları (bilinmeyen kod olduğu gibi gösterilir). */
+export const AUDIT_ACTION: Record<string, string> = {
+  GIRIS: t('Giriş'),
+  GIRIS_HATASI: t('Hatalı giriş'),
+  GIRIS_ENGELLENDI: t('Giriş engellendi'),
+  CIKIS: t('Çıkış'),
+  SIFRE_DEGISTI: t('Şifre değişti'),
+  SIFRE_SIFIRLANDI: t('Şifre sıfırlandı'),
+  KULLANICI: t('Kullanıcı'),
+  MAL_KABUL: t('Mal kabul'),
+  URETIM_EMRI: t('Üretim emri'),
+  URETIM_SEVK: t('Üretim sevki'),
+  URETIM_TAMAM: t('Üretim tamamlandı'),
+  URETIM_IPTAL: t('Üretim iptal'),
+  YENIDEN_ISLEME: t('Yeniden işleme'),
+  PARCALAMA: t('Parçalama'),
+  PARCALAMA_ONAY: t('Parçalama onayı'),
+  RECETE: t('Reçete'),
+  SATIS: t('Satış'),
+  SATIS_SENKRON: t('Telefon satışı'),
+  IADE: t('İade'),
+  DAGITIM: t('İkinci kademe dağıtım'),
+  FIRE: t('Fire / düzeltme'),
+  TERS_KAYIT: t('Ters kayıt'),
+  TRANSFER: t('Transfer'),
+  SAYIM: t('Sayım'),
+  GERI_CAGIRMA: t('Geri çağırma'),
+  GERI_CAGIRMA_KAPANDI: t('Geri çağırma kapandı'),
+  ALARM: t('Alarm'),
+  ALARM_OKUNDU: t('Alarm okundu'),
+  KURAL: t('Alarm kuralları'),
+  AYAR: t('Ayar'),
+  EPOSTA: t('E-posta'),
+  URUN: t('Ürün'),
+  CARI: t('Cari'),
 }
 
 /** Gün sonu toplamlarındaki ödeme anahtarı; eski uygulama sürümünden gelen satışta ödeme türü yoktur. */

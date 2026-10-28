@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { tiltHandlers } from './Tilt'
 
 type Tone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger'
 
@@ -22,9 +23,9 @@ export function Stat({ label, value, hint, tone = 'neutral', onClick }: Props) {
       {hint && <div className="stat-hint">{hint}</div>}
     </>
   )
-  if (!onClick) return <div className={`stat is-${tone}`}>{content}</div>
+  if (!onClick) return <div className={`stat tilt is-${tone}`} {...tiltHandlers()}>{content}</div>
   return (
-    <button type="button" className={`stat is-${tone}`} onClick={onClick}>
+    <button type="button" className={`stat tilt is-${tone}`} onClick={onClick} {...tiltHandlers()}>
       {content}
     </button>
   )

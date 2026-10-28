@@ -320,7 +320,7 @@ def test_parse_invoice_text_suggests_receipt_lines(client, session):
         "ET-2026-002",
     )
     assert D(meat["invoice_amount"]) == D("1188.00") and meat["expiry_date"] == "2026-11-15"
-    assert meat["warnings"] == []
+    assert meat["warnings"] == [] and meat["match"] == casing["match"] == "ad"
     assert casing["product_code"] == "BAGIRSAK" and D(casing["unit_price"]) == D("11.60")
     assert any("Lot numarası yok" in w for w in casing["warnings"])
     assert any("tutar" in w.lower() for w in casing["warnings"])  # 6 × 11,60 = 69,60 ≠ 70,00

@@ -7,7 +7,8 @@ import type { FormInstance } from 'antd'
 import { useState } from 'react'
 import { api, errorMessage } from '../api/client'
 import { refreshBusinessData, usePartners, useProducts } from '../api/queries'
-import type { Product, Purchase, PurchaseCostKind, PurchaseInput } from '../api/types'
+import type { InvoiceSuggestion, Product, Purchase, PurchaseCostKind, PurchaseInput } from '../api/types'
+import { InvoiceImport } from '../components/InvoiceImport'
 import { Page } from '../components/Page'
 import { compare, multiply, parseUserDecimal, sum } from '../lib/decimal'
 import { formatMoney, todayIso, unitLabel } from '../lib/format'
@@ -79,6 +80,27 @@ export default function PurchaseNewPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
+  /** Fatura metninden gelen öneriyi forma yazar; kaydetmez. Bulunamayan alan boş kalır. */
+  function applySuggestion(suggestion: InvoiceSuggestion) {
+    const current = form.getFieldsValue()
+    form.setFieldsValue({
+      supplier_id: suggestion.supplier_id ?? current.supplier_id,
+      doc_no: suggestion.doc_no ?? current.doc_no,
+      doc_date: suggestion.doc_date ?? current.doc_date,
+      lines: suggestion.lines.map((line) => ({
+        product_id: line.product_id ?? undefined,
+        lot_no: line.lot_no ?? undefined,
+        qty: fromApiDecimal(line.qty),
+        unit_price: fromApiDecimal(line.unit_price),
+        invoice_amount: fromApiDecimal(line.invoice_amount),
+        expiry_date: line.expiry_date ?? undefined,
+        extra_costs: [],
+      })),
+    })
+    message.info(t('Öneri forma aktarıldı. Her alanı kontrol edin; eksikleri tamamlayıp kaydedin.'))
+    void form.validateFields({ validateOnly: true }).catch(() => undefined)
+  }
+
   async function finish(values: FormValues) {
     setSaving(true)
     setError(null)
@@ -95,7 +117,7 @@ export default function PurchaseNewPage() {
   }
 
   return (
-    <Page title={t('Yeni mal kabul')} back={{ to: '/alislar', label: t('Mal kabul') }}>
+    <Page title={t('Yeni mal kabul')} back={{ to: '/alislar', label: t('Mal kabul') }} extra={<InvoiceImport onApply={applySuggestion} />}>
       {error && <Alert type="error" showIcon role="alert" title={error} style={{ marginBottom: 16 }} />}
       <Form<FormValues>
         form={form}

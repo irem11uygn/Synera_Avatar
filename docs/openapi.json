@@ -33,6 +33,7 @@
           "kimlik"
         ],
         "summary": "Login",
+        "description": "Hatalı giriş hata fırlatılmadan yanıtlanır: denetim kaydı ve gerekirse alarm kalıcı olsun\n(fırlatılsaydı isteğin işlemi geri alınırdı). Başarılı girişte alarm kuralları çalışır.",
         "operationId": "login_api_v1_auth_login_post",
         "requestBody": {
           "content": {
@@ -55,6 +56,9 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -64,6 +68,9 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too Many Requests"
           }
         }
       }
@@ -364,6 +371,33 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DashboardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/dashboard/charts": {
+      "get": {
+        "tags": [
+          "günlük işler"
+        ],
+        "summary": "Get Charts",
+        "description": "Panel grafikleri: EKP geçmişi ve model tahmini, hedef/gerçekleşen, maliyet dağılımı, sevkiyat.",
+        "operationId": "get_charts_api_v1_dashboard_charts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChartsOut"
                 }
               }
             }
@@ -1115,6 +1149,53 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/purchases/parse-text": {
+      "post": {
+        "tags": [
+          "alış"
+        ],
+        "summary": "Parse Text",
+        "description": "Fatura/irsaliye metninden mal kabul önerisi. Hiçbir şey kaydetmez; kullanıcı kontrol edip kaydeder.",
+        "operationId": "parse_text_api_v1_purchases_parse_text_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseTextIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceSuggestionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/lots": {
@@ -2242,7 +2323,7 @@
           "satış"
         ],
         "summary": "Create",
-        "description": "Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz.",
+        "description": "Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz.\n\nBloke lot denemesi reddedilir ve kritik alarm açar: satışın yarım yazılanları kayıt noktasıyla\n(savepoint) geri alınır, yalnız alarm ve denetim kaydı kalır.",
         "operationId": "create_api_v1_sales_post",
         "security": [
           {
@@ -2269,6 +2350,9 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "Conflict"
           },
           "422": {
             "description": "Validation Error",
@@ -3025,7 +3109,7 @@
     "/api/v1/alerts": {
       "get": {
         "tags": [
-          "geri çağırma"
+          "alarm"
         ],
         "summary": "List Alerts",
         "operationId": "list_alerts_api_v1_alerts_get",
@@ -3043,6 +3127,32 @@
               "type": "boolean",
               "default": false,
               "title": "Only Open"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Severity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 300,
+              "title": "Limit"
             }
           }
         ],
@@ -3074,10 +3184,37 @@
         }
       }
     },
+    "/api/v1/alerts/summary": {
+      "get": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "Summary",
+        "description": "Üst çubuktaki zil: açık alarm sayıları ve son beş açık alarm.",
+        "operationId": "summary_api_v1_alerts_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertSummaryOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/alerts/{alert_id}/ack": {
       "post": {
         "tags": [
-          "geri çağırma"
+          "alarm"
         ],
         "summary": "Acknowledge",
         "operationId": "acknowledge_api_v1_alerts__alert_id__ack_post",
@@ -3119,6 +3256,703 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/alerts/ack-all": {
+      "post": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "Acknowledge All",
+        "description": "Kullanıcının okundu işaretleyebildiği bütün açık alarmlar.",
+        "operationId": "acknowledge_all_api_v1_alerts_ack_all_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlertOut"
+                  },
+                  "type": "array",
+                  "title": "Response Acknowledge All Api V1 Alerts Ack All Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/alerts/run-rules": {
+      "post": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "Run Rules",
+        "operationId": "run_rules_api_v1_alerts_run_rules_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleRunOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/settings/alarm-thresholds": {
+      "get": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "Get Thresholds",
+        "operationId": "get_thresholds_api_v1_settings_alarm_thresholds_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThresholdsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "alarm"
+        ],
+        "summary": "Put Thresholds",
+        "operationId": "put_thresholds_api_v1_settings_alarm_thresholds_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThresholdsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThresholdsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "tags": [
+          "denetim"
+        ],
+        "summary": "List Events",
+        "operationId": "list_events_api_v1_audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Severity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Username"
+            }
+          },
+          {
+            "name": "day_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day From"
+            }
+          },
+          {
+            "name": "day_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day To"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 500,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditOut"
+                  },
+                  "title": "Response List Events Api V1 Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit/export.csv": {
+      "get": {
+        "tags": [
+          "denetim"
+        ],
+        "summary": "Export Csv",
+        "operationId": "export_csv_api_v1_audit_export_csv_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Severity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Username"
+            }
+          },
+          {
+            "name": "day_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day From"
+            }
+          },
+          {
+            "name": "day_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mail/status": {
+      "get": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_v1_mail_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailStatusOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mail/recipients": {
+      "get": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Recipients",
+        "description": "E-postası tanımlı aktif kullanıcılar ve cari kartlar (müşteri, tedarikçi, dış üretici).",
+        "operationId": "recipients_api_v1_mail_recipients_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MailRecipientOut"
+                  },
+                  "type": "array",
+                  "title": "Response Recipients Api V1 Mail Recipients Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mail": {
+      "post": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Send",
+        "description": "Raporu giden kutusuna koyar; e-posta sunucusu tanımlıysa arka planda gönderilir.",
+        "operationId": "send_api_v1_mail_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mail/outbox": {
+      "get": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Outbox",
+        "description": "Yönetici bütün e-postaları, diğer kullanıcılar yalnız kendi gönderdiklerini görür.",
+        "operationId": "outbox_api_v1_mail_outbox_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MailOut"
+                  },
+                  "title": "Response Outbox Api V1 Mail Outbox Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mail/deliver": {
+      "post": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Deliver",
+        "description": "Kuyruktaki ve hatalı e-postaları şimdi gönderir (arka plan göndericisini beklemeden).",
+        "operationId": "deliver_api_v1_mail_deliver_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mail/{message_id}/retry": {
+      "post": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Retry",
+        "operationId": "retry_api_v1_mail__message_id__retry_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Message Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calc/ekp": {
+      "post": {
+        "tags": [
+          "hesaplayıcı"
+        ],
+        "summary": "Ekp",
+        "operationId": "ekp_api_v1_calc_ekp_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EkpIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EkpOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/calc/cutting": {
+      "post": {
+        "tags": [
+          "hesaplayıcı"
+        ],
+        "summary": "Cutting",
+        "operationId": "cutting_api_v1_calc_cutting_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CuttingCalcIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuttingCalcOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/reports": {
@@ -3639,7 +4473,13 @@
         "type": "string",
         "enum": [
           "GERI_CAGIRMA_IHLALI",
-          "SKT_IHLALI"
+          "SKT_IHLALI",
+          "GERI_CAGIRMA",
+          "BLOKE_SATIS_DENEMESI",
+          "BLOKE_STOK",
+          "VERIM_SAPMASI",
+          "FIYAT_ARTISI",
+          "HATALI_GIRIS"
         ],
         "title": "AlertKind"
       },
@@ -3651,6 +4491,13 @@
           },
           "kind": {
             "$ref": "#/components/schemas/AlertKind"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
           },
           "ref_type": {
             "type": "string",
@@ -3680,19 +4527,69 @@
               }
             ],
             "title": "Acknowledged At"
+          },
+          "acknowledged_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acknowledged By Name"
+          },
+          "can_acknowledge": {
+            "type": "boolean",
+            "title": "Can Acknowledge"
           }
         },
         "type": "object",
         "required": [
           "id",
           "kind",
+          "kind_label",
+          "severity",
           "ref_type",
           "ref_id",
           "message",
           "created_at",
-          "acknowledged_at"
+          "acknowledged_at",
+          "acknowledged_by_name",
+          "can_acknowledge"
         ],
         "title": "AlertOut"
+      },
+      "AlertSummaryOut": {
+        "properties": {
+          "open_total": {
+            "type": "integer",
+            "title": "Open Total"
+          },
+          "open_critical": {
+            "type": "integer",
+            "title": "Open Critical"
+          },
+          "open_warning": {
+            "type": "integer",
+            "title": "Open Warning"
+          },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/AlertOut"
+            },
+            "type": "array",
+            "title": "Latest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "open_total",
+          "open_critical",
+          "open_warning",
+          "latest"
+        ],
+        "title": "AlertSummaryOut"
       },
       "AllocationMethod": {
         "type": "string",
@@ -3701,6 +4598,99 @@
           "DEGER"
         ],
         "title": "AllocationMethod"
+      },
+      "AuditOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "ref_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref Type"
+          },
+          "ref_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref Id"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "username",
+          "full_name",
+          "severity",
+          "action",
+          "message",
+          "ref_type",
+          "ref_id",
+          "client"
+        ],
+        "title": "AuditOut"
       },
       "BaseUnit": {
         "type": "string",
@@ -3749,6 +4739,117 @@
           "new_password"
         ],
         "title": "ChangePasswordIn"
+      },
+      "ChartsOut": {
+        "properties": {
+          "ekp_history": {
+            "items": {
+              "$ref": "#/components/schemas/EkpPointOut"
+            },
+            "type": "array",
+            "title": "Ekp History"
+          },
+          "ekp_synthetic": {
+            "items": {
+              "$ref": "#/components/schemas/EkpPointOut"
+            },
+            "type": "array",
+            "title": "Ekp Synthetic"
+          },
+          "target_qty": {
+            "type": "string",
+            "title": "Target Qty"
+          },
+          "actual_qty": {
+            "type": "string",
+            "title": "Actual Qty"
+          },
+          "fill_rate_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fill Rate Pct"
+          },
+          "target_label": {
+            "type": "string",
+            "title": "Target Label"
+          },
+          "cost_order_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Order No"
+          },
+          "cost_slices": {
+            "items": {
+              "$ref": "#/components/schemas/SliceOut"
+            },
+            "type": "array",
+            "title": "Cost Slices"
+          },
+          "cost_ekp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Ekp"
+          },
+          "parts_cutting_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parts Cutting No"
+          },
+          "part_costs": {
+            "items": {
+              "$ref": "#/components/schemas/PartCostOut"
+            },
+            "type": "array",
+            "title": "Part Costs"
+          },
+          "shipments": {
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOut"
+            },
+            "type": "array",
+            "title": "Shipments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ekp_history",
+          "ekp_synthetic",
+          "target_qty",
+          "actual_qty",
+          "fill_rate_pct",
+          "target_label",
+          "cost_order_no",
+          "cost_slices",
+          "cost_ekp",
+          "parts_cutting_no",
+          "part_costs",
+          "shipments"
+        ],
+        "title": "ChartsOut"
       },
       "ColumnKind": {
         "type": "string",
@@ -4097,6 +5198,239 @@
           "address"
         ],
         "title": "CustomerOut"
+      },
+      "CutLineIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Kg"
+          },
+          "value_per_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Per Kg"
+          },
+          "is_fire": {
+            "type": "boolean",
+            "title": "Is Fire",
+            "default": false
+          },
+          "bears_cost": {
+            "type": "boolean",
+            "title": "Bears Cost",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kg"
+        ],
+        "title": "CutLineIn"
+      },
+      "CutLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kg": {
+            "type": "string",
+            "title": "Kg"
+          },
+          "share_pct": {
+            "type": "string",
+            "title": "Share Pct"
+          },
+          "allocated_cost": {
+            "type": "string",
+            "title": "Allocated Cost"
+          },
+          "unit_cost": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Cost"
+          },
+          "is_fire": {
+            "type": "boolean",
+            "title": "Is Fire"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kg",
+          "share_pct",
+          "allocated_cost",
+          "unit_cost",
+          "is_fire"
+        ],
+        "title": "CutLineOut"
+      },
+      "CuttingCalcIn": {
+        "properties": {
+          "input_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Input Kg"
+          },
+          "input_cost": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Input Cost"
+          },
+          "invoice_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Kg"
+          },
+          "method": {
+            "$ref": "#/components/schemas/AllocationMethod"
+          },
+          "tolerance_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Tolerance Kg",
+            "default": "0.5"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CutLineIn"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_kg",
+          "input_cost",
+          "method",
+          "lines"
+        ],
+        "title": "CuttingCalcIn"
+      },
+      "CuttingCalcOut": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CutLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "outputs_kg": {
+            "type": "string",
+            "title": "Outputs Kg"
+          },
+          "fire_kg": {
+            "type": "string",
+            "title": "Fire Kg"
+          },
+          "fire_pct": {
+            "type": "string",
+            "title": "Fire Pct"
+          },
+          "difference_kg": {
+            "type": "string",
+            "title": "Difference Kg"
+          },
+          "balance_ok": {
+            "type": "boolean",
+            "title": "Balance Ok"
+          },
+          "total_allocated": {
+            "type": "string",
+            "title": "Total Allocated"
+          },
+          "input_unit_cost": {
+            "type": "string",
+            "title": "Input Unit Cost"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lines",
+          "outputs_kg",
+          "fire_kg",
+          "fire_pct",
+          "difference_kg",
+          "balance_ok",
+          "total_allocated",
+          "input_unit_cost",
+          "warnings"
+        ],
+        "title": "CuttingCalcOut"
       },
       "CuttingForecastIn": {
         "properties": {
@@ -4788,6 +6122,24 @@
         ],
         "title": "DayTotalOut"
       },
+      "DeliveryOut": {
+        "properties": {
+          "sent": {
+            "type": "integer",
+            "title": "Sent"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sent",
+          "failed"
+        ],
+        "title": "DeliveryOut"
+      },
       "DocType": {
         "type": "string",
         "enum": [
@@ -4800,6 +6152,221 @@
           "DUZELTME"
         ],
         "title": "DocType"
+      },
+      "EkpIn": {
+        "properties": {
+          "raw_lines": {
+            "items": {
+              "$ref": "#/components/schemas/RawLineIn"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Raw Lines"
+          },
+          "service_unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Service Unit Price"
+          },
+          "received_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Received Qty"
+          },
+          "invoiced_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoiced Qty"
+          },
+          "service_invoice_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Invoice Amount"
+          },
+          "sale_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw_lines",
+          "service_unit_price",
+          "received_qty"
+        ],
+        "title": "EkpIn"
+      },
+      "EkpOut": {
+        "properties": {
+          "raw_lines": {
+            "items": {
+              "$ref": "#/components/schemas/RawLineOut"
+            },
+            "type": "array",
+            "title": "Raw Lines"
+          },
+          "raw_total": {
+            "type": "string",
+            "title": "Raw Total"
+          },
+          "service_suggested": {
+            "type": "string",
+            "title": "Service Suggested"
+          },
+          "service_used": {
+            "type": "string",
+            "title": "Service Used"
+          },
+          "total": {
+            "type": "string",
+            "title": "Total"
+          },
+          "ekp": {
+            "type": "string",
+            "title": "Ekp"
+          },
+          "ekp_display": {
+            "type": "string",
+            "title": "Ekp Display"
+          },
+          "gross_profit_per_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Profit Per Unit"
+          },
+          "margin_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Pct"
+          },
+          "total_gross_profit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Gross Profit"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw_lines",
+          "raw_total",
+          "service_suggested",
+          "service_used",
+          "total",
+          "ekp",
+          "ekp_display",
+          "gross_profit_per_unit",
+          "margin_pct",
+          "total_gross_profit",
+          "warnings"
+        ],
+        "title": "EkpOut"
+      },
+      "EkpPointOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "actual": {
+            "type": "string",
+            "title": "Actual"
+          },
+          "forecast": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "day",
+          "actual",
+          "forecast"
+        ],
+        "title": "EkpPointOut"
       },
       "EvaluationOut": {
         "properties": {
@@ -5238,6 +6805,214 @@
         ],
         "title": "InputResultIn"
       },
+      "InvoiceSuggestionOut": {
+        "properties": {
+          "supplier_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Id"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          },
+          "doc_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc No"
+          },
+          "doc_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Date"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineSuggestionOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "supplier_id",
+          "supplier_name",
+          "doc_no",
+          "doc_date",
+          "lines",
+          "warnings"
+        ],
+        "title": "InvoiceSuggestionOut"
+      },
+      "LineSuggestionOut": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "match": {
+            "type": "string",
+            "title": "Match"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "invoice_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Amount"
+          },
+          "lot_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot No"
+          },
+          "expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Date"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "product_id",
+          "product_code",
+          "product_name",
+          "match",
+          "qty",
+          "unit",
+          "unit_price",
+          "invoice_amount",
+          "lot_no",
+          "expiry_date",
+          "warnings"
+        ],
+        "title": "LineSuggestionOut"
+      },
       "LinkOut": {
         "properties": {
           "lot_no": {
@@ -5494,6 +7269,209 @@
           "min_stock"
         ],
         "title": "LowStockOut"
+      },
+      "MailIn": {
+        "properties": {
+          "recipients": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Recipients"
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Subject"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipients",
+          "subject",
+          "body"
+        ],
+        "title": "MailIn"
+      },
+      "MailOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "created_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "recipients": {
+            "type": "string",
+            "title": "Recipients"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MailStatus"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "created_by_name",
+          "kind",
+          "recipients",
+          "subject",
+          "body",
+          "status",
+          "attempts",
+          "sent_at",
+          "last_error"
+        ],
+        "title": "MailOut"
+      },
+      "MailRecipientOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "Kullanıcı",
+              "Müşteri",
+              "Tedarikçi",
+              "Dış üretici"
+            ],
+            "title": "Group"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "group",
+          "role"
+        ],
+        "title": "MailRecipientOut"
+      },
+      "MailStatus": {
+        "type": "string",
+        "enum": [
+          "KUYRUKTA",
+          "GONDERILDI",
+          "HATA"
+        ],
+        "title": "MailStatus"
+      },
+      "MailStatusOut": {
+        "properties": {
+          "smtp_configured": {
+            "type": "boolean",
+            "title": "Smtp Configured"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          },
+          "sender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender"
+          }
+        },
+        "type": "object",
+        "required": [
+          "smtp_configured",
+          "host",
+          "sender"
+        ],
+        "title": "MailStatusOut"
       },
       "MovementOut": {
         "properties": {
@@ -6073,6 +8051,44 @@
           "forecast"
         ],
         "title": "OrderOut"
+      },
+      "ParseTextIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "ParseTextIn"
+      },
+      "PartCostOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kg": {
+            "type": "string",
+            "title": "Kg"
+          },
+          "unit_cost": {
+            "type": "string",
+            "title": "Unit Cost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "kg",
+          "unit_cost"
+        ],
+        "title": "PartCostOut"
       },
       "PartnerIn": {
         "properties": {
@@ -7174,6 +9190,75 @@
           "REJECTED"
         ],
         "title": "PushStatus"
+      },
+      "RawLineIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Unit Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "qty",
+          "unit_price"
+        ],
+        "title": "RawLineIn"
+      },
+      "RawLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "qty": {
+            "type": "string",
+            "title": "Qty"
+          },
+          "unit_price": {
+            "type": "string",
+            "title": "Unit Price"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "qty",
+          "unit_price",
+          "amount"
+        ],
+        "title": "RawLineOut"
       },
       "RealComparisonOut": {
         "properties": {
@@ -8450,6 +10535,38 @@
         ],
         "title": "ReverseIn"
       },
+      "RuleRunOut": {
+        "properties": {
+          "created": {
+            "items": {
+              "$ref": "#/components/schemas/AlertOut"
+            },
+            "type": "array",
+            "title": "Created"
+          },
+          "checked": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Checked"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created",
+          "checked",
+          "notes"
+        ],
+        "title": "RuleRunOut"
+      },
       "SaleChannel": {
         "type": "string",
         "enum": [
@@ -8685,6 +10802,60 @@
           "margin_pct"
         ],
         "title": "SalesOut"
+      },
+      "Severity": {
+        "type": "string",
+        "enum": [
+          "BILGI",
+          "UYARI",
+          "KRITIK"
+        ],
+        "title": "Severity",
+        "description": "Alarm ve denetim kaydı önemi."
+      },
+      "ShipmentOut": {
+        "properties": {
+          "customer": {
+            "type": "string",
+            "title": "Customer"
+          },
+          "qty_by_unit": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Qty By Unit"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer",
+          "qty_by_unit",
+          "amount"
+        ],
+        "title": "ShipmentOut"
+      },
+      "SliceOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "SliceOut"
       },
       "Species": {
         "type": "string",
@@ -9099,6 +11270,71 @@
         ],
         "title": "SupplierRefOut"
       },
+      "ThresholdsIn": {
+        "properties": {
+          "yield_z": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yield Z"
+          },
+          "price_increase_pct": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Increase Pct"
+          },
+          "failed_logins": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Logins"
+          }
+        },
+        "type": "object",
+        "title": "ThresholdsIn"
+      },
+      "ThresholdsOut": {
+        "properties": {
+          "yield_z": {
+            "type": "string",
+            "title": "Yield Z"
+          },
+          "price_increase_pct": {
+            "type": "string",
+            "title": "Price Increase Pct"
+          },
+          "failed_logins": {
+            "type": "string",
+            "title": "Failed Logins"
+          }
+        },
+        "type": "object",
+        "required": [
+          "yield_z",
+          "price_increase_pct",
+          "failed_logins"
+        ],
+        "title": "ThresholdsOut"
+      },
       "TraceLinkOut": {
         "properties": {
           "parent_lot_no": {
@@ -9472,6 +11708,17 @@
             "type": "boolean",
             "title": "Must Change Password"
           },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
           "active": {
             "type": "boolean",
             "title": "Active"
@@ -9486,6 +11733,7 @@
           "warehouse_id",
           "warehouse_code",
           "must_change_password",
+          "email",
           "active"
         ],
         "title": "UserAdminOut"
@@ -9523,6 +11771,18 @@
               }
             ],
             "title": "Warehouse Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
           }
         },
         "type": "object",
@@ -9576,6 +11836,17 @@
           "must_change_password": {
             "type": "boolean",
             "title": "Must Change Password"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
           }
         },
         "type": "object",
@@ -9586,7 +11857,8 @@
           "role",
           "warehouse_id",
           "warehouse_code",
-          "must_change_password"
+          "must_change_password",
+          "email"
         ],
         "title": "UserOut"
       },
@@ -9628,6 +11900,18 @@
               }
             ],
             "title": "Warehouse Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
           }
         },
         "type": "object",

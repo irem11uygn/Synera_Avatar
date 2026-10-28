@@ -1,6 +1,7 @@
 import {
   AlertOutlined,
   AppstoreOutlined,
+  AuditOutlined,
   BarChartOutlined,
   BulbOutlined,
   CalculatorOutlined,
@@ -13,10 +14,13 @@ import {
   InboxOutlined,
   KeyOutlined,
   LogoutOutlined,
+  MailOutlined,
   MenuOutlined,
   NodeIndexOutlined,
+  PercentageOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
+  SettingOutlined,
   ScissorOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
@@ -30,11 +34,12 @@ import { useQuery } from '@tanstack/react-query'
 import { Badge, Button, Dropdown, Flex, Menu, Result, Spin, type MenuProps } from 'antd'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { api } from './api/client'
-import type { AlertRow, ReportCode, UserRole } from './api/types'
+import type { AlertSummary, ReportCode, UserRole } from './api/types'
 import { useSession } from './auth/context'
+import { AlarmBell } from './components/AlarmBell'
 import { LanguageSwitch } from './components/LanguageSwitch'
 import { LotSearch } from './components/LotSearch'
-import { can, ROLE } from './lib/roles'
+import { ROLE } from './lib/roles'
 import { matchPath, navigate, usePath } from './lib/router'
 import { t } from './lib/i18n'
 
@@ -64,6 +69,10 @@ const RecallsPage = lazy(() => import('./pages/RecallsPage'))
 const RecallDetailPage = lazy(() => import('./pages/RecallDetailPage'))
 const MockRecallPage = lazy(() => import('./pages/MockRecallPage'))
 const AlertsPage = lazy(() => import('./pages/AlertsPage'))
+const AuditPage = lazy(() => import('./pages/AuditPage'))
+const MailPage = lazy(() => import('./pages/MailPage'))
+const AlarmSettingsPage = lazy(() => import('./pages/AlarmSettingsPage'))
+const CalculatorsPage = lazy(() => import('./pages/CalculatorsPage'))
 const ReportsPage = lazy(() => import('./pages/ReportsPage'))
 const AiPage = lazy(() => import('./pages/AiPage'))
 const UsersPage = lazy(() => import('./pages/UsersPage'))
@@ -111,7 +120,12 @@ const ROUTES: Route[] = [
   { pattern: '/geri-cagirma', render: () => <RecallsPage /> },
   { pattern: '/geri-cagirma/:id', render: ({ id }) => withId(id, (n) => <RecallDetailPage key={n} id={n} />) },
   { pattern: '/tatbikat', render: () => <MockRecallPage /> },
+  { pattern: '/alarmlar', render: () => <AlertsPage /> },
   { pattern: '/uyarilar', render: () => <AlertsPage /> },
+  { pattern: '/denetim', render: () => <AuditPage /> },
+  { pattern: '/e-posta', render: () => <MailPage /> },
+  { pattern: '/alarm-ayarlari', render: () => <AlarmSettingsPage /> },
+  { pattern: '/hesaplayicilar', render: () => <CalculatorsPage /> },
   { pattern: '/raporlar', render: () => <ReportsPage /> },
   { pattern: '/raporlar/:code', render: ({ code }) => <ReportsPage code={code as ReportCode} /> },
   { pattern: '/yapay-zeka', render: () => <AiPage /> },
@@ -162,13 +176,15 @@ const NAV: NavGroup[] = [
       { to: '/izleme', label: t('Lot izleme'), icon: <NodeIndexOutlined />, roles: ALL },
       { to: '/geri-cagirma', label: t('Geri çağırma'), icon: <SafetyCertificateOutlined />, roles: ['YONETICI', 'KALITE'] },
       { to: '/tatbikat', label: t('Geri çağırma tatbikatı'), icon: <FileSearchOutlined />, roles: ['YONETICI', 'KALITE'] },
-      { to: '/uyarilar', label: t('Uyarılar'), icon: <AlertOutlined />, roles: ['YONETICI', 'KALITE'], badge: 'alerts' },
+      { to: '/alarmlar', label: t('Alarm merkezi'), icon: <AlertOutlined />, roles: ALL, badge: 'alerts' },
     ],
   },
   {
     label: t('Raporlar'),
     items: [
       { to: '/raporlar', label: t('Raporlar'), icon: <BarChartOutlined />, roles: ALL },
+      { to: '/e-posta', label: t('Rapor gönder (e-posta)'), icon: <MailOutlined />, roles: ALL },
+      { to: '/hesaplayicilar', label: t('Ne olur hesaplayıcıları'), icon: <PercentageOutlined />, roles: ALL },
       { to: '/yapay-zeka', label: t('Yapay zekâ tahminleri'), icon: <BulbOutlined />, roles: ['YONETICI', 'URETIM'] },
     ],
   },
@@ -178,6 +194,8 @@ const NAV: NavGroup[] = [
       { to: '/kullanicilar', label: t('Kullanıcılar'), icon: <TeamOutlined />, roles: ['YONETICI'] },
       { to: '/urunler', label: t('Ürünler ve fiyatlar'), icon: <ShopOutlined />, roles: ['YONETICI'] },
       { to: '/cariler', label: t('Müşteri ve tedarikçiler'), icon: <UserOutlined />, roles: ['YONETICI', 'DEPO', 'MAGAZA'] },
+      { to: '/alarm-ayarlari', label: t('Alarm ve e-posta ayarları'), icon: <SettingOutlined />, roles: ['YONETICI'] },
+      { to: '/denetim', label: t('Denetim günlüğü'), icon: <AuditOutlined />, roles: ['YONETICI'] },
     ],
   },
 ]
@@ -277,12 +295,11 @@ function Shell({
   role: UserRole
   logout: () => Promise<void>
 }) {
-  // Okunmamış uyarı sayısı menüde görünür (ör. geri çağrılmış lotun çevrimdışı satışı).
+  // Açık alarm sayısı zilde ve menüde görünür; yeni alarm köşede bildirilir (30 sn'de bir bakılır).
   const alerts = useQuery({
-    queryKey: ['alerts', true],
-    queryFn: () => api<AlertRow[]>('/alerts', { query: { only_open: true } }),
-    refetchInterval: 60_000,
-    enabled: can(role, 'quality'),
+    queryKey: ['alerts', 'summary'],
+    queryFn: () => api<AlertSummary>('/alerts/summary'),
+    refetchInterval: 30_000,
   })
 
   const go = (to: string) => {
@@ -318,7 +335,7 @@ function Shell({
           </span>
         </a>
         <nav className="shell-nav" id="ana-menu">
-          <Menu mode="inline" items={menuItems(role, alerts.data?.length ?? 0, go)} selectedKeys={[selectedKey(path)]} />
+          <Menu mode="inline" theme="dark" items={menuItems(role, alerts.data?.open_total ?? 0, go)} selectedKeys={[selectedKey(path)]} />
         </nav>
       </aside>
       <div className="shell-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
@@ -336,6 +353,7 @@ function Shell({
           <span style={{ marginLeft: 'auto' }}>
             <LanguageSwitch />
           </span>
+          <AlarmBell summary={alerts.data} />
           <Dropdown menu={{ items: userMenu }} trigger={['click']} placement="bottomRight">
             <Button icon={<UserOutlined />} aria-label={t('Hesap: {name}', { name: userName })}>
               <span className="shell-user-name">{userName}</span>

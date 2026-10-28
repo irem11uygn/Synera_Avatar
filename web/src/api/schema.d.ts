@@ -30,7 +30,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Login */
+        /**
+         * Login
+         * @description Hatalı giriş hata fırlatılmadan yanıtlanır: denetim kaydı ve gerekirse alarm kalıcı olsun
+         *     (fırlatılsaydı isteğin işlemi geri alınırdı). Başarılı girişte alarm kuralları çalışır.
+         */
         post: operations["login_api_v1_auth_login_post"];
         delete?: never;
         options?: never;
@@ -159,6 +163,26 @@ export interface paths {
          * @description Bugün ilgilenilecek işler: SKT'si yaklaşan/geçen partiler, kritik stok, açık geri çağırmalar.
          */
         get: operations["get_dashboard_api_v1_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboard/charts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Charts
+         * @description Panel grafikleri: EKP geçmişi ve model tahmini, hedef/gerçekleşen, maliyet dağılımı, sevkiyat.
+         */
+        get: operations["get_charts_api_v1_dashboard_charts_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -362,6 +386,26 @@ export interface paths {
         get: operations["get_purchase_api_v1_purchases__purchase_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchases/parse-text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Parse Text
+         * @description Fatura/irsaliye metninden mal kabul önerisi. Hiçbir şey kaydetmez; kullanıcı kontrol edip kaydeder.
+         */
+        post: operations["parse_text_api_v1_purchases_parse_text_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -688,6 +732,9 @@ export interface paths {
         /**
          * Create
          * @description Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz.
+         *
+         *     Bloke lot denemesi reddedilir ve kritik alarm açar: satışın yarım yazılanları kayıt noktasıyla
+         *     (savepoint) geri alınır, yalnız alarm ve denetim kaydı kalır.
          */
         post: operations["create_api_v1_sales_post"];
         delete?: never;
@@ -925,6 +972,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/alerts/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Summary
+         * @description Üst çubuktaki zil: açık alarm sayıları ve son beş açık alarm.
+         */
+        get: operations["summary_api_v1_alerts_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/alerts/{alert_id}/ack": {
         parameters: {
             query?: never;
@@ -936,6 +1003,243 @@ export interface paths {
         put?: never;
         /** Acknowledge */
         post: operations["acknowledge_api_v1_alerts__alert_id__ack_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/ack-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acknowledge All
+         * @description Kullanıcının okundu işaretleyebildiği bütün açık alarmlar.
+         */
+        post: operations["acknowledge_all_api_v1_alerts_ack_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/run-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Rules */
+        post: operations["run_rules_api_v1_alerts_run_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/alarm-thresholds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Thresholds */
+        get: operations["get_thresholds_api_v1_settings_alarm_thresholds_get"];
+        /** Put Thresholds */
+        put: operations["put_thresholds_api_v1_settings_alarm_thresholds_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Events */
+        get: operations["list_events_api_v1_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/audit/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Csv */
+        get: operations["export_csv_api_v1_audit_export_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_v1_mail_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail/recipients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recipients
+         * @description E-postası tanımlı aktif kullanıcılar ve cari kartlar (müşteri, tedarikçi, dış üretici).
+         */
+        get: operations["recipients_api_v1_mail_recipients_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send
+         * @description Raporu giden kutusuna koyar; e-posta sunucusu tanımlıysa arka planda gönderilir.
+         */
+        post: operations["send_api_v1_mail_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail/outbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Outbox
+         * @description Yönetici bütün e-postaları, diğer kullanıcılar yalnız kendi gönderdiklerini görür.
+         */
+        get: operations["outbox_api_v1_mail_outbox_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deliver
+         * @description Kuyruktaki ve hatalı e-postaları şimdi gönderir (arka plan göndericisini beklemeden).
+         */
+        post: operations["deliver_api_v1_mail_deliver_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail/{message_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry */
+        post: operations["retry_api_v1_mail__message_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calc/ekp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ekp */
+        post: operations["ekp_api_v1_calc_ekp_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calc/cutting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cutting */
+        post: operations["cutting_api_v1_calc_cutting_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1128,12 +1432,15 @@ export interface components {
          * AlertKind
          * @enum {string}
          */
-        AlertKind: "GERI_CAGIRMA_IHLALI" | "SKT_IHLALI";
+        AlertKind: "GERI_CAGIRMA_IHLALI" | "SKT_IHLALI" | "GERI_CAGIRMA" | "BLOKE_SATIS_DENEMESI" | "BLOKE_STOK" | "VERIM_SAPMASI" | "FIYAT_ARTISI" | "HATALI_GIRIS";
         /** AlertOut */
         AlertOut: {
             /** Id */
             id: number;
             kind: components["schemas"]["AlertKind"];
+            /** Kind Label */
+            kind_label: string;
+            severity: components["schemas"]["Severity"];
             /** Ref Type */
             ref_type: string;
             /** Ref Id */
@@ -1147,12 +1454,52 @@ export interface components {
             created_at: string;
             /** Acknowledged At */
             acknowledged_at: string | null;
+            /** Acknowledged By Name */
+            acknowledged_by_name: string | null;
+            /** Can Acknowledge */
+            can_acknowledge: boolean;
+        };
+        /** AlertSummaryOut */
+        AlertSummaryOut: {
+            /** Open Total */
+            open_total: number;
+            /** Open Critical */
+            open_critical: number;
+            /** Open Warning */
+            open_warning: number;
+            /** Latest */
+            latest: components["schemas"]["AlertOut"][];
         };
         /**
          * AllocationMethod
          * @enum {string}
          */
         AllocationMethod: "MIKTAR" | "DEGER";
+        /** AuditOut */
+        AuditOut: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Username */
+            username: string | null;
+            /** Full Name */
+            full_name: string | null;
+            severity: components["schemas"]["Severity"];
+            /** Action */
+            action: string;
+            /** Message */
+            message: string;
+            /** Ref Type */
+            ref_type: string | null;
+            /** Ref Id */
+            ref_id: number | null;
+            /** Client */
+            client: string | null;
+        };
         /**
          * BaseUnit
          * @enum {string}
@@ -1169,6 +1516,33 @@ export interface components {
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ChartsOut */
+        ChartsOut: {
+            /** Ekp History */
+            ekp_history: components["schemas"]["EkpPointOut"][];
+            /** Ekp Synthetic */
+            ekp_synthetic: components["schemas"]["EkpPointOut"][];
+            /** Target Qty */
+            target_qty: string;
+            /** Actual Qty */
+            actual_qty: string;
+            /** Fill Rate Pct */
+            fill_rate_pct: string | null;
+            /** Target Label */
+            target_label: string;
+            /** Cost Order No */
+            cost_order_no: string | null;
+            /** Cost Slices */
+            cost_slices: components["schemas"]["SliceOut"][];
+            /** Cost Ekp */
+            cost_ekp: string | null;
+            /** Parts Cutting No */
+            parts_cutting_no: string | null;
+            /** Part Costs */
+            part_costs: components["schemas"]["PartCostOut"][];
+            /** Shipments */
+            shipments: components["schemas"]["ShipmentOut"][];
         };
         /**
          * ColumnKind
@@ -1261,6 +1635,78 @@ export interface components {
             email: string | null;
             /** Address */
             address: string | null;
+        };
+        /** CutLineIn */
+        CutLineIn: {
+            /** Name */
+            name: string;
+            /** Kg */
+            kg: number | string;
+            /** Value Per Kg */
+            value_per_kg?: number | string | null;
+            /**
+             * Is Fire
+             * @default false
+             */
+            is_fire: boolean;
+            /**
+             * Bears Cost
+             * @default true
+             */
+            bears_cost: boolean;
+        };
+        /** CutLineOut */
+        CutLineOut: {
+            /** Name */
+            name: string;
+            /** Kg */
+            kg: string;
+            /** Share Pct */
+            share_pct: string;
+            /** Allocated Cost */
+            allocated_cost: string;
+            /** Unit Cost */
+            unit_cost: string | null;
+            /** Is Fire */
+            is_fire: boolean;
+        };
+        /** CuttingCalcIn */
+        CuttingCalcIn: {
+            /** Input Kg */
+            input_kg: number | string;
+            /** Input Cost */
+            input_cost: number | string;
+            /** Invoice Kg */
+            invoice_kg?: number | string | null;
+            method: components["schemas"]["AllocationMethod"];
+            /**
+             * Tolerance Kg
+             * @default 0.5
+             */
+            tolerance_kg: number | string;
+            /** Lines */
+            lines: components["schemas"]["CutLineIn"][];
+        };
+        /** CuttingCalcOut */
+        CuttingCalcOut: {
+            /** Lines */
+            lines: components["schemas"]["CutLineOut"][];
+            /** Outputs Kg */
+            outputs_kg: string;
+            /** Fire Kg */
+            fire_kg: string;
+            /** Fire Pct */
+            fire_pct: string;
+            /** Difference Kg */
+            difference_kg: string;
+            /** Balance Ok */
+            balance_ok: boolean;
+            /** Total Allocated */
+            total_allocated: string;
+            /** Input Unit Cost */
+            input_unit_cost: string;
+            /** Warnings */
+            warnings: string[];
         };
         /** CuttingForecastIn */
         CuttingForecastIn: {
@@ -1480,11 +1926,72 @@ export interface components {
             /** Amount */
             amount: string;
         };
+        /** DeliveryOut */
+        DeliveryOut: {
+            /** Sent */
+            sent: number;
+            /** Failed */
+            failed: number;
+        };
         /**
          * DocType
          * @enum {string}
          */
         DocType: "ALIS" | "TRANSFER" | "URETIM" | "PARCALAMA" | "SATIS" | "IADE" | "DUZELTME";
+        /** EkpIn */
+        EkpIn: {
+            /** Raw Lines */
+            raw_lines: components["schemas"]["RawLineIn"][];
+            /** Service Unit Price */
+            service_unit_price: number | string;
+            /** Received Qty */
+            received_qty: number | string;
+            /** Invoiced Qty */
+            invoiced_qty?: number | string | null;
+            /** Service Invoice Amount */
+            service_invoice_amount?: number | string | null;
+            /** Sale Price */
+            sale_price?: number | string | null;
+        };
+        /** EkpOut */
+        EkpOut: {
+            /** Raw Lines */
+            raw_lines: components["schemas"]["RawLineOut"][];
+            /** Raw Total */
+            raw_total: string;
+            /** Service Suggested */
+            service_suggested: string;
+            /** Service Used */
+            service_used: string;
+            /** Total */
+            total: string;
+            /** Ekp */
+            ekp: string;
+            /** Ekp Display */
+            ekp_display: string;
+            /** Gross Profit Per Unit */
+            gross_profit_per_unit: string | null;
+            /** Margin Pct */
+            margin_pct: string | null;
+            /** Total Gross Profit */
+            total_gross_profit: string | null;
+            /** Warnings */
+            warnings: string[];
+        };
+        /** EkpPointOut */
+        EkpPointOut: {
+            /** Label */
+            label: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Actual */
+            actual: string;
+            /** Forecast */
+            forecast: string | null;
+        };
         /** EvaluationOut */
         EvaluationOut: {
             /** Available */
@@ -1635,6 +2142,48 @@ export interface components {
              */
             returned_qty: number | string;
         };
+        /** InvoiceSuggestionOut */
+        InvoiceSuggestionOut: {
+            /** Supplier Id */
+            supplier_id: number | null;
+            /** Supplier Name */
+            supplier_name: string | null;
+            /** Doc No */
+            doc_no: string | null;
+            /** Doc Date */
+            doc_date: string | null;
+            /** Lines */
+            lines: components["schemas"]["LineSuggestionOut"][];
+            /** Warnings */
+            warnings: string[];
+        };
+        /** LineSuggestionOut */
+        LineSuggestionOut: {
+            /** Source */
+            source: string;
+            /** Product Id */
+            product_id: number | null;
+            /** Product Code */
+            product_code: string | null;
+            /** Product Name */
+            product_name: string | null;
+            /** Match */
+            match: string;
+            /** Qty */
+            qty: string | null;
+            /** Unit */
+            unit: string | null;
+            /** Unit Price */
+            unit_price: string | null;
+            /** Invoice Amount */
+            invoice_amount: string | null;
+            /** Lot No */
+            lot_no: string | null;
+            /** Expiry Date */
+            expiry_date: string | null;
+            /** Warnings */
+            warnings: string[];
+        };
         /** LinkOut */
         LinkOut: {
             /** Lot No */
@@ -1722,6 +2271,69 @@ export interface components {
             qty: string;
             /** Min Stock */
             min_stock: string;
+        };
+        /** MailIn */
+        MailIn: {
+            /** Recipients */
+            recipients: string[];
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+        };
+        /** MailOut */
+        MailOut: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By Name */
+            created_by_name: string | null;
+            /** Kind */
+            kind: string;
+            /** Recipients */
+            recipients: string;
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+            status: components["schemas"]["MailStatus"];
+            /** Attempts */
+            attempts: number;
+            /** Sent At */
+            sent_at: string | null;
+            /** Last Error */
+            last_error: string | null;
+        };
+        /** MailRecipientOut */
+        MailRecipientOut: {
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "Kullanıcı" | "Müşteri" | "Tedarikçi" | "Dış üretici";
+            role: components["schemas"]["UserRole"] | null;
+        };
+        /**
+         * MailStatus
+         * @enum {string}
+         */
+        MailStatus: "KUYRUKTA" | "GONDERILDI" | "HATA";
+        /** MailStatusOut */
+        MailStatusOut: {
+            /** Smtp Configured */
+            smtp_configured: boolean;
+            /** Host */
+            host: string | null;
+            /** Sender */
+            sender: string | null;
         };
         /** MovementOut */
         MovementOut: {
@@ -1875,6 +2487,20 @@ export interface components {
             sales: components["schemas"]["SalesOut"] | null;
             yield: components["schemas"]["YieldOut"] | null;
             forecast: components["schemas"]["ForecastOut"] | null;
+        };
+        /** ParseTextIn */
+        ParseTextIn: {
+            /** Text */
+            text: string;
+        };
+        /** PartCostOut */
+        PartCostOut: {
+            /** Label */
+            label: string;
+            /** Kg */
+            kg: string;
+            /** Unit Cost */
+            unit_cost: string;
         };
         /** PartnerIn */
         PartnerIn: {
@@ -2212,6 +2838,26 @@ export interface components {
          * @enum {string}
          */
         PushStatus: "ACCEPTED" | "ACCEPTED_WITH_WARNING" | "DUPLICATE" | "REJECTED";
+        /** RawLineIn */
+        RawLineIn: {
+            /** Name */
+            name: string;
+            /** Qty */
+            qty: number | string;
+            /** Unit Price */
+            unit_price: number | string;
+        };
+        /** RawLineOut */
+        RawLineOut: {
+            /** Name */
+            name: string;
+            /** Qty */
+            qty: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Amount */
+            amount: string;
+        };
         /** RealComparisonOut */
         RealComparisonOut: {
             /** Model */
@@ -2600,6 +3246,17 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** RuleRunOut */
+        RuleRunOut: {
+            /** Created */
+            created: components["schemas"]["AlertOut"][];
+            /** Checked */
+            checked: {
+                [key: string]: number;
+            };
+            /** Notes */
+            notes: string[];
+        };
         /**
          * SaleChannel
          * @enum {string}
@@ -2693,6 +3350,30 @@ export interface components {
             gross_profit_per_unit: string;
             /** Margin Pct */
             margin_pct: string;
+        };
+        /**
+         * Severity
+         * @description Alarm ve denetim kaydı önemi.
+         * @enum {string}
+         */
+        Severity: "BILGI" | "UYARI" | "KRITIK";
+        /** ShipmentOut */
+        ShipmentOut: {
+            /** Customer */
+            customer: string;
+            /** Qty By Unit */
+            qty_by_unit: {
+                [key: string]: string;
+            };
+            /** Amount */
+            amount: string;
+        };
+        /** SliceOut */
+        SliceOut: {
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
         };
         /**
          * Species
@@ -2826,6 +3507,24 @@ export interface components {
             /** Qty */
             qty: string;
         };
+        /** ThresholdsIn */
+        ThresholdsIn: {
+            /** Yield Z */
+            yield_z?: string | null;
+            /** Price Increase Pct */
+            price_increase_pct?: string | null;
+            /** Failed Logins */
+            failed_logins?: string | null;
+        };
+        /** ThresholdsOut */
+        ThresholdsOut: {
+            /** Yield Z */
+            yield_z: string;
+            /** Price Increase Pct */
+            price_increase_pct: string;
+            /** Failed Logins */
+            failed_logins: string;
+        };
         /** TraceLinkOut */
         TraceLinkOut: {
             /** Parent Lot No */
@@ -2944,6 +3643,8 @@ export interface components {
             warehouse_code: string | null;
             /** Must Change Password */
             must_change_password: boolean;
+            /** Email */
+            email: string | null;
             /** Active */
             active: boolean;
         };
@@ -2958,6 +3659,8 @@ export interface components {
             password: string;
             /** Warehouse Id */
             warehouse_id?: number | null;
+            /** Email */
+            email?: string | null;
         };
         /** UserOut */
         UserOut: {
@@ -2974,6 +3677,8 @@ export interface components {
             warehouse_code: string | null;
             /** Must Change Password */
             must_change_password: boolean;
+            /** Email */
+            email: string | null;
         };
         /**
          * UserRole
@@ -2990,6 +3695,8 @@ export interface components {
             active: boolean;
             /** Warehouse Id */
             warehouse_id?: number | null;
+            /** Email */
+            email?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -3195,6 +3902,13 @@ export interface operations {
                     "application/json": components["schemas"]["LoginResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3203,6 +3917,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3416,6 +4137,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DashboardOut"];
+                };
+            };
+        };
+    };
+    get_charts_api_v1_dashboard_charts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChartsOut"];
                 };
             };
         };
@@ -3857,6 +4598,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    parse_text_api_v1_purchases_parse_text_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParseTextIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceSuggestionOut"];
                 };
             };
             /** @description Validation Error */
@@ -4611,6 +5385,13 @@ export interface operations {
                     "application/json": components["schemas"]["SaleOut"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -5074,6 +5855,8 @@ export interface operations {
         parameters: {
             query?: {
                 only_open?: boolean;
+                severity?: components["schemas"]["Severity"] | null;
+                limit?: number;
             };
             header?: never;
             path?: never;
@@ -5101,6 +5884,26 @@ export interface operations {
             };
         };
     };
+    summary_api_v1_alerts_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertSummaryOut"];
+                };
+            };
+        };
+    };
     acknowledge_api_v1_alerts__alert_id__ack_post: {
         parameters: {
             query?: never;
@@ -5119,6 +5922,389 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AlertOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_all_api_v1_alerts_ack_all_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertOut"][];
+                };
+            };
+        };
+    };
+    run_rules_api_v1_alerts_run_rules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleRunOut"];
+                };
+            };
+        };
+    };
+    get_thresholds_api_v1_settings_alarm_thresholds_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThresholdsOut"];
+                };
+            };
+        };
+    };
+    put_thresholds_api_v1_settings_alarm_thresholds_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ThresholdsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThresholdsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_events_api_v1_audit_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                severity?: components["schemas"]["Severity"] | null;
+                username?: string | null;
+                day_from?: string | null;
+                day_to?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_csv_api_v1_audit_export_csv_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                severity?: components["schemas"]["Severity"] | null;
+                username?: string | null;
+                day_from?: string | null;
+                day_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_v1_mail_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailStatusOut"];
+                };
+            };
+        };
+    };
+    recipients_api_v1_mail_recipients_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailRecipientOut"][];
+                };
+            };
+        };
+    };
+    send_api_v1_mail_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    outbox_api_v1_mail_outbox_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deliver_api_v1_mail_deliver_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryOut"];
+                };
+            };
+        };
+    };
+    retry_api_v1_mail__message_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                message_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ekp_api_v1_calc_ekp_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EkpIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EkpOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cutting_api_v1_calc_cutting_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CuttingCalcIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuttingCalcOut"];
                 };
             };
             /** @description Validation Error */

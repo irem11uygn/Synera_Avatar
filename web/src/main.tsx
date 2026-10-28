@@ -23,29 +23,42 @@ createRoot(document.getElementById('root')!).render(
     <ConfigProvider
       locale={lang === 'en' ? enUS : trTR}
       theme={{
-        // Sade, okunaklı iş uygulaması: düz yüzeyler, 15 px yazı, büyük dokunma alanları.
+        // Turkuaz + 3B: turkuaz ana renk, yuvarlak köşeler, 15 px yazı, büyük dokunma alanları.
         token: {
-          colorPrimary: '#0f766e',
+          colorPrimary: '#0d9488',
           colorInfo: '#1d4ed8',
           colorSuccess: '#2e7d32',
           colorWarning: '#b45309',
           colorError: '#c62828',
-          colorText: '#1f2328',
-          colorTextSecondary: '#4b5563',
-          colorBorder: '#d5dae0',
-          colorBorderSecondary: '#e3e6ea',
-          colorBgLayout: '#f4f5f7',
-          borderRadius: 8,
+          colorText: '#102a2a',
+          colorTextSecondary: '#3f5655',
+          colorBorder: '#c9dad7',
+          colorBorderSecondary: '#e1ecea',
+          colorBgLayout: 'transparent',
+          borderRadius: 10,
           fontSize: 15,
           controlHeight: 38,
           fontFamily:
             "'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
         },
         components: {
-          Menu: { itemHeight: 42, itemBorderRadius: 6, itemMarginInline: 10, itemSelectedBg: '#e6f4f2', itemSelectedColor: '#0b5d57' },
-          Table: { headerBg: '#f8f9fb', headerColor: '#4b5563', cellPaddingBlock: 12, rowHoverBg: '#f8f9fb' },
+          // Sol menü turkuaz geçiş üzerinde: koyu menü teması, saydam zemin, beyaz yazı.
+          Menu: {
+            itemHeight: 42,
+            itemBorderRadius: 10,
+            itemMarginInline: 10,
+            darkItemBg: 'transparent',
+            darkSubMenuItemBg: 'transparent',
+            darkItemColor: 'rgba(255,255,255,0.88)',
+            darkItemHoverBg: 'rgba(255,255,255,0.14)',
+            darkItemHoverColor: '#ffffff',
+            darkItemSelectedBg: 'rgba(255,255,255,0.24)',
+            darkItemSelectedColor: '#ffffff',
+            darkGroupTitleColor: 'rgba(255,255,255,0.66)',
+          },
+          Table: { headerBg: 'rgba(240,249,247,0.9)', headerColor: '#3f5655', cellPaddingBlock: 12, rowHoverBg: '#f0f9f7' },
           Card: { headerFontSize: 16 },
-          Button: { fontWeight: 550 },
+          Button: { fontWeight: 600, primaryShadow: '0 6px 14px -8px rgba(13,148,136,0.8)' },
         },
       }}
     >

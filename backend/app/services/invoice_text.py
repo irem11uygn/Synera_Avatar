@@ -107,12 +107,13 @@ def _date(match: re.Match[str]) -> date | None:
 def _match_product(line: str, products: list[Product]) -> tuple[Product | None, str]:
     folded = _fold(line)
     upper = line.upper()
-    by_code = [p for p in products if re.search(rf"(?<![A-Z0-9-]){re.escape(p.code)}(?![A-Z0-9-])", upper)]
-    if by_code:
-        return max(by_code, key=lambda p: len(p.code)), "kod"
+    # Tam ad önce: kısa kodlar ("ET") ad içindeki sözcüğe de denk gelebilir.
     by_name = [p for p in products if _fold(p.name) in folded]
     if by_name:
         return max(by_name, key=lambda p: len(p.name)), "ad"
+    by_code = [p for p in products if re.search(rf"(?<![A-Z0-9-]){re.escape(p.code)}(?![A-Z0-9-])", upper)]
+    if by_code:
+        return max(by_code, key=lambda p: len(p.code)), "kod"
     words = re.findall(r"[a-z0-9]+", folded)
     best: tuple[float, Product | None] = (0.0, None)
     for product in products:

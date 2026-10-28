@@ -24,9 +24,11 @@ import type { ReactNode } from 'react'
 import { api } from '../api/client'
 import type { Dashboard, UserRole } from '../api/types'
 import { useSession } from '../auth/context'
+import { DashboardCharts } from '../components/DashboardCharts'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { Stat } from '../components/Stat'
+import { tiltHandlers } from '../components/Tilt'
 import { formatDate, formatMoney } from '../lib/format'
 import { ROLE } from '../lib/roles'
 import { navigate } from '../lib/router'
@@ -43,11 +45,11 @@ function todos(data: Dashboard): Todo[] {
     list.push({
       tone: 'danger',
       icon: <AlertOutlined />,
-      title: t('{n} okunmamış uyarı', { n: data.unread_alerts }),
-      sub: t('Satışa kapalı ya da son kullanma tarihi geçmiş lot telefondan satılmış olabilir.'),
-      to: '/uyarilar',
-      action: t('Uyarıları gör'),
-      roles: ['YONETICI', 'KALITE'],
+      title: t('{n} açık alarm', { n: data.unread_alerts }),
+      sub: t('Verim sapması, fiyat artışı, bloke lot, geri çağırma ya da hatalı giriş olabilir. Bakıp okundu işaretleyin.'),
+      to: '/alarmlar',
+      action: t('Alarm merkezi'),
+      roles: ['YONETICI', 'KALITE', 'DEPO', 'URETIM', 'MAGAZA'],
     })
   if (data.open_recalls.length > 0)
     list.push({
@@ -198,7 +200,7 @@ export default function HomePage() {
           <div className="section-title">{t('Hızlı işlemler')}</div>
           <div className="quick-actions">
             {quick.map((q) => (
-              <button key={q.to} type="button" className="quick-action" onClick={() => navigate(q.to)}>
+              <button key={q.to} type="button" className="quick-action tilt" onClick={() => navigate(q.to)} {...tiltHandlers(6)}>
                 {q.icon}
                 {q.label}
               </button>
@@ -252,6 +254,13 @@ export default function HomePage() {
               />
             </Col>
           </Row>
+        </>
+      )}
+
+      {(role === 'YONETICI' || role === 'URETIM' || role === 'KALITE') && (
+        <>
+          <div className="section-title">{t('Panel')}</div>
+          <DashboardCharts />
         </>
       )}
     </Page>

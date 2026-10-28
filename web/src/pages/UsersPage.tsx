@@ -55,7 +55,7 @@ export default function UsersPage() {
   const save = useMutation({
     mutationFn: (values: EditValues) =>
       editing === 'new'
-        ? api('/users', { method: 'POST', body: values as UserCreateInput })
+        ? api('/users', { method: 'POST', body: { ...values, email: values.email?.trim() || null } as UserCreateInput })
         : api(`/users/${(editing as UserAdmin).id}`, {
             method: 'PUT',
             body: {
@@ -63,6 +63,7 @@ export default function UsersPage() {
               role: values.role,
               active: values.active,
               warehouse_id: values.role === 'SATIS' ? values.warehouse_id : null,
+              email: values.email?.trim() || null,
             },
           }),
     onSuccess: refresh,
@@ -128,6 +129,7 @@ export default function UsersPage() {
           },
           { title: t('Rol'), dataIndex: 'role', render: (role: UserRole) => ROLE[role] },
           { title: t('Araç'), dataIndex: 'warehouse_code', render: (code: string | null) => code ?? '—', responsive: ['md'] },
+          { title: t('E-posta'), dataIndex: 'email', render: (email: string | null) => email ?? <span className="muted">—</span>, responsive: ['md'] },
           {
             title: t('Durum'),
             render: (_, user) =>
@@ -161,7 +163,7 @@ export default function UsersPage() {
         onClose={() => setEditing(null)}
         initialValues={
           editing && editing !== 'new'
-            ? { full_name: editing.full_name, role: editing.role, active: editing.active, warehouse_id: editing.warehouse_id }
+            ? { full_name: editing.full_name, role: editing.role, active: editing.active, warehouse_id: editing.warehouse_id, email: editing.email ?? '' }
             : { role: 'DEPO', active: true }
         }
         onSubmit={(values) => save.mutateAsync(values)}
@@ -184,6 +186,14 @@ export default function UsersPage() {
         </Form.Item>
         <Form.Item name="role" label={t('Görevi')} rules={[{ required: true }]}>
           <Select options={ROLE_OPTIONS} optionLabelProp="title" />
+        </Form.Item>
+        <Form.Item
+          name="email"
+          label={t('E-posta (isteğe bağlı)')}
+          extra={t('Yönetici ve kalite sorumlusunun e-postasına kritik alarmlar gider.')}
+          rules={[{ type: 'email', message: t('Geçerli bir e-posta adresi yazın.') }]}
+        >
+          <Input type="email" maxLength={120} autoComplete="off" />
         </Form.Item>
         <VanField />
         {editing === 'new' ? (
