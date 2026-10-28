@@ -394,5 +394,9 @@ Ekip aksini söylemedikçe bu varsayılanlar geçerlidir:
 - **Gerçek zamanlı gönderim.** E-posta isteğin işlemiyle giden kutusuna yazılır. SQLAlchemy `after_commit` olayı göndericiyi (`MailWorker`) hemen uyandırır; kaydedilmemiş bir işin e-postası gitmez. Başarısız gönderim `MAIL_INTERVAL_S` aralığıyla, en çok 5 kez yeniden denenir. Sonuç aynı satırda kalır: durum, deneme, `sent_at`, `last_error`.
 - **Abonelik** (`alert_subscriptions`, `services/subscriptions.py`). Kayıt yoksa rolün varsayılanı geçerlidir: yönetici bütün türler; kalite geri çağırma, ihlal, SKT, bloke ve verim; depo bloke stok, fiyat, SKT ve sayım; üretim verim; mağaza bloke satış ve SKT. Kullanıcının göremediği tür (hatalı giriş, yönetici dışı) e-postayla da gitmez.
 - **Tekilleştirme.** Her alıcıya ayrı satır yazılır; `mail_outbox.dedup_key = ALERT:<alarm>:<adres>` tekildir, aynı alarm aynı adrese ikinci kez yazılmaz.
-- **Açık posta rölesi yok.** Rapor e-postasının alıcısı yalnız aktif kullanıcı ya da izinli alan adı olabilir; kullanıcı başına dakikada 5 gönderim. Eski `POST /mail` ucu davranışını korur (bkz. bilinen sınırlamalar).
+- **Açık posta rölesi yok** (`services/mail_policy.py`).
+  - Rapor e-postasının alıcısı yalnız aktif kullanıcı ya da izinli alan adı olabilir; rapor iç veridir, cariye gitmez.
+  - Serbest e-postada (`POST /mail`, `/mail/batch`) kayıtlı cariler (müşteri, tedarikçi, dış üretici) de izinlidir; geri çağırma bildirimi müşteriye gider.
+  - Kullanıcı başına dakikada 5 gönderim; iki uç aynı sayaçtan düşer, biri ötekini atlatamaz.
+  - Toplu gönderim (her müşteriye ayrı geri çağırma bildirimi) tek istek ve tek gönderimdir; biri geçersizse hiçbiri yazılmaz.
 - **Yeni uyarı türleri:** `SKT_YAKLASIYOR` (kural motoru; ana depo/araçta satışa açık lot, SKT ≤ 3 gün ya da geçmiş) ve `SAYIM_FARKI` (sayım kaydedilince).

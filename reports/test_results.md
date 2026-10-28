@@ -483,3 +483,16 @@ Bulunan sorun: Test oturumunda Alembic'in `logging.fileConfig`'i önceden oluşm
 - İzinsiz alıcı (`yabanci@kotu.example`) → 422, `details.rejected`. Aynı dakikada 6. gönderim → 429.
 - Sayım farkı (ET-2026-002, −0,5 kg): uyarı e-postası 0,34 sn içinde abonelere ayrı ayrı gitti (yönetici, depo). Konu `[AVATAR UYARI] Sayım farkı`; gövdede sayım no, depo, eksik değeri ve `http://localhost:18380/sayim` bağlantısı vardı. Mailpit'te HTML görünümü düzgündü.
 - Giden kutusunda bütün satırlar "Gönderildi".
+
+## 29 Ekim 2026 — serbest e-postada açık röle kapatıldı
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **256 geçti** (yeni 4: `POST /mail` izinsiz/pasif adres 422, kayıtlı cari ve izinli alan adı kabul; rapor e-postası cariye gitmez; iki uç ortak dakika sınırı; toplu gönderim tek sayılır ve hep ya da hiç) |
+| Biçim | `ruff check` + `ruff format --check` | Temiz |
+| Web | `npm test`, `tsc -b`, `oxlint` | 30 geçti; derleme ve lint temiz |
+
+Mailpit ile canlı deneme (demo yığını, API 18300):
+- `magaza1` → `yabanci@kotu.example`: 422, `details.rejected`; → Market A (kayıtlı cari): 201, Mailpit'e düştü. Aynı dakikada 6. gönderim 429.
+- `kalite1`, web'den **Rapor gönder → Geri çağırma bildirimi → Etkilenen müşterileri alıcı yap (3) → Gönder**: tek istek (`POST /mail/batch` 201), üç ayrı e-posta. Her markete yalnız kendi miktarı gitti (A 30, B 25, C 30 adet).
+- Gün değişince yönetici girişinde kural motoru 4 lot için SKT uyarısı açtı; her uyarı 4 aboneye ayrı ayrı gitti (tekilleştirme alarm + alıcı başına).

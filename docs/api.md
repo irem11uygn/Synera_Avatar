@@ -169,7 +169,8 @@ Hepsi `?date_from=&date_to=&product_id=&lot_no=&format=csv` süzgeçlerini kabul
 | GET | `/audit/export.csv` | Y | Aynı süzgeçle CSV |
 | GET | `/mail/status` | web | SMTP tanımlı mı, sunucu ve gönderen adresi (şifre dönmez) |
 | GET | `/mail/recipients` | web | E-postası tanımlı kullanıcılar ve cari kartlar |
-| POST | `/mail` | web | `{recipients[], subject, body}` giden kutusuna yazılır (en çok 20 alıcı) |
+| POST | `/mail` | web | `{recipients[], subject, body}` giden kutusuna yazılır (en çok 20 alıcı). Alıcı yalnız aktif kullanıcı, kayıtlı cari (müşteri, tedarikçi, dış üretici) ya da `ALLOWED_EMAIL_DOMAINS` (değilse 422, `details.rejected`); kullanıcı başına dakikada 5 gönderim, rapor e-postasıyla ortak sayaç (429) |
+| POST | `/mail/batch` | web | `{messages: [{recipients[], subject, body}] (1..50)}`: ayrı ayrı e-postalar, **tek gönderim** sayılır (ör. her müşteriye kendi miktarını içeren geri çağırma bildirimi). Aynı alıcı kuralı; biri geçersizse hiçbiri kaydedilmez |
 | GET | `/mail/outbox` | web | Yönetici hepsini, diğerleri kendi gönderdiklerini görür |
 | POST | `/mail/deliver`, `/mail/{id}/retry` | Y | Kuyruktakileri şimdi gönder (SMTP yoksa `INVALID_STATE`); hatalıyı yeniden kuyruğa al |
 | GET | `/dashboard/charts` | web | Panel grafikleri: EKP geçmişi ve kayıtlı model tahmini, sentetik model testi, hedef/gerçekleşen, maliyet kalemleri, parça maliyeti, sevkiyat |

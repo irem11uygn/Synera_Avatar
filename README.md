@@ -140,6 +140,7 @@ Uyarılar ve raporlar e-postayla gider. E-posta önce giden kutusuna yazılır; 
 - **Abonelik:** Yönetici bütün türlere abonedir; diğer roller kendi işini ilgilendiren türlere abonedir. Herkes kendi tercihini `GET/PUT /api/v1/alerts/subscriptions` ile görür ve değiştirir. E-posta adresi kullanıcı kartındadır (Yönetim → Kullanıcılar).
 - **Rapor e-postası:** `POST /api/v1/reports/{kod}/email`, ör. `{"recipients": ["kalite@synera.example"], "note": "..."}` → 202. Rapor CSV eki olarak gider; süzgeçler `GET /reports/{kod}` ile aynıdır.
   - Alıcılar yalnız sistemdeki aktif kullanıcılar ya da `ALLOWED_EMAIL_DOMAINS`'teki alan adları olabilir; başka adres 422 döner (açık posta rölesi yok).
+- **Serbest e-posta** (`POST /api/v1/mail`, toplu `POST /api/v1/mail/batch`; web'de **Rapor gönder (e-posta)**): Aktif kullanıcılara, kayıtlı carilere (müşteri, tedarikçi, dış üretici) ve izinli alan adlarına gider; başka adres 422 döner. Rapor e-postasıyla birlikte kullanıcı başına dakikada en çok 5 gönderim yapılabilir.
   - Kullanıcı başına dakikada en çok 5 gönderim yapılabilir.
 
 | Değişken | Varsayılan | Ne |

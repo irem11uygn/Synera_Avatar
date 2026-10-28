@@ -160,7 +160,7 @@ def test_report_email_rejects_unknown_recipients(client, admin, session, monkeyp
     assert _outbox(session) == []
     # İzinli alan adı ayarlanınca (ALLOWED_EMAIL_DOMAINS) sistem dışı adres kabul edilir.
     monkeypatch.setattr(
-        "app.services.report_mail.get_settings",
+        "app.services.mail_policy.get_settings",
         lambda: replace(get_settings(), allowed_email_domains=("bayi.example",)),
     )
     assert _email(client, admin, ["satinalma@bayi.example"]).status_code == 202
@@ -357,3 +357,84 @@ def test_expiring_lot_alert_on_rule_run(client, admin, session):
     assert "/lotlar/SKT-LOT-1" in message.html and "Narin Sucuk" in message.html
     again = client.post(f"{API}/alerts/run-rules", headers=admin).json()
     assert [a for a in again["created"] if a["kind"] == "SKT_YAKLASIYOR"] == []
+
+
+# --- Serbest e-posta (POST /mail): açık röle yok, ortak sınır ---------------------------------------
+
+
+def _mail(client, headers, recipients, subject="Not"):
+    return client.post(
+        f"{API}/mail", json={"recipients": recipients, "subject": subject, "body": "Metin"}, headers=headers
+    )
+
+
+def test_mail_endpoint_accepts_only_known_or_allowed_addresses(client, session, monkeypatch):
+    store = auth_header(client, "magaza1", "magaza123")
+    refused = _mail(client, store, ["yabanci@kotu.example", "market-a@example.com"])
+    assert refused.status_code == 422 and refused.json()["error"]["details"]["rejected"] == [
+        "yabanci@kotu.example"
+    ]
+    assert "kayıtlı bir cari" in refused.json()["error"]["message"]
+    assert (
+        _mail(
+            client, store, ["market-a@example.com", "et-tedarik@example.com", "yonetici@synera.example"]
+        ).status_code
+        == 201
+    )
+    by_username(session, "depo1").active = False
+    session.flush()
+    assert _mail(client, store, ["depo@synera.example"]).status_code == 422  # pasif kullanıcı
+    monkeypatch.setattr(
+        "app.services.mail_policy.get_settings",
+        lambda: replace(get_settings(), allowed_email_domains=("bayi.example",)),
+    )
+    assert _mail(client, store, ["satinalma@bayi.example"]).status_code == 201
+    assert [m.recipients for m in _outbox(session)] == [
+        "market-a@example.com, et-tedarik@example.com, yonetici@synera.example",
+        "satinalma@bayi.example",
+    ]
+
+
+def test_report_email_does_not_accept_partner_addresses(client, admin):
+    # Rapor (iç veri) yalnız kullanıcılara ya da izinli alan adlarına; cariye değil.
+    response = _email(client, admin, ["market-a@example.com"])
+    assert response.status_code == 422 and response.json()["error"]["details"]["rejected"] == [
+        "market-a@example.com"
+    ]
+
+
+def test_mail_and_report_email_share_the_per_user_limit(client, admin):
+    for _ in range(3):
+        assert _email(client, admin, ["kalite@synera.example"]).status_code == 202
+    for _ in range(2):
+        assert _mail(client, admin, ["kalite@synera.example"]).status_code == 201
+    limited = _mail(client, admin, ["kalite@synera.example"])
+    assert limited.status_code == 429 and limited.json()["error"]["code"] == "TOO_MANY_ATTEMPTS"
+    assert _email(client, admin, ["kalite@synera.example"]).status_code == 429
+
+
+def test_mail_batch_is_one_send_and_all_or_nothing(client, admin, session):
+    customers = [
+        "market-a@example.com",
+        "market-b@example.com",
+        "market-c@example.com",
+        "market-b-sube1@example.com",
+        "market-b-sube2@example.com",
+        "kalite@synera.example",
+    ]
+    messages = [
+        {"recipients": [address], "subject": "Geri çağırma", "body": f"Size: {address}"}
+        for address in customers
+    ]
+    response = client.post(f"{API}/mail/batch", json={"messages": messages}, headers=admin)
+    assert response.status_code == 201 and [m["recipients"] for m in response.json()] == customers
+    assert len(_outbox(session)) == 6  # her alıcıya ayrı e-posta, tek gönderim sayıldı:
+    for _ in range(4):
+        assert _mail(client, admin, ["kalite@synera.example"]).status_code == 201
+    assert _mail(client, admin, ["kalite@synera.example"]).status_code == 429
+
+    other = auth_header(client, "kalite1", "kalite123")
+    bad = [*messages[:2], {"recipients": ["yabanci@kotu.example"], "subject": "x", "body": "y"}]
+    refused = client.post(f"{API}/mail/batch", json={"messages": bad}, headers=other)
+    assert refused.status_code == 422
+    assert len(_outbox(session)) == 10  # 6 + 4; reddedilen toplu gönderimden hiçbiri yazılmadı

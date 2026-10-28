@@ -139,3 +139,9 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Alarm e-postası abonelere (`alert_subscriptions`, rol varsayılanları), her alıcıya ayrı, aynı alarm aynı adrese bir kez; konu `[AVATAR UYARI] <başlık>`, gövdede lot/ürün ve web bağlantısı. Uçlar `GET/PUT /api/v1/alerts/subscriptions`.
 - Yeni uyarılar: SKT yaklaşan/geçen lot, sayım farkı. Göç `d7f3b9a2c4e1` (37 tablo).
 - docker-compose'a Mailpit (`axllent/mailpit:v1.32.0`, 8025 arayüz, 1025 SMTP); `.env.example` yeni değişkenlerle. Değişken adları `SMTP_PASS`, `MAIL_FROM` (eski `SMTP_PASSWORD`, `SMTP_FROM` de okunur).
+
+### 29 Ekim 2026 — serbest e-postada açık röle kapatıldı
+- `POST /api/v1/mail`: alıcı yalnız aktif kullanıcı, kayıtlı cari (müşteri, tedarikçi, dış üretici) e-postası ya da `ALLOWED_EMAIL_DOMAINS`; başka adres 422 (önce her adrese gidebiliyordu).
+- Kullanıcı başına dakikada 5 gönderim sınırı serbest e-postada da; rapor e-postasıyla ortak sayaç.
+- `POST /api/v1/mail/batch`: ayrı ayrı e-postalar tek gönderim (web'de müşterilere geri çağırma bildirimi artık tek istekte; beşten fazla müşteride sınıra takılmaz, biri geçersizse hiçbiri yazılmaz).
+- Alıcı kuralı ve sınır ortak modülde (`app/services/mail_policy.py`).

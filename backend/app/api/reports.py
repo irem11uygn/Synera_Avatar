@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from app.api.csv_export import csv_response, csv_text
 from app.api.deps import Db, WebUser
 from app.models.enums import MailStatus
-from app.services import audit, mail, report_mail
+from app.services import audit, mail, mail_policy, report_mail
 from app.services.reports import FILTERS, META, ColumnKind, Report, ReportCode, ReportFilter, build_report
 
 router = APIRouter(prefix="/reports", tags=["raporlar"])
@@ -135,8 +135,8 @@ def email_report(
     Süzgeçler `GET /reports/{code}` ile aynıdır. Alıcı: aktif kullanıcı ya da izinli alan adı.
     Kullanıcı başına dakikada en çok 5 gönderim.
     """
-    report_mail.limiter.check(user.id)
-    recipients = report_mail.allowed_recipients(db, body.recipients)
+    mail_policy.limiter.check(user.id)
+    recipients = mail_policy.allowed_recipients(db, body.recipients)
     filters = ReportFilter(
         date_from=date_from, date_to=date_to, product_id=product_id, lot_no=(lot_no or "").strip() or None
     )
@@ -168,7 +168,7 @@ def email_report(
         ref_type="MAIL",
         ref_id=message.id,
     )
-    report_mail.limiter.record(user.id)
+    mail_policy.limiter.record(user.id)
     return ReportEmailOut(
         message_id=message.id,
         status=message.status,

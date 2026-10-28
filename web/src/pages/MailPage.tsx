@@ -73,16 +73,18 @@ export default function MailPage() {
     mutationFn: async () => {
       // Geri çağırma: her müşteriye yalnız kendi miktarını içeren ayrı e-posta (müşteriler birbirini görmez).
       const customers = new Map((recall.data?.recipients ?? []).filter((r) => r.contact.email).map((r) => [r.contact.email!, r.customer_id]))
+      // Hepsi tek istekte (tek gönderim sayılır, biri geçersizse hiçbiri kaydedilmez).
       const perCustomer = kind === 'recall' && recall.data && !edited ? to.filter((email) => customers.has(email)) : []
       const others = to.filter((email) => !perCustomer.includes(email))
-      let last: MailRow | undefined
-      for (const email of perCustomer) {
+      if (perCustomer.length === 0)
+        return api<MailRow>('/mail', { method: 'POST', body: { recipients: to, subject: draft!.subject, body: draft!.body } })
+      const messages = perCustomer.map((email) => {
         const own = recallNotice(recall.data!, note, customers.get(email))
-        last = await api<MailRow>('/mail', { method: 'POST', body: { recipients: [email], subject: own.subject, body: own.body } })
-      }
-      if (others.length > 0)
-        last = await api<MailRow>('/mail', { method: 'POST', body: { recipients: others, subject: draft!.subject, body: draft!.body } })
-      return last!
+        return { recipients: [email], subject: own.subject, body: own.body }
+      })
+      if (others.length > 0) messages.push({ recipients: others, subject: draft!.subject, body: draft!.body })
+      const rows = await api<MailRow[]>('/mail/batch', { method: 'POST', body: { messages } })
+      return rows[rows.length - 1]
     },
     onSuccess: (row) => {
       message.success(
@@ -171,7 +173,10 @@ export default function MailPage() {
                   )}
                 </Form.Item>
               )}
-              <Form.Item label={t('Alıcılar')} extra={t('Listeden seçin ya da adresi yazıp Enter’a basın.')}>
+              <Form.Item
+                label={t('Alıcılar')}
+                extra={t('Listeden seçin: kullanıcılar ve kayıtlı cariler. Listede olmayan adres yalnız izinli alan adlarına gider; dakikada en çok 5 gönderim.')}
+              >
                 <Select
                   mode="tags"
                   value={to}

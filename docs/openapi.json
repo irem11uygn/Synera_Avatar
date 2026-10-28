@@ -3767,7 +3767,7 @@
           "e-posta"
         ],
         "summary": "Send",
-        "description": "Raporu giden kutusuna koyar; e-posta sunucusu tanımlıysa arka planda gönderilir.",
+        "description": "E-postayı giden kutusuna koyar; gönderici hemen gönderir (istek beklemez).\n\nAlıcı: aktif kullanıcı, kayıtlı cari (müşteri, tedarikçi, dış üretici) ya da ALLOWED_EMAIL_DOMAINS;\nbaşka adres 422. Kullanıcı başına dakikada en çok 5 gönderim (rapor e-postasıyla ortak sayaç).",
         "operationId": "send_api_v1_mail_post",
         "requestBody": {
           "content": {
@@ -3791,14 +3791,57 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mail/batch": {
+      "post": {
+        "tags": [
+          "e-posta"
+        ],
+        "summary": "Send Batch",
+        "description": "Ayrı ayrı e-postalar, tek gönderim sayılır: ör. her müşteriye yalnız kendi miktarını içeren geri\nçağırma bildirimi. Aynı alıcı kuralı; biri geçersizse hiçbiri kaydedilmez.",
+        "operationId": "send_batch_api_v1_mail_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailBatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "items": {
+                    "$ref": "#/components/schemas/MailOut"
+                  },
+                  "type": "array",
+                  "title": "Response Send Batch Api V1 Mail Batch Post"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "description": "Too Many Requests"
           }
         },
         "security": [
@@ -7462,6 +7505,24 @@
           "min_stock"
         ],
         "title": "LowStockOut"
+      },
+      "MailBatchIn": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/MailIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "MailBatchIn"
       },
       "MailIn": {
         "properties": {

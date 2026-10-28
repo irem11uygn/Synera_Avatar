@@ -12,7 +12,7 @@ from app.config import get_settings
 from app.errors import InvalidState
 from app.models import MailMessage, Partner, User
 from app.models.enums import MailStatus, UserRole
-from app.services import audit, mail
+from app.services import audit, mail, mail_policy
 from app.services.lookups import get_or_404
 
 router = APIRouter(prefix="/mail", tags=["e-posta"])
@@ -99,12 +99,16 @@ def recipients(db: Db, _: WebUser) -> list[MailRecipientOut]:
     return rows
 
 
-@router.post("", response_model=MailOut, status_code=201)
-def send(body: MailIn, db: Db, user: WebUser) -> MailOut:
-    """Raporu giden kutusuna koyar; e-posta sunucusu tanımlıysa arka planda gönderilir."""
+class MailBatchIn(BaseModel):
+    messages: list[MailIn] = Field(min_length=1, max_length=50)
+
+
+def _queue(db: Db, user: User, body: MailIn) -> MailMessage:
+    recipients = mail_policy.allowed_recipients(db, body.recipients, partners=True)
     message = mail.queue(
-        db, recipients=body.recipients, subject=body.subject, body=body.body, kind="RAPOR", user=user
+        db, recipients=recipients, subject=body.subject, body=body.body, kind="RAPOR", user=user
     )
+    assert message is not None  # tekilleştirme anahtarı yok
     audit.log(
         db,
         "EPOSTA",
@@ -113,7 +117,30 @@ def send(body: MailIn, db: Db, user: WebUser) -> MailOut:
         ref_type="MAIL",
         ref_id=message.id,
     )
+    return message
+
+
+@router.post("", response_model=MailOut, status_code=201, responses={422: {}, 429: {}})
+def send(body: MailIn, db: Db, user: WebUser) -> MailOut:
+    """E-postayı giden kutusuna koyar; gönderici hemen gönderir (istek beklemez).
+
+    Alıcı: aktif kullanıcı, kayıtlı cari (müşteri, tedarikçi, dış üretici) ya da ALLOWED_EMAIL_DOMAINS;
+    başka adres 422. Kullanıcı başına dakikada en çok 5 gönderim (rapor e-postasıyla ortak sayaç).
+    """
+    mail_policy.limiter.check(user.id)
+    message = _queue(db, user, body)
+    mail_policy.limiter.record(user.id)
     return _out(db, message)
+
+
+@router.post("/batch", response_model=list[MailOut], status_code=201, responses={422: {}, 429: {}})
+def send_batch(body: MailBatchIn, db: Db, user: WebUser) -> list[MailOut]:
+    """Ayrı ayrı e-postalar, tek gönderim sayılır: ör. her müşteriye yalnız kendi miktarını içeren geri
+    çağırma bildirimi. Aynı alıcı kuralı; biri geçersizse hiçbiri kaydedilmez."""
+    mail_policy.limiter.check(user.id)
+    messages = [_queue(db, user, item) for item in body.messages]
+    mail_policy.limiter.record(user.id)
+    return [_out(db, m) for m in messages]
 
 
 @router.get("/outbox", response_model=list[MailOut])

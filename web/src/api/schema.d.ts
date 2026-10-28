@@ -1170,9 +1170,33 @@ export interface paths {
         put?: never;
         /**
          * Send
-         * @description Raporu giden kutusuna koyar; e-posta sunucusu tanımlıysa arka planda gönderilir.
+         * @description E-postayı giden kutusuna koyar; gönderici hemen gönderir (istek beklemez).
+         *
+         *     Alıcı: aktif kullanıcı, kayıtlı cari (müşteri, tedarikçi, dış üretici) ya da ALLOWED_EMAIL_DOMAINS;
+         *     başka adres 422. Kullanıcı başına dakikada en çok 5 gönderim (rapor e-postasıyla ortak sayaç).
          */
         post: operations["send_api_v1_mail_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mail/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Batch
+         * @description Ayrı ayrı e-postalar, tek gönderim sayılır: ör. her müşteriye yalnız kendi miktarını içeren geri
+         *     çağırma bildirimi. Aynı alıcı kuralı; biri geçersizse hiçbiri kaydedilmez.
+         */
+        post: operations["send_batch_api_v1_mail_batch_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2318,6 +2342,11 @@ export interface components {
             qty: string;
             /** Min Stock */
             min_stock: string;
+        };
+        /** MailBatchIn */
+        MailBatchIn: {
+            /** Messages */
+            messages: components["schemas"]["MailIn"][];
         };
         /** MailIn */
         MailIn: {
@@ -6306,14 +6335,57 @@ export interface operations {
                     "application/json": components["schemas"]["MailOut"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+        };
+    };
+    send_batch_api_v1_mail_batch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailBatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailOut"][];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
