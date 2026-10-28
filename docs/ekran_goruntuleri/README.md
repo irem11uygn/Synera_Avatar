@@ -2,7 +2,7 @@
 
 Uygulamanın bütün ekranları, demo verisiyle (şartname senaryosu ve örnek günlük işler). Sistemi kurmadan uygulamayı görmek için.
 Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülatörden (yarı boyut).
-Web görüntüleri 28 Ekim 2026'da, sıfırdan kurulan sistemden turkuaz + 3B arayüzle çekildi (alarm, denetim, e-posta, panel ve hesaplayıcı ekranları dahil). Android görüntüleri aynı günün ilk turundan; telefondaki üst çubuk artık turkuazdır.
+28 Ekim 2026'da, sıfırdan kurulan sistemden turkuaz + 3B arayüzle çekildi (alarm, denetim, e-posta, panel ve hesaplayıcı ekranları dahil); Android görüntüleri emülatörden, turkuaz üst çubukla.
 
 İçindekiler: [Web — giriş ve rollere göre ana sayfa](#1) · [Web — satış, gün sonu](#2) · [Web — depo: mal kabul, stok, son kullanma, sayım](#3) · [Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)](#4) · [Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)](#5) · [Web — raporlar, yapay zekâ, yönetim](#6) · [Web — alarm, denetim, e-posta, hesaplayıcılar, faturadan doldur](#7) · [Web — yazdırılabilir belgeler](#8) · [Web — İngilizce ve telefon genişliği](#9) · [Android (Kotlin) — araçtan satış](#10)
 
@@ -258,13 +258,13 @@ Web görüntüleri 28 Ekim 2026'da, sıfırdan kurulan sistemden turkuaz + 3B ar
 
 <img src="android/A01_giris.png" alt="Giriş; dil seçimi (English / Türkçe)." width="320">
 
-**Ana ekran: eşitleme durumu, büyük "Yeni satış" düğmesi, bugünkü satış ve nakit. Alt menü: Satış, Stok, Geçmiş, Gün sonu.**
+**Ana ekran (turkuaz üst çubuk): eşitleme durumu, büyük "Yeni satış" düğmesi, bugünkü satış ve nakit. Alt menü: Satış, Stok, Geçmiş, Gün sonu.**
 
-<img src="android/A02_ana_sayfa.png" alt="Ana ekran: eşitleme durumu, büyük &quot;Yeni satış&quot; düğmesi, bugünkü satış ve nakit. Alt menü: Satış, Stok, Geçmiş, Gün sonu." width="320">
+<img src="android/A02_ana_sayfa.png" alt="Ana ekran (turkuaz üst çubuk): eşitleme durumu, büyük &quot;Yeni satış&quot; düğmesi, bugünkü satış ve nakit. Alt menü: Satış, Stok, Geçmiş, Gün sonu." width="320">
 
-**Araç stoku: son kullanma tarihi en yakın üstte; satışa kapalı ve süresi yaklaşan lotlar etiketli.**
+**Araç stoku: son kullanma tarihi en yakın üstte; satışa kapalı ya da süresi yaklaşan lot olursa etiketlenir.**
 
-<img src="android/A03_stok.png" alt="Araç stoku: son kullanma tarihi en yakın üstte; satışa kapalı ve süresi yaklaşan lotlar etiketli." width="320">
+<img src="android/A03_stok.png" alt="Araç stoku: son kullanma tarihi en yakın üstte; satışa kapalı ya da süresi yaklaşan lot olursa etiketlenir." width="320">
 
 **Satış 1/4: müşteri ara ve seç.**
 

@@ -462,4 +462,4 @@ Not: Bu prova T-26'nın yerini tutmaz. Asıl temiz kurulum testi ekip arkadaşı
 - Faturadan doldur: örnek metinden tedarikçi, belge no, tarih, iki satır (lot, miktar, fiyat, SKT) önerildi, forma aktarıldı, kaydedilmedi. Bulunan sorun: "Sucukluk et" adıyla eşleştiği hâlde "Kodla eşleşti" yazıyordu → ad önce denenir.
 - Fiyat artışı alarmında fiyat "10,9 €" yazıyordu → iki basamak ("10,90 €").
 - Telefon genişliğinde (375 px) ana sayfa ve panel tek sütun, yatay taşma yok.
-- Ekran görüntüleri yeniden çekildi: 52 web (yeni 8) + 14 Android (`docs/ekran_goruntuleri`).
+- Ekran görüntüleri yeniden çekildi: 52 web (yeni 8) + 14 Android (emülatör Medium_Phone, turkuaz üst çubuk; satış SAT-2026-0107 Market B 1,5 kg sırt 39,00 € nakit, gönderildi) (`docs/ekran_goruntuleri`).
