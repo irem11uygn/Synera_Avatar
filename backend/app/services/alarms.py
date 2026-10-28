@@ -403,8 +403,8 @@ def _price_rules(session: Session, th: Thresholds, user: User | None) -> tuple[i
             Severity.UYARI,
             f"{product.name if product else 'Ürün'}: {purchase.doc_no} "
             f"({supplier.name if supplier else '?'}) "
-            f"birim fiyatı {tr_number(line.unit_price)} €, önceki alış {before[1].doc_no} "
-            f"{tr_number(before[0].unit_price)} € — %{tr_number(round_percent(increase))} artış "
+            f"birim fiyatı {tr_number(line.unit_price, 2)} €, önceki alış {before[1].doc_no} "
+            f"{tr_number(before[0].unit_price, 2)} € — %{tr_number(round_percent(increase))} artış "
             f"(eşik %{tr_number(th.price_increase_pct)}). Faturayı ve anlaşmayı kontrol edin.",
             ref_type="PURCHASE",
             ref_id=purchase.id,

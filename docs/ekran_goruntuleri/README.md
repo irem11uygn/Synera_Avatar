@@ -2,9 +2,9 @@
 
 Uygulamanın bütün ekranları, demo verisiyle (şartname senaryosu ve örnek günlük işler). Sistemi kurmadan uygulamayı görmek için.
 Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülatörden (yarı boyut).
-28 Ekim 2026'da, sıfırdan kurulan sistemden yeni arayüzle çekildi.
+Web görüntüleri 28 Ekim 2026'da, sıfırdan kurulan sistemden turkuaz + 3B arayüzle çekildi (alarm, denetim, e-posta, panel ve hesaplayıcı ekranları dahil). Android görüntüleri aynı günün ilk turundan; telefondaki üst çubuk artık turkuazdır.
 
-İçindekiler: [Web — giriş ve rollere göre ana sayfa](#1) · [Web — satış, gün sonu](#2) · [Web — depo: mal kabul, stok, son kullanma, sayım](#3) · [Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)](#4) · [Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)](#5) · [Web — raporlar, yapay zekâ, yönetim](#6) · [Web — yazdırılabilir belgeler](#7) · [Web — İngilizce ve telefon genişliği](#8) · [Android (Kotlin) — araçtan satış](#9)
+İçindekiler: [Web — giriş ve rollere göre ana sayfa](#1) · [Web — satış, gün sonu](#2) · [Web — depo: mal kabul, stok, son kullanma, sayım](#3) · [Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)](#4) · [Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)](#5) · [Web — raporlar, yapay zekâ, yönetim](#6) · [Web — alarm, denetim, e-posta, hesaplayıcılar, faturadan doldur](#7) · [Web — yazdırılabilir belgeler](#8) · [Web — İngilizce ve telefon genişliği](#9) · [Android (Kotlin) — araçtan satış](#10)
 
 <a id="1"></a>
 
@@ -22,9 +22,9 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <img src="web/03_ana_sayfa_depo.jpg" alt="Depo sorumlusunun ana sayfası (`depo1`): dolmak üzere lotlar, azalan stok; mal kabul, araca yükleme, sayım.">
 
-**Yöneticinin ana sayfası: bütün işler ve özet (bugünkü satış, stok değeri, dolmak üzere lotlar, açık geri çağırma).**
+**Yöneticinin ana sayfası (turkuaz + 3B görünüm): bugün yapılacaklar, özet ve panel — EKP gerçek/model tahmini (kesikli), hedef/gerçekleşen göstergesi, maliyet halkası (1.543,50 € → 18,16 €), izometrik 3B parça maliyetleri, müşteri sevkiyatı, açık alarmlar. Her grafikte "Tablo" görünümü var.**
 
-<img src="web/04_ana_sayfa_yonetici.jpg" alt="Yöneticinin ana sayfası: bütün işler ve özet (bugünkü satış, stok değeri, dolmak üzere lotlar, açık geri çağırma).">
+<img src="web/04_ana_sayfa_yonetici.jpg" alt="Yöneticinin ana sayfası (turkuaz + 3B görünüm): bugün yapılacaklar, özet ve panel — EKP gerçek/model tahmini (kesikli), hedef/gerçekleşen göstergesi, maliyet halkası (1.543,50 € → 18,16 €), izometrik 3B parça maliyetleri, müşteri sevkiyatı, açık alarmlar. Her grafikte &quot;Tablo&quot; görünümü var.">
 
 <a id="2"></a>
 
@@ -134,9 +134,9 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <img src="web/34_geri_cagirma_ayrintisi.jpg" alt="Geri çağırma: lot ve ondan yapılan bütün lotlar satışa kapalı; etkilenen zincir, aranacak müşteriler, iletişim listesi (CSV), bildirim yazdırma, iade alma, kapatma.">
 
-**Uyarılar: telefondan çevrimdışı yapılan sorunlu satışlar burada görünür.**
+**Alarm merkezi (kalite sorumlusu): geri çağırma başladı (kritik), alış fiyatı artışı (uyarı), bloke lotta stok; okundu işaretleme. Hatalı giriş alarmı yalnız yöneticiye görünür.**
 
-<img src="web/35_uyarilar.jpg" alt="Uyarılar: telefondan çevrimdışı yapılan sorunlu satışlar burada görünür.">
+<img src="web/35_alarm_merkezi.jpg" alt="Alarm merkezi (kalite sorumlusu): geri çağırma başladı (kritik), alış fiyatı artışı (uyarı), bloke lotta stok; okundu işaretleme. Hatalı giriş alarmı yalnız yöneticiye görünür.">
 
 <a id="6"></a>
 
@@ -172,6 +172,38 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <a id="7"></a>
 
+## Web — alarm, denetim, e-posta, hesaplayıcılar, faturadan doldur
+
+**Üst çubuktaki alarm zili: açık alarm sayısı (kritik varsa kırmızı) ve son beş alarm; yeni alarm gelince köşede bildirim açılır.**
+
+<img src="web/45_alarm_zili.jpg" alt="Üst çubuktaki alarm zili: açık alarm sayısı (kritik varsa kırmızı) ve son beş alarm; yeni alarm gelince köşede bildirim açılır.">
+
+**Denetim günlüğü (yönetici): kim, ne zaman, ne yaptı; önem, arama, kullanıcı ve tarih süzgeci, CSV. Hatalı girişler de burada.**
+
+<img src="web/46_denetim_gunlugu.jpg" alt="Denetim günlüğü (yönetici): kim, ne zaman, ne yaptı; önem, arama, kullanıcı ve tarih süzgeci, CSV. Hatalı girişler de burada.">
+
+**Rapor gönder (e-posta): rapor seç, alıcı ve not ekle, ön izlemede metnin tamamını gör; giden kutusu ve durumları (SMTP tanımlı değilse "Kuyrukta").**
+
+<img src="web/47_rapor_gonder_eposta.jpg" alt="Rapor gönder (e-posta): rapor seç, alıcı ve not ekle, ön izlemede metnin tamamını gör; giden kutusu ve durumları (SMTP tanımlı değilse &quot;Kuyrukta&quot;).">
+
+**Alarm ve e-posta ayarları: verim z-skoru, fiyat artışı ve hatalı giriş eşikleri; kuralları şimdi çalıştır; e-posta sunucusu durumu; kuralların listesi.**
+
+<img src="web/48_alarm_ve_eposta_ayarlari.jpg" alt="Alarm ve e-posta ayarları: verim z-skoru, fiyat artışı ve hatalı giriş eşikleri; kuralları şimdi çalıştır; e-posta sunucusu durumu; kuralların listesi.">
+
+**Ne olur hesaplayıcısı — EKP: hammadde, hizmet ücreti, teslim adedi; gerçek kayıtla aynı hesap (18,16 €).**
+
+<img src="web/49_hesaplayici_ekp.jpg" alt="Ne olur hesaplayıcısı — EKP: hammadde, hizmet ücreti, teslim adedi; gerçek kayıtla aynı hesap (18,16 €).">
+
+**Ne olur hesaplayıcısı — parçalama: değere ya da kiloya göre dağıtım, fire, ağırlık dengesi, 3B parça maliyeti.**
+
+<img src="web/50_hesaplayici_parcalama.jpg" alt="Ne olur hesaplayıcısı — parçalama: değere ya da kiloya göre dağıtım, fire, ağırlık dengesi, 3B parça maliyeti.">
+
+**Mal kabulde "Faturadan doldur": fatura/irsaliye metninden tedarikçi, belge no, tarih, ürün, miktar, lot, fiyat ve SKT önerisi. Kaydetmez; kullanıcı forma aktarıp kontrol eder.**
+
+<img src="web/51_faturadan_doldur.jpg" alt="Mal kabulde &quot;Faturadan doldur&quot;: fatura/irsaliye metninden tedarikçi, belge no, tarih, ürün, miktar, lot, fiyat ve SKT önerisi. Kaydetmez; kullanıcı forma aktarıp kontrol eder.">
+
+<a id="8"></a>
+
 ## Web — yazdırılabilir belgeler
 
 **Lot etiketi: ürün, üretim ve son tüketim tarihi, Code 128 barkod (el terminaliyle okunur).**
@@ -194,7 +226,7 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <img src="web/44_yazdir_geri_cagirma_bildirimi.jpg" alt="Müşteri başına geri çağırma bildirimi: ürün, lot, teslim belgesi, müşteride olması gereken miktar.">
 
-<a id="8"></a>
+<a id="9"></a>
 
 ## Web — İngilizce ve telefon genişliği
 
@@ -214,7 +246,11 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <img src="web/39_telefon_magaza_satisi.jpg" alt="Telefon genişliğinde mağaza satışı." width="320">
 
-<a id="9"></a>
+**Telefon genişliğinde yöneticinin ana sayfası ve paneli: grafikler tek sütunda.**
+
+<img src="web/52_telefon_yonetici_paneli.jpg" alt="Telefon genişliğinde yöneticinin ana sayfası ve paneli: grafikler tek sütunda." width="320">
+
+<a id="10"></a>
 
 ## Android (Kotlin) — araçtan satış
 

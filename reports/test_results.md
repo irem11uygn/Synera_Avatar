@@ -438,3 +438,28 @@ Not: Bu prova T-26'nın yerini tutmaz. Asıl temiz kurulum testi ekip arkadaşı
 - Gün sonu: 74,70 € nakit, araçta kalan mal; araç sayımı 26 adet → SAY-2026-0001, 1 lot eksik, stok 26'ya indi.
 - Menüden English: ekran anında İngilizce, sayılar 74.70, tarih 23/12/2026; uygulama yeniden açılınca seçim korunuyor.
 
+
+## 28 Ekim 2026 (ikinci tur) — alarm merkezi, denetim günlüğü, e-posta, panel grafikleri, hesaplayıcılar, turkuaz + 3B arayüz
+
+### Otomatik testler
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **237 geçti** (yeni 22: art arda hatalı giriş alarmı ve e-postası, alarm görünürlüğü, denetim günlüğü ve CSV, bloke lot satış denemesi, geri çağırma alarmı, fiyat artışı kuralı ve eşik değişikliği, verim sapması, demo senaryosunun alarmsız olması, rapor e-postası ve giden kutusu, SMTP gönderimi (sahte sunucuyla: gönderildi / hata / bağlantı yok), fatura metni ayrıştırma, sayı biçimleri, EKP ve parçalama hesaplayıcıları, panel grafikleri) |
+| Biçim | `ruff check` + `ruff format --check` | Temiz |
+| Yapay zekâ | `cd /ml && pytest -q` | 4 geçti |
+| Kabul (sıfırdan kurulum) | `sh scripts/kabul_testleri.sh` | **23/23**; ET-2026-001 ileri izleme 0,110 sn |
+| Web | `npm test`, `tsc -b`, `oxlint` | **30 geçti** (yeni 4: günlük özet ve maliyet raporu metni, e-posta programı bağlantısı, geri çağırma bildiriminde her müşterinin yalnız kendi miktarını görmesi; çeviri eksiksizliği); derleme ve lint temiz |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | **22 geçti**; APK üretildi (üst çubuk turkuaz) |
+
+Çalışırken bulunan sorunlar: geri çağırma artık ek alarmlar açtığı için bir eski test (yalnız ihlal uyarısını bekliyordu) güncellendi; çeviri testinin önbelleği yeni dosyaları görmüyordu (önbellek temizlenince doğru sonuç); uzun açıklamalar `t(` ile aynı satırda olmadığı için sözlük testinden kaçıyordu, tek satıra alındı ve çevrildi.
+
+### Tarayıcıda deneme (sıfırdan kurulan kopya, nginx dahil)
+- `kalite1` hesabına 3 yanlış şifre → yönetici girişinde zil 1, köşede "1 kritik alarm açık" bildirimi; denetim günlüğünde 3 "Hatalı giriş" (uyarı) ve 1 alarm (kritik).
+- ET-2026-001 geri çağırması → kritik alarm; bloke SUC-2026-045'i mağazada satma denemesi → 409 `LOT_BLOCKED`, satış yazılmadı, kritik alarm açıldı. Üç alarm e-postası yönetici ve kaliteye "Kuyrukta" (SMTP tanımlı değil).
+- Rapor gönder → Geri çağırma bildirimi → "Etkilenen müşterileri alıcı yap (3)": Market A 30, B 25, C 30 adet. Bulunan sorun: tek e-postada marketler birbirinin adresini ve miktarını görüyordu → düzeltildi, her müşteriye ayrı e-posta, yalnız kendi miktarı (test eklendi).
+- Ne olur hesaplayıcısı: senaryo değerleriyle EKP 18,16 € (18,158824); VKP 24,90 € → brüt kâr 6,74 €, marj %27,07; faturadaki adet 86 yazınca uyarı. Parçalama: but 17,63 €/kg, sırt 20,84 €/kg, 351,00 € tam dağıtıldı; 3B sütunlar çizildi.
+- Faturadan doldur: örnek metinden tedarikçi, belge no, tarih, iki satır (lot, miktar, fiyat, SKT) önerildi, forma aktarıldı, kaydedilmedi. Bulunan sorun: "Sucukluk et" adıyla eşleştiği hâlde "Kodla eşleşti" yazıyordu → ad önce denenir.
+- Fiyat artışı alarmında fiyat "10,9 €" yazıyordu → iki basamak ("10,90 €").
+- Telefon genişliğinde (375 px) ana sayfa ve panel tek sütun, yatay taşma yok.
+- Ekran görüntüleri yeniden çekildi: 52 web (yeni 8) + 14 Android (`docs/ekran_goruntuleri`).

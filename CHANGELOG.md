@@ -121,3 +121,13 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Dil seçeneği: web ve telefon Türkçe / English; sayı ve tarih biçimi dile göre; testler her metnin çevirisini denetler.
 - Testler: 215 sunucu, 4 yapay zekâ, 23 kabul (sıfırdan kurulum), 26 web, 22 Android — hepsi geçti (`reports/test_results.md`).
 
+### 28 Ekim 2026 (ikinci tur) — alarm merkezi, denetim günlüğü, e-posta, panel, hesaplayıcılar, turkuaz + 3B
+- Alarm kural motoru: verim sapması (gerçek verimin model beklentisinden sapması, z-skoru; σ modelin test hatasından), alış fiyatı artışı (bir önceki alışa göre %), bloke lotta stok. Olay alarmları: geri çağırma başladı, mağazada bloke lot satış denemesi (satış reddedilir), çevrimdışı geri çağırma/SKT ihlali, art arda hatalı giriş. Her durum için tek alarm; kurallar girişte, ilgili kayıttan sonra ve yöneticinin düğmesiyle çalışır; eşikler yönetimden değişir.
+- Denetim günlüğü: kim, ne zaman, ne yaptı (giriş, hatalı giriş, mal kabul, üretim, parçalama, satış, iade, fire, transfer, sayım, geri çağırma, kullanıcı, ayar, e-posta, alarm); önem derecesi, arama, süzme, CSV. Hatalı girişler hata yanıtına rağmen kalıcı yazılır.
+- E-posta giden kutusu: kritik alarm yönetici ve kaliteye, uyarı yöneticiye. `.env`'de SMTP tanımlıysa arka planda gönderilir, değilse "Kuyrukta" bekler. Rapor e-postası (günlük özet, maliyet ve sevkiyat, geri çağırma bildirimi — her müşteriye yalnız kendi miktarı —, açık alarmlar) ön izlemeli; e-posta programında açma seçeneği.
+- Panel grafikleri: EKP gerçek ve model tahmini (sistemde az emir varken modelin sentetik test verisi ayrıca, etiketli), hedef/gerçekleşen, maliyet halkası, izometrik 3B parça maliyeti, müşteri sevkiyatı, açık alarmlar; her grafikte tablo görünümü.
+- "Ne olur" hesaplayıcıları: EKP (fatura/teslim adedi farkı, hizmet faturası farkı, kâr ve marj) ve parçalama (değere/kiloya göre dağıtım, fire, ağırlık dengesi, fatura–tartım farkı). Gerçek kayıtla aynı maliyet fonksiyonları kullanılır.
+- Faturadan doldur: fatura/irsaliye metninden tedarikçi, belge no, tarih ve satırlar (ürün, miktar, lot, fiyat, SKT) önerilir; kaydetmez, kullanıcı kontrol edip kaydeder. Lot numarası bulunamazsa uydurulmaz.
+- Görünüm: turkuaz geçişli menü, buzlu cam kartlar, fareyle eğilen 3B kartlar, izometrik 3B sütunlar; azaltılmış hareket tercihinde kapanır. Android üst çubuğu da turkuaz.
+- Kullanıcılara e-posta alanı. Göç `c5e8a1f0d2b6` (36 tablo: `audit_events`, `app_settings`, `mail_outbox`).
+- Testler: 237 sunucu, 30 web, 22 Android (`reports/test_results.md`).

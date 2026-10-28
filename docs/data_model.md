@@ -197,3 +197,18 @@ Satış tabloları (T-14, Room sürüm 3; göç 2 → 3 Room'un ürettiği tanı
 | `sale_line` | saleUuid, lineNo, productId, lotId, lotNo, qtyMilli, unitPriceCents, amountCents | Birincil anahtar (saleUuid, lineNo); lotNo gönderim için satırda da saklanır |
 
 Kullanılabilir miktar = `stock.qty_milli` − Σ (sync_state = `BEKLIYOR` olan satış satırlarının qty_milli).
+
+## 7. Alarm, denetim ve e-posta tabloları (göç `c5e8a1f0d2b6`, 28 Ekim 2026)
+
+| Tablo / sütun | Açıklama |
+|---|---|
+| `alerts.severity` | BILGI / UYARI / KRITIK (eski geri çağırma ihlalleri KRITIK yapıldı) |
+| `alerts.acknowledged_by` | Okundu işaretleyen kullanıcı |
+| `alerts.rule_key` | Kural alarmının tekil anahtarı (ör. `FIYAT:12`, `BLOKE_STOK:3:41`); olay alarmında boş |
+| `alerts.kind` (yeni değerler) | GERI_CAGIRMA, BLOKE_SATIS_DENEMESI, BLOKE_STOK, VERIM_SAPMASI, FIYAT_ARTISI, HATALI_GIRIS |
+| `users.email` | Alarm ve rapor e-postaları için (isteğe bağlı) |
+| `audit_events` | Yalnız eklenen günlük: zaman, kullanıcı (ya da hatalı girişte yazılan ad), önem, işlem kodu, açıklama, ilgili kayıt, adres |
+| `app_settings` | Yöneticinin değiştirdiği ayarlar (`alarm.yield_z`, `alarm.price_increase_pct`, `alarm.failed_logins`); kayıt yoksa varsayılan |
+| `mail_outbox` | Giden kutusu: alıcılar, konu, metin, tür (ALARM/RAPOR), durum (KUYRUKTA/GONDERILDI/HATA), deneme sayısı, son hata, ilgili alarm |
+
+Toplam 36 tablo.

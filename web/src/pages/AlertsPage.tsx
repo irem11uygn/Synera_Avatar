@@ -156,7 +156,7 @@ export default function AlertsPage() {
               ),
             },
             { title: t('Tür'), dataIndex: 'kind', render: (kind: AlertRow['kind']) => <strong>{ALERT_KIND[kind]}</strong> },
-            { title: t('Açıklama'), dataIndex: 'message', render: (text: string) => <span style={{ whiteSpace: 'normal', display: 'block', minWidth: 280, maxWidth: 620 }}>{text}</span> },
+            { title: t('Açıklama'), dataIndex: 'message', render: (text: string) => <span style={{ whiteSpace: 'normal', display: 'block', minWidth: 260, maxWidth: 480 }}>{text}</span> },
             { title: t('Zaman'), dataIndex: 'created_at', render: formatDateTime },
             {
               title: t('Durum'),

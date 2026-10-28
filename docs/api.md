@@ -156,6 +156,29 @@ Hepsi `?date_from=&date_to=&product_id=&lot_no=&format=csv` süzgeçlerini kabul
 | POST | `/stock-counts` | Y, D, S | Sayım: `{warehouse_id, note?, lines: [{lot_no, counted_qty}]}`. Eksik çıkan "Sayım farkı" firesiyle düşülür; fazlası stoka eklenmez, raporlanır. Satış elemanı yalnız kendi aracını sayar |
 | GET | `/stock-counts`, `/stock-counts/{id}` | web | Sayım belgeleri, satır farkları ve eksik maliyeti |
 
+### Alarm, denetim, e-posta, panel ve hesaplayıcılar (28 Ekim 2026, ikinci tur)
+
+| Yöntem | Yol | Rol | Açıklama |
+|---|---|---|---|
+| GET | `/alerts?only_open=&severity=&limit=` | web | Alarmlar; `severity` (BILGI/UYARI/KRITIK), `kind_label`, `can_acknowledge`, okundu işaretleyenin adı. Art arda hatalı giriş alarmı yalnız yöneticiye görünür |
+| GET | `/alerts/summary` | web | Zil: açık alarm sayıları (kritik/uyarı) ve son beş açık alarm |
+| POST | `/alerts/{id}/ack`, `/alerts/ack-all` | web | Okundu işaretle; kim işaretleyebilir türe göre (ör. fiyat artışı: yönetici, depo; verim: yönetici, kalite, üretim) |
+| POST | `/alerts/run-rules` | Y | Kural motorunu şimdi çalıştırır; yeni alarmlar ve taranan kayıt sayısı döner |
+| GET / PUT | `/settings/alarm-thresholds` | web / Y | Eşikler: `yield_z`, `price_increase_pct`, `failed_logins` (metin olarak ondalık) |
+| GET | `/audit?q=&severity=&username=&day_from=&day_to=&limit=` | Y | Denetim günlüğü (yeniden eskiye) |
+| GET | `/audit/export.csv` | Y | Aynı süzgeçle CSV |
+| GET | `/mail/status` | web | SMTP tanımlı mı, sunucu ve gönderen adresi (şifre dönmez) |
+| GET | `/mail/recipients` | web | E-postası tanımlı kullanıcılar ve cari kartlar |
+| POST | `/mail` | web | `{recipients[], subject, body}` giden kutusuna yazılır (en çok 20 alıcı) |
+| GET | `/mail/outbox` | web | Yönetici hepsini, diğerleri kendi gönderdiklerini görür |
+| POST | `/mail/deliver`, `/mail/{id}/retry` | Y | Kuyruktakileri şimdi gönder (SMTP yoksa `INVALID_STATE`); hatalıyı yeniden kuyruğa al |
+| GET | `/dashboard/charts` | web | Panel grafikleri: EKP geçmişi ve kayıtlı model tahmini, sentetik model testi, hedef/gerçekleşen, maliyet kalemleri, parça maliyeti, sevkiyat |
+| POST | `/calc/ekp` | web | Kayıtsız EKP hesabı (gerçek kayıtla aynı fonksiyonlar), kâr/marj ve uyarılar |
+| POST | `/calc/cutting` | web | Kayıtsız parçalama maliyet dağıtımı, fire, ağırlık dengesi |
+| POST | `/purchases/parse-text` | Y, D | Fatura/irsaliye metninden mal kabul önerisi; hiçbir şey kaydetmez |
+
+Hatalı giriş `401 UNAUTHORIZED` olarak yanıtlanır ama yanıt hata fırlatılmadan döner: denetim kaydı ve gerekirse alarm kalıcı olur. Mağazada bloke lot satışı `409 LOT_BLOCKED` döner; satışın yarım yazılanları geri alınır, alarm kalır.
+
 ## 3. Hata biçimi ve kodları
 
 Ek kodlar (28 Ekim): `CONFLICT` (409, aynı anda değişen kayıt / benzersizlik), `TOO_MANY_ATTEMPTS` (429), `PASSWORD_CHANGE_REQUIRED` (403), `INTERNAL_ERROR` (500, ayrıntı istemciye verilmez).

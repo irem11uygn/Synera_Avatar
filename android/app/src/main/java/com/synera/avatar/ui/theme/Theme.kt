@@ -11,10 +11,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-/** Web arayüzüyle aynı renkler: sade, düz; anlam taşıyan renk yalnız durumlarda. */
+/** Web arayüzüyle aynı turkuaz kimlik; anlam taşıyan renk (kırmızı/turuncu/yeşil) yalnız durumlarda. */
 object Brand {
-    val Primary = Color(0xFF0F766E)
-    val PrimarySoft = Color(0xFFE6F4F2)
+    val Primary = Color(0xFF0D9488)
+    val PrimaryDeep = Color(0xFF0F766E)
+    val PrimarySoft = Color(0xFFDFF5F1)
     val Danger = Color(0xFFC62828)
     val DangerSoft = Color(0xFFFDECEC)
     val Success = Color(0xFF2E7D32)
@@ -29,10 +30,10 @@ private val light = lightColorScheme(
     primary = Brand.Primary,
     onPrimary = Color.White,
     primaryContainer = Brand.PrimarySoft,
-    onPrimaryContainer = Color(0xFF0B5D57),
+    onPrimaryContainer = Brand.PrimaryDeep,
     secondaryContainer = Brand.PrimarySoft,
-    onSecondaryContainer = Color(0xFF0B5D57),
-    background = Color(0xFFF4F5F7),
+    onSecondaryContainer = Brand.PrimaryDeep,
+    background = Color(0xFFEEF6F5),
     surface = Color.White,
     surfaceContainer = Color.White,
     onSurface = Color(0xFF1F2328),

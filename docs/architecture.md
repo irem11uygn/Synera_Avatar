@@ -375,3 +375,15 @@ Ekip aksini söylemedikçe bu varsayılanlar geçerlidir:
 - **Sayım.** Eksik çıkan miktar "Sayım farkı" firesiyle defterden düşülür; fazla çıkan miktar stoka eklenmez (kaynağı belirsiz mal deftere girmez), sayım belgesinde raporlanır.
 - **Dil.** Web ve telefonda metinler Türkçe yazılır ve `t()` ile çevrilir; sözlükte eksik metin testte yakalanır. Sunucunun iş kuralı mesajları Türkçedir.
 
+## Alarm merkezi, denetim günlüğü ve e-posta (28 Ekim 2026, ikinci tur)
+
+- **Alarm türleri.** Olay alarmı iş anında açılır (geri çağırma başladı, bloke lot satış denemesi, çevrimdışı ihlal, art arda hatalı giriş). Kural alarmı kural motoruyla (`app/services/alarms.py`) açılır: girişte, mal kabul / üretim tamamlama / parçalama onayı / geri çağırmadan sonra ve yöneticinin "şimdi çalıştır" düğmesiyle. `alerts.rule_key` tekil: aynı durum için ikinci alarm açılmaz.
+- **Verim sapması.** z = (gerçek − beklenen) / σ. Emir açılırken kaydedilen Model A tahmini varsa beklenen odur ve σ modelin test hatasından gelir (MAE × √(π/2), hatalar normal dağılımlıysa standart sapma). Tahmini olmayan emirde aynı mamulün en az 5 tamamlanmış emri varsa klasik z-skoru (ortalama, standart sapma). Parçalamada fire kg'ı Model B'nin fire tahminiyle aynı yolla karşılaştırılır. Varsayılan eşik |z| > 2; demo senaryosu tek başına alarm üretmez (test edildi).
+- **Önem ve e-posta.** Kritik: yönetici + kalite; uyarı: yönetici (kullanıcı kartında e-postası olanlar). Her alarm denetim günlüğüne de yazılır.
+- **Giden kutusu (outbox).** E-posta isteğin içinde gönderilmez; `mail_outbox`'a aynı işlemle yazılır. İşlem geri alınırsa e-posta da yoktur. SMTP tanımlıysa uygulama içi gönderici (`MailWorker`) belli aralıkla kuyruğu tarar; `SELECT … FOR UPDATE SKIP LOCKED` ile iki gönderici aynı e-postayı almaz. En çok 5 otomatik deneme; sonra yönetici elle dener.
+- **Hatalı giriş günlüğü.** İstek başına tek işlem kuralında hata fırlatmak yazılanları geri alır. Giriş ucu bu yüzden 401'i fırlatmadan yanıt olarak döner; günlük ve alarm kalıcı olur. Art arda sayım, son başarılı girişten sonraki hatalı girişlerdir; tam eşikte bir kritik alarm.
+- **Bloke lot satış denemesi.** Mağaza satışı kayıt noktası (savepoint) içinde yapılır; bloke lot hatasında yalnız satışın yazdıkları geri alınır, alarm ve günlük kalır.
+- **Denetim günlüğü** (`audit_events`) yalnız eklenir; iş uçları kaydı API katmanında, belge numarasıyla yazar.
+- **Hesaplayıcılar** `app/domain` fonksiyonlarını (EKP, kâr/marj, en büyük kalan yöntemiyle dağıtım, ağırlık dengesi) doğrudan çağırır; kayıt açmaz.
+- **Faturadan doldur** kural tabanlıdır (düzenli ifade + ürün adı/kod eşleşmesi + benzerlik); sayıyı Türkçe ve İngilizce yazımla okur, SKT'yi belge tarihinden ayırır, tutar ≠ miktar × fiyat ise uyarır. Öneri kaydedilmez; lot numarası bulunamazsa uydurulmaz.
+- **Görünüm.** Turkuaz geçişli menü, buzlu cam yüzey (`backdrop-filter`, desteklemeyen tarayıcıda opak yüzey), fareyle eğilen kart (dokunmatikte ve azaltılmış harekette kapalı; başlangıçta da dönüşüm verilir ki üzerine gelince katman sırası değişmesin), elle çizilmiş SVG grafikler (kategorik renkler renk körlüğü denetiminden geçti; her grafikte tablo görünümü).

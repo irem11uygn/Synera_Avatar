@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.synera.avatar.data.local.Payment
@@ -47,6 +49,7 @@ import com.synera.avatar.ui.dayend.DayEndViewModel
 import com.synera.avatar.ui.theme.AppIcons
 import com.synera.avatar.ui.theme.Badge
 import com.synera.avatar.ui.theme.Banner
+import com.synera.avatar.ui.theme.Brand
 import com.synera.avatar.ui.theme.Panel
 import com.synera.avatar.ui.theme.SectionTitle
 import com.synera.avatar.ui.theme.StatBox
@@ -86,10 +89,16 @@ fun MainScreen(viewModel: MainViewModel, dayEnd: DayEndViewModel, onNewSale: () 
                         Text(
                             t("Araç {code}", "code" to viewModel.session?.warehouseCode.orEmpty()),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = Color.White.copy(alpha = 0.82f),
                         )
                     }
                 },
+                // Web'deki turkuaz menüyle aynı kimlik: turkuaz üst çubuk, beyaz yazı.
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Brand.Primary,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White,
+                ),
                 actions = {
                     IconButton(onClick = viewModel::refresh, enabled = !ui.syncing) {
                         Icon(AppIcons.Sync, contentDescription = t("Verileri güncelle"))

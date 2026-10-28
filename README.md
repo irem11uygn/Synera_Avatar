@@ -10,12 +10,16 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 > - **İki yapay zekâ modeli**, yedi rapor.
 > - **Gerçek kullanım:** rollere göre ekranlar (yönetici, depo, üretim, kalite, mağaza, satış), kullanıcı ve şifre yönetimi, mağaza satışı (ödeme türüyle), gün sonu, depo/araç sayımı, son kullanma takibi ve kuralı (ilk dolan ilk çıkar), kritik stok uyarısı, geri çağırma tatbikatı, yazdırılabilir belgeler (barkodlu lot etiketi, fiş/irsaliye, geri çağırma bildirimi, gün sonu, sayım tutanağı).
 > - **Sade, iki dilli arayüz:** web ve telefon Türkçe / English; terimler sadeleştirildi.
+> - **Alarm merkezi ve denetim:** verim sapması (z-skoru), alış fiyatı artışı, bloke lot, geri çağırma, bloke lot satış denemesi, art arda hatalı giriş; zil ve anlık bildirim; kim-ne zaman-ne yaptı günlüğü (CSV).
+> - **E-posta:** kritik alarmlar yönetici ve kaliteye; rapor e-postası (günlük özet, maliyet, müşterilere geri çağırma bildirimi), giden kutusu, SMTP isteğe bağlı.
+> - **Panel ve hesaplayıcılar:** EKP gerçek/model grafiği, hedef/gerçekleşen, maliyet halkası, 3B parça maliyeti, sevkiyat; EKP ve parçalama "ne olur" hesaplayıcıları; mal kabulde faturadan doldur.
+> - **Turkuaz + 3B görünüm:** turkuaz menü, cam kartlar, eğilen 3B kartlar ve izometrik sütunlar.
 >
-> Testler: 215 sunucu, 4 yapay zekâ, 26 web, 22 Android ve **23 kabul testi** (AT-01…AT-15). Kalan teslim adımları: video, GitHub'a yükleme, e-posta ([docs/submission_checklist.md](docs/submission_checklist.md)).
+> Testler: 237 sunucu, 4 yapay zekâ, 30 web, 22 Android ve **23 kabul testi** (AT-01…AT-15). Kalan teslim adımları: video, GitHub'a yükleme, e-posta ([docs/submission_checklist.md](docs/submission_checklist.md)).
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
-**Ekran görüntüleri:** Sistemi kurmadan bütün ekranları görmek için [docs/ekran_goruntuleri](docs/ekran_goruntuleri/README.md) (58 görüntü: web ve Android, yeni arayüz).
+**Ekran görüntüleri:** Sistemi kurmadan bütün ekranları görmek için [docs/ekran_goruntuleri](docs/ekran_goruntuleri/README.md) (66 görüntü: web ve Android; turkuaz + 3B arayüz, alarm merkezi, denetim günlüğü, e-posta, panel grafikleri, hesaplayıcılar).
 
 ## Önemli tarihler
 
@@ -126,6 +130,8 @@ Bu şifreler yalnız yerel demo içindir. Yönetici **Kullanıcılar** ekranınd
 
 **Dil:** Web'de üst çubuktaki **TR / EN** seçimi, telefonda sağ üstteki menü. Seçim hatırlanır.
 
+**E-posta (isteğe bağlı):** Alarm ve rapor e-postaları önce giden kutusuna yazılır. `.env` içinde `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` tanımlanırsa arka planda gönderilir; tanımlı değilse **Yönetim → Alarm ve e-posta ayarları / Rapor gönder** ekranlarında "Kuyrukta" görünür ve kullanıcı isterse kendi e-posta programında açar. Demo kullanıcılarının e-postaları gerçek değildir (`@synera.example`).
+
 ### Şartname senaryosunu 5 dakikada denemek
 
 1. Web'e `yonetici` ile girin. Ana sayfa o günün işlerini gösterir (dolmak üzere lotlar, uyarılar, bekleyen belgeler).
@@ -136,7 +142,8 @@ Bu şifreler yalnız yerel demo içindir. Yönetici **Kullanıcılar** ekranınd
 6. **Üretim → Parçalama → PRC-2026-012:** ağırlık dengesi (25 = 22 + 3 fire) ve 351,00 €'nun kuruşu kuruşuna dağıtımı.
 7. **Satış → Mağaza satışı** (`magaza1` ile de olur): ürün ekleyin, lot kendiliğinden seçilir; ödeme türünü seçip kaydedin, fişi yazdırın. **Gün sonu** ödeme türüne göre toplamları verir.
 8. **Raporlar** (yedi rapor, CSV) ve **Yapay zekâ tahminleri** (referansla karşılaştırma).
-9. Android'de `satis1` ile girip eşitleyin. Satış dört adımdır (müşteri → ürün → ödeme → özet); geri çağrılan ve süresi geçen lot satılamaz. **Gün sonu** sekmesinde günün özeti ve araç sayımı.
+9. **Alarm merkezi** (üst çubuktaki zil): geri çağırma başlatınca kritik alarm düşer, köşede bildirim çıkar. **Raporlar → Rapor gönder (e-posta):** "Geri çağırma bildirimi" seçip "Etkilenen müşterileri alıcı yap" → her markete yalnız kendi miktarı gider (SMTP yoksa giden kutusunda "Kuyrukta"). **Ne olur hesaplayıcıları:** satış fiyatını 24,90 € yazınca kâr 6,74 €, marj %27,07.
+10. Android'de `satis1` ile girip eşitleyin. Satış dört adımdır (müşteri → ürün → ödeme → özet); geri çağrılan ve süresi geçen lot satılamaz. **Gün sonu** sekmesinde günün özeti ve araç sayımı.
 
 Durdurmak için `docker compose down`; veritabanını da silmek için `docker compose down -v`.
 
@@ -197,7 +204,9 @@ Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). De
 - **Fiş/irsaliye mali belge değildir.** e-Fatura/e-Arşiv ve yazar kasa entegrasyonu yoktur; belgelerdeki işletme adı `web/src/pages/PrintPage.tsx` içinde sabittir.
 - **Sunucunun hata ayrıntıları Türkçedir.** İngilizce ekranda önce hatanın türü İngilizce, ardından sunucunun Türkçe açıklaması görünür.
 - **Sayımda fazla çıkan mal stoka eklenmez;** kaynağı araştırılıp ilgili belge düzeltilmelidir (eksik çıkan mal fire olarak düşülür).
-- **İsteğe bağlı yapay zekâ özellikleri** (fatura okuma, anomali uyarıları) kapsam dışıdır. Geri çağırma ihlali uyarısı kural tabanlıdır.
+- **Faturadan doldur yalnız metinle çalışır** (kural tabanlı; PDF ya da fotoğraf okumaz). Öneri hiçbir zaman kendiliğinden kaydedilmez; lot numarası metinde yoksa boş bırakılır.
+- **Verim sapması alarmı** modelin test hatasına dayanır (σ = MAE × √(π/2)); veri sentetik olduğu için eşik gerçek işletmede yeniden ayarlanmalıdır (Yönetim → Alarm ve e-posta ayarları).
+- **E-posta** için SMTP sunucusu gerekir; tanımlı değilse e-postalar gönderilmez, giden kutusunda bekler.
 - **Tek ana depo** varsayılır. Dış üretici ve araç depoları ayrıca tanımlanır.
 - **Şifreler yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli ve HTTPS arkasında çalıştırılmalıdır. Hatalı giriş sınırı sunucu belleğinde tutulur (tek sunucu süreci için).
 
