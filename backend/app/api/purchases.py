@@ -10,6 +10,8 @@ from sqlalchemy import select
 from app.api.deps import Db, StockUser, WebUser
 from app.models import Lot, Partner, Product, Purchase, PurchaseCost, PurchaseLine
 from app.models.enums import PurchaseCostKind
+from app.services import alarms, audit
+from app.services.invoice_text import parse_invoice_text
 from app.services.lookups import get_or_404, main_warehouse
 from app.services.purchasing import ExtraCost, PurchaseLineInput, create_purchase
 
@@ -134,7 +136,18 @@ def create(body: PurchaseIn, db: Db, user: StockUser) -> PurchaseOut:
             for line in body.lines
         ],
     )
-    return _purchase_out(db, purchase)
+    out = _purchase_out(db, purchase)
+    audit.log(
+        db,
+        "MAL_KABUL",
+        f"Mal kabul {purchase.doc_no} ({out.supplier_name}): {len(out.lines)} satır, "
+        f"lotlar {', '.join(line.lot_no for line in out.lines)}",
+        user=user,
+        ref_type="PURCHASE",
+        ref_id=purchase.id,
+    )
+    alarms.run_rules(db, user)  # fiyat artışı hemen görünsün
+    return out
 
 
 @router.get("", response_model=list[PurchaseOut])
@@ -146,3 +159,45 @@ def list_purchases(db: Db, _: WebUser) -> list[PurchaseOut]:
 @router.get("/{purchase_id}", response_model=PurchaseOut)
 def get_purchase(purchase_id: int, db: Db, _: WebUser) -> PurchaseOut:
     return _purchase_out(db, get_or_404(db, Purchase, purchase_id, "Alış belgesi"))
+
+
+class ParseTextIn(BaseModel):
+    text: str = Field(min_length=1, max_length=20000)
+
+
+class LineSuggestionOut(BaseModel):
+    source: str
+    product_id: int | None
+    product_code: str | None
+    product_name: str | None
+    match: str
+    qty: Decimal | None
+    unit: str | None
+    unit_price: Decimal | None
+    invoice_amount: Decimal | None
+    lot_no: str | None
+    expiry_date: date | None
+    warnings: list[str]
+
+
+class InvoiceSuggestionOut(BaseModel):
+    supplier_id: int | None
+    supplier_name: str | None
+    doc_no: str | None
+    doc_date: date | None
+    lines: list[LineSuggestionOut]
+    warnings: list[str]
+
+
+@router.post("/parse-text", response_model=InvoiceSuggestionOut)
+def parse_text(body: ParseTextIn, db: Db, _: StockUser) -> InvoiceSuggestionOut:
+    """Fatura/irsaliye metninden mal kabul önerisi. Hiçbir şey kaydetmez; kullanıcı kontrol edip kaydeder."""
+    result = parse_invoice_text(db, body.text)
+    return InvoiceSuggestionOut(
+        supplier_id=result.supplier_id,
+        supplier_name=result.supplier_name,
+        doc_no=result.doc_no,
+        doc_date=result.doc_date,
+        lines=[LineSuggestionOut(**vars(line)) for line in result.lines],
+        warnings=result.warnings,
+    )

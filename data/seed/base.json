@@ -31,12 +31,12 @@
     {"code": "KUZU-KIYMA", "name": "Kuzu kıyma", "kind": "PARCA", "base_unit": "KG", "lot_prefix": "KIYMA", "sale_price": "16.00", "shelf_life_days": 3, "min_stock": "5"}
   ],
   "users": [
-    {"username": "yonetici", "full_name": "Demo Yönetici", "role": "YONETICI", "password": "yonetici123"},
+    {"username": "yonetici", "full_name": "Demo Yönetici", "role": "YONETICI", "password": "yonetici123", "email": "yonetici@synera.example"},
     {"username": "satis1", "full_name": "Demo Satış Elemanı", "role": "SATIS", "warehouse_code": "ARAC-01", "password": "satis123"},
-    {"username": "depo1", "full_name": "Demo Depo Sorumlusu", "role": "DEPO", "password": "depo1234"},
-    {"username": "uretim1", "full_name": "Demo Üretim Sorumlusu", "role": "URETIM", "password": "uretim123"},
-    {"username": "kalite1", "full_name": "Demo Kalite Sorumlusu", "role": "KALITE", "password": "kalite123"},
-    {"username": "magaza1", "full_name": "Demo Mağaza Kasası", "role": "MAGAZA", "password": "magaza123"}
+    {"username": "depo1", "full_name": "Demo Depo Sorumlusu", "role": "DEPO", "password": "depo1234", "email": "depo@synera.example"},
+    {"username": "uretim1", "full_name": "Demo Üretim Sorumlusu", "role": "URETIM", "password": "uretim123", "email": "uretim@synera.example"},
+    {"username": "kalite1", "full_name": "Demo Kalite Sorumlusu", "role": "KALITE", "password": "kalite123", "email": "kalite@synera.example"},
+    {"username": "magaza1", "full_name": "Demo Mağaza Kasası", "role": "MAGAZA", "password": "magaza123", "email": "magaza@synera.example"}
   ],
   "cutting_recipes": [
     {

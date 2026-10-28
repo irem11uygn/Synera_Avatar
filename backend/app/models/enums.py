@@ -144,6 +144,26 @@ class RecallResolution(StrEnum):
 class AlertKind(StrEnum):
     GERI_CAGIRMA_IHLALI = "GERI_CAGIRMA_IHLALI"
     SKT_IHLALI = "SKT_IHLALI"  # son kullanma tarihi geçmiş parti satıldı (çevrimdışı)
+    GERI_CAGIRMA = "GERI_CAGIRMA"  # geri çağırma başlatıldı
+    BLOKE_SATIS_DENEMESI = "BLOKE_SATIS_DENEMESI"  # mağazada bloke lot satılmak istendi (reddedildi)
+    BLOKE_STOK = "BLOKE_STOK"  # bloke lotta hâlâ stok var
+    VERIM_SAPMASI = "VERIM_SAPMASI"  # üretim/parçalama verimi beklenenden çok farklı (z-skoru)
+    FIYAT_ARTISI = "FIYAT_ARTISI"  # alış fiyatı bir önceki alışa göre eşikten fazla arttı
+    HATALI_GIRIS = "HATALI_GIRIS"  # art arda hatalı giriş denemesi
+
+
+class Severity(StrEnum):
+    """Alarm ve denetim kaydı önemi."""
+
+    BILGI = "BILGI"
+    UYARI = "UYARI"
+    KRITIK = "KRITIK"
+
+
+class MailStatus(StrEnum):
+    KUYRUKTA = "KUYRUKTA"  # e-posta sunucusu tanımlı değil ya da henüz gönderilmedi
+    GONDERILDI = "GONDERILDI"
+    HATA = "HATA"  # gönderim denendi, başarısız (yeniden denenebilir)
 
 
 class PaymentMethod(StrEnum):

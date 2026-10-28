@@ -5,6 +5,7 @@ deposundaki mal (hammadde) üretimde tüketileceği için kritik stok hesabına 
 """
 
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -25,7 +26,15 @@ from app.models import (
     StockBalance,
     Warehouse,
 )
-from app.models.enums import BaseUnit, CuttingStatus, LotStatus, ProductionStatus, RecallStatus, WarehouseKind
+from app.models.enums import (
+    AlertKind,
+    BaseUnit,
+    CuttingStatus,
+    LotStatus,
+    ProductionStatus,
+    RecallStatus,
+    WarehouseKind,
+)
 
 EXPIRY_WARNING_DAYS = 3
 OWN_STOCK = (WarehouseKind.ANA, WarehouseKind.ARAC)
@@ -76,7 +85,8 @@ class Dashboard:
     stock_value: Decimal
 
 
-def dashboard(session: Session) -> Dashboard:
+def dashboard(session: Session, alert_kinds: Sequence[AlertKind] | None = None) -> Dashboard:
+    """alert_kinds: kullanıcının görebildiği alarm türleri (boşsa hepsi)."""
     today = business_today()
     start, end = business_day_bounds_utc(today)
     order_counts = dict(
@@ -102,7 +112,9 @@ def dashboard(session: Session) -> Dashboard:
             )
         ],
         unread_alerts=session.scalar(
-            select(func.count()).select_from(Alert).where(Alert.acknowledged_at.is_(None))
+            select(func.count())
+            .select_from(Alert)
+            .where(Alert.acknowledged_at.is_(None), Alert.kind.in_(alert_kinds or list(AlertKind)))
         )
         or 0,
         draft_orders=order_counts.get(ProductionStatus.TASLAK, 0),

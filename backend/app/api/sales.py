@@ -4,14 +4,19 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import Db, StoreUser, WebUser
+from app.api.errors import error_response
 from app.api.fields import UtcDateTime
 from app.domain.clock import business_day_bounds_utc
+from app.domain.money import tr_number
+from app.errors import LotBlocked
 from app.models import Sale
 from app.models.enums import BaseUnit, PaymentMethod, SaleChannel
+from app.services import alarms, audit
 from app.services.lookups import get_or_404
 from app.services.sales import SaleView, StoreLineInput, create_store_sale, sale_view
 
@@ -86,18 +91,37 @@ class StoreSaleIn(BaseModel):
     lines: list[StoreLineIn] = Field(min_length=1, max_length=50)
 
 
-@router.post("", response_model=SaleOut, status_code=201)
-def create(body: StoreSaleIn, db: Db, user: StoreUser) -> SaleOut:
-    """Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz."""
-    sale = create_store_sale(
+@router.post("", response_model=SaleOut, status_code=201, responses={409: {}})
+def create(body: StoreSaleIn, db: Db, user: StoreUser) -> SaleOut | JSONResponse:
+    """Mağaza satışı: ana depodan, anlık. Geri çağrılmış ya da son kullanma tarihi geçmiş parti satılamaz.
+
+    Bloke lot denemesi reddedilir ve kritik alarm açar: satışın yarım yazılanları kayıt noktasıyla
+    (savepoint) geri alınır, yalnız alarm ve denetim kaydı kalır.
+    """
+    try:
+        with db.begin_nested():
+            sale = create_store_sale(
+                db,
+                user,
+                customer_id=body.customer_id,
+                warehouse_id=body.warehouse_id,
+                payment_method=body.payment_method,
+                lines=[StoreLineInput(line.lot_no, line.qty, line.unit_price) for line in body.lines],
+            )
+    except LotBlocked as error:
+        lot_no = str(error.details.get("lot_no", "?"))
+        alarms.blocked_sale_attempt(db, user, lot_no)
+        return error_response(error)
+    view = sale_view(db, sale)
+    audit.log(
         db,
-        user,
-        customer_id=body.customer_id,
-        warehouse_id=body.warehouse_id,
-        payment_method=body.payment_method,
-        lines=[StoreLineInput(line.lot_no, line.qty, line.unit_price) for line in body.lines],
+        "SATIS",
+        f"Mağaza satışı {sale.sale_no}: {view.customer_name}, {tr_number(view.total_amount, 2)} €",
+        user=user,
+        ref_type="SALE",
+        ref_id=sale.id,
     )
-    return _sale_out(sale_view(db, sale))
+    return _sale_out(view)
 
 
 @router.get("", response_model=list[SaleOut])

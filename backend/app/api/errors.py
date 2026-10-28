@@ -31,9 +31,14 @@ def _response(status: int, code: str, message: str, details: dict[str, Any]) -> 
     )
 
 
+def error_response(exc: DomainError) -> JSONResponse:
+    """Hatayı fırlatmadan yanıtlamak için (isteğin işlemi kaydedilsin: ör. hatalı giriş günlüğü)."""
+    return _response(exc.http_status, exc.code, exc.message, exc.details)
+
+
 async def _domain_error(_request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, DomainError)
-    return _response(exc.http_status, exc.code, exc.message, exc.details)
+    return error_response(exc)
 
 
 async def _validation_error(_request: Request, exc: Exception) -> JSONResponse:

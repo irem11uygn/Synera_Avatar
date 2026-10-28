@@ -11,6 +11,7 @@ from app.api.deps import Db, ProductionUser, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Lot, Product, ProductionInput, ProductionOrder, StockMovement
 from app.models.enums import BaseUnit, DocType, MovementType, ProductionKind
+from app.services import audit
 from app.services.lookups import lot_by_no
 from app.services.reprocessing import ReprocessInput, reprocess
 
@@ -120,6 +121,14 @@ def create(body: ReprocessIn, db: Db, user: ProductionUser) -> ReprocessOut:
         output_lot_no=(body.output_lot_no or "").strip() or None,
         warehouse_id=body.warehouse_id,
         user_id=user.id,
+    )
+    audit.log(
+        db,
+        "YENIDEN_ISLEME",
+        f"Yeniden işleme {order.order_no} kaydedildi",
+        user=user,
+        ref_type="PRODUCTION_ORDER",
+        ref_id=order.id,
     )
     return _out(db, order)
 

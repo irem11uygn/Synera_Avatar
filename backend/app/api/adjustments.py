@@ -8,8 +8,10 @@ from sqlalchemy import select
 
 from app.api.deps import Db, StockUser, WebUser
 from app.api.fields import UtcDateTime
+from app.domain.money import tr_number
 from app.models import Adjustment, Lot, Warehouse
-from app.models.enums import MovementType
+from app.models.enums import MovementType, Severity
+from app.services import audit
 from app.services.adjustments import create_adjustment, reverse
 from app.services.lookups import lot_by_no
 
@@ -79,6 +81,15 @@ def create(body: AdjustmentIn, db: Db, user: StockUser) -> AdjustmentOut:
         reason=body.reason,
         user_id=user.id,
     )
+    audit.log(
+        db,
+        "FIRE",
+        f"Fire/düzeltme: {body.lot_no.strip()}, {tr_number(body.qty)} — {body.reason}",
+        user=user,
+        severity=Severity.UYARI,
+        ref_type="ADJUSTMENT",
+        ref_id=record.id,
+    )
     return _adjustment_rows(db, Adjustment.id == record.id)[0]
 
 
@@ -91,6 +102,15 @@ def list_adjustments(db: Db, _: WebUser) -> list[AdjustmentOut]:
 def reverse_one(movement_id: int, body: ReverseIn, db: Db, user: StockUser) -> list[ReversalOut]:
     """Hareketi silmeden düzeltir: aslının tam tersi yeni hareket(ler) yazılır (gerekçe zorunlu)."""
     reversals = reverse(db, movement_id, body.reason, user.id)
+    audit.log(
+        db,
+        "TERS_KAYIT",
+        f"Hareket {movement_id} ters kayıtla düzeltildi — {body.reason}",
+        user=user,
+        severity=Severity.UYARI,
+        ref_type="MOVEMENT",
+        ref_id=movement_id,
+    )
     lot_ids = [m.lot_id for m in reversals]
     names = {lot_id: no for lot_id, no in db.execute(select(Lot.id, Lot.lot_no).where(Lot.id.in_(lot_ids)))}
     codes = {wid: code for wid, code in db.execute(select(Warehouse.id, Warehouse.code))}

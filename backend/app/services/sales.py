@@ -23,7 +23,7 @@ from app.domain.clock import business_today
 from app.domain.costing import line_amount
 from app.domain.money import tr_number
 from app.errors import DomainError, Forbidden, InvalidInput, NotFound
-from app.models import Alert, Lot, Partner, Product, Sale, SaleLine, User
+from app.models import Lot, Partner, Product, Sale, SaleLine, User
 from app.models.enums import (
     AlertKind,
     BaseUnit,
@@ -32,9 +32,11 @@ from app.models.enums import (
     MovementType,
     PaymentMethod,
     SaleChannel,
+    Severity,
     WarehouseKind,
 )
 from app.models.types import utcnow
+from app.services.alarms import raise_alarm
 from app.services.ledger import post_movement
 from app.services.lookups import warehouse_or_404
 from app.services.numbering import next_document_no
@@ -176,30 +178,28 @@ def _record_sale(
         product = session.get(Product, lot.product_id)
         unit = "adet" if product is not None and product.base_unit == BaseUnit.ADET else "kg"
         if lot.status == LotStatus.BLOKE:
-            session.add(
-                Alert(
-                    kind=AlertKind.GERI_CAGIRMA_IHLALI,
-                    ref_type="SALE",
-                    ref_id=sale.id,
-                    message=(
-                        f"{sale.sale_no}: bloke {lot.lot_no} lotundan {tr_number(line.qty)} {unit} "
-                        f"{customer.name} müşterisine satıldı (çevrimdışı satış). Müşteriyi geri çağırma "
-                        "listesine ekleyin."
-                    ),
-                )
+            raise_alarm(
+                session,
+                AlertKind.GERI_CAGIRMA_IHLALI,
+                Severity.KRITIK,
+                f"{sale.sale_no}: bloke {lot.lot_no} lotundan {tr_number(line.qty)} {unit} "
+                f"{customer.name} müşterisine satıldı (çevrimdışı satış). Müşteriyi geri çağırma "
+                "listesine ekleyin.",
+                ref_type="SALE",
+                ref_id=sale.id,
+                user=user,
             )
         if _expired(lot, sale_day):
-            session.add(
-                Alert(
-                    kind=AlertKind.SKT_IHLALI,
-                    ref_type="SALE",
-                    ref_id=sale.id,
-                    message=(
-                        f"{sale.sale_no}: son kullanma tarihi geçmiş {lot.lot_no} partisinden "
-                        f"{tr_number(line.qty)} {unit} {customer.name} müşterisine satıldı "
-                        "(çevrimdışı satış). Müşteriyle iletişime geçin."
-                    ),
-                )
+            raise_alarm(
+                session,
+                AlertKind.SKT_IHLALI,
+                Severity.UYARI,
+                f"{sale.sale_no}: son kullanma tarihi geçmiş {lot.lot_no} partisinden "
+                f"{tr_number(line.qty)} {unit} {customer.name} müşterisine satıldı "
+                "(çevrimdışı satış). Müşteriyle iletişime geçin.",
+                ref_type="SALE",
+                ref_id=sale.id,
+                user=user,
             )
     session.flush()
     return sale

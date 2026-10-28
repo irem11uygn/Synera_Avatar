@@ -10,6 +10,7 @@ from app.api.deps import Db, StockUser, WebUser
 from app.api.fields import UtcDateTime
 from app.models import Lot, Transfer, TransferLine, Warehouse
 from app.models.enums import TransferReason
+from app.services import audit
 from app.services.lookups import lot_by_no
 from app.services.transfers import TransferLineInput, create_transfer
 
@@ -74,7 +75,16 @@ def create(body: TransferIn, db: Db, user: StockUser) -> TransferOut:
         reason=body.reason,
         user_id=user.id,
     )
-    return _transfer_out(db, transfer)
+    out = _transfer_out(db, transfer)
+    audit.log(
+        db,
+        "TRANSFER",
+        f"Transfer {transfer.transfer_no}: {len(body.lines)} satır",
+        user=user,
+        ref_type="TRANSFER",
+        ref_id=transfer.id,
+    )
+    return out
 
 
 @router.get("", response_model=list[TransferOut])

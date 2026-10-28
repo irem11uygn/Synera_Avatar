@@ -20,6 +20,7 @@ from app.models.enums import UserRole, WarehouseKind
 from app.security import hash_password
 from app.services.auth import check_new_password, end_all_sessions
 from app.services.lookups import get_or_404
+from app.services.mail import EMAIL
 
 USERNAME = re.compile(r"^[a-z0-9._]{3,50}$")
 
@@ -33,6 +34,15 @@ def _check_warehouse(session: Session, role: UserRole, warehouse_id: int | None)
     if warehouse.kind != WarehouseKind.ARAC:
         raise InvalidInput("Saha satış kullanıcısının deposu bir araç deposu olmalı.")
     return warehouse.id
+
+
+def _check_email(email: str | None) -> str | None:
+    value = (email or "").strip()
+    if not value:
+        return None
+    if not EMAIL.match(value):
+        raise InvalidInput(f"Geçersiz e-posta adresi: {value}")
+    return value
 
 
 def _active_admins(session: Session) -> int:
@@ -52,6 +62,7 @@ def create_user(
     role: UserRole,
     password: str,
     warehouse_id: int | None = None,
+    email: str | None = None,
 ) -> User:
     username = username.strip().lower()
     if not USERNAME.match(username):
@@ -70,6 +81,7 @@ def create_user(
         password_hash=hash_password(password),
         warehouse_id=_check_warehouse(session, role, warehouse_id),
         must_change_password=True,  # yöneticinin verdiği ilk şifre geçicidir
+        email=_check_email(email),
     )
     session.add(user)
     session.flush()
@@ -85,6 +97,7 @@ def update_user(
     role: UserRole,
     active: bool,
     warehouse_id: int | None,
+    email: str | None = None,
 ) -> User:
     if not full_name.strip():
         raise InvalidInput("Ad soyad gerekli.")
@@ -98,6 +111,7 @@ def update_user(
     user.full_name = full_name.strip()
     user.role = role
     user.warehouse_id = _check_warehouse(session, role, warehouse_id)
+    user.email = _check_email(email)
     if user.active and not active:
         end_all_sessions(session, user.id)
     user.active = active

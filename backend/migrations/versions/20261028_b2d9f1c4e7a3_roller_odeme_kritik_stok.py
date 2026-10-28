@@ -43,7 +43,9 @@ def upgrade() -> None:
         "users", sa.Column("must_change_password", sa.Boolean(), nullable=False, server_default=sa.false())
     )
     op.add_column("products", sa.Column("min_stock", sa.Numeric(12, 3), nullable=True))
-    op.add_column("sales", sa.Column("payment_method", sa.Enum(*PAYMENTS, name="paymentmethod"), nullable=True))
+    op.add_column(
+        "sales", sa.Column("payment_method", sa.Enum(*PAYMENTS, name="paymentmethod"), nullable=True)
+    )
     op.alter_column(
         "alerts",
         "kind",

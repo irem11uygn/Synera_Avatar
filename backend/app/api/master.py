@@ -10,6 +10,7 @@ from sqlalchemy import select
 from app.api.deps import AdminUser, Db, PartnerUser, WebUser
 from app.models import Partner, Product, Warehouse
 from app.models.enums import BaseUnit, ProductKind, WarehouseKind
+from app.services import audit
 from app.services.lookups import get_or_404
 from app.services.master import save_partner, save_product
 
@@ -71,13 +72,31 @@ def list_products(db: Db, _: WebUser, kind: ProductKind | None = None) -> list[P
 
 
 @router.post("/products", response_model=ProductOut, status_code=201)
-def create_product(body: ProductIn, db: Db, _: AdminUser) -> Product:
-    return save_product(db, None, body.model_dump())
+def create_product(body: ProductIn, db: Db, user: AdminUser) -> Product:
+    product = save_product(db, None, body.model_dump())
+    audit.log(
+        db,
+        "URUN",
+        f"Ürün eklendi: {product.code} {product.name}",
+        user=user,
+        ref_type="PRODUCT",
+        ref_id=product.id,
+    )
+    return product
 
 
 @router.put("/products/{product_id}", response_model=ProductOut)
-def update_product(product_id: int, body: ProductIn, db: Db, _: AdminUser) -> Product:
-    return save_product(db, get_or_404(db, Product, product_id, "Ürün"), body.model_dump())
+def update_product(product_id: int, body: ProductIn, db: Db, user: AdminUser) -> Product:
+    product = save_product(db, get_or_404(db, Product, product_id, "Ürün"), body.model_dump())
+    audit.log(
+        db,
+        "URUN",
+        f"Ürün değişti: {product.code} {product.name}",
+        user=user,
+        ref_type="PRODUCT",
+        ref_id=product.id,
+    )
+    return product
 
 
 @router.get("/partners", response_model=list[PartnerOut])
@@ -93,13 +112,31 @@ def list_partners(
 
 
 @router.post("/partners", response_model=PartnerOut, status_code=201)
-def create_partner(body: PartnerIn, db: Db, _: PartnerUser) -> Partner:
-    return save_partner(db, None, body.model_dump())
+def create_partner(body: PartnerIn, db: Db, user: PartnerUser) -> Partner:
+    partner = save_partner(db, None, body.model_dump())
+    audit.log(
+        db,
+        "CARI",
+        f"Cari eklendi: {partner.code} {partner.name}",
+        user=user,
+        ref_type="PARTNER",
+        ref_id=partner.id,
+    )
+    return partner
 
 
 @router.put("/partners/{partner_id}", response_model=PartnerOut)
-def update_partner(partner_id: int, body: PartnerIn, db: Db, _: PartnerUser) -> Partner:
-    return save_partner(db, get_or_404(db, Partner, partner_id, "Cari"), body.model_dump())
+def update_partner(partner_id: int, body: PartnerIn, db: Db, user: PartnerUser) -> Partner:
+    partner = save_partner(db, get_or_404(db, Partner, partner_id, "Cari"), body.model_dump())
+    audit.log(
+        db,
+        "CARI",
+        f"Cari değişti: {partner.code} {partner.name}",
+        user=user,
+        ref_type="PARTNER",
+        ref_id=partner.id,
+    )
+    return partner
 
 
 @router.get("/warehouses", response_model=list[WarehouseOut])

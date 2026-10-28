@@ -9,11 +9,11 @@ from sqlalchemy import select
 
 from app.api.deps import Db, ProductionUser, WebUser
 from app.api.fields import UtcDateTime
-from app.domain.money import round_money
+from app.domain.money import round_money, tr_number
 from app.errors import NotFound
 from app.models import ProductionOrder
-from app.models.enums import BaseUnit, ForecastTarget, ProductionKind, ProductionStatus
-from app.services import production
+from app.models.enums import BaseUnit, ForecastTarget, ProductionKind, ProductionStatus, Severity
+from app.services import alarms, audit, production
 from app.services.ai import first_forecast
 from app.services.lookups import get_or_404, lot_by_no
 
@@ -191,6 +191,14 @@ def create(body: OrderIn, db: Db, user: ProductionUser) -> OrderOut:
         inputs=[production.PlannedInput(lot_by_no(db, i.lot_no).id, i.qty) for i in body.inputs],
         user_id=user.id,
     )
+    audit.log(
+        db,
+        "URETIM_EMRI",
+        f"Dış üretim emri {order.order_no} açıldı ({tr_number(order.planned_qty)} planlanan)",
+        user=user,
+        ref_type="PRODUCTION_ORDER",
+        ref_id=order.id,
+    )
     return _order_out(db, order)
 
 
@@ -214,7 +222,16 @@ def get_order(order_id: int, db: Db, _: WebUser) -> OrderOut:
 
 @router.post("/{order_id}/ship", response_model=OrderOut, response_model_by_alias=True)
 def ship(order_id: int, db: Db, user: ProductionUser) -> OrderOut:
-    return _order_out(db, production.ship_order(db, order_id, user_id=user.id))
+    order = production.ship_order(db, order_id, user_id=user.id)
+    audit.log(
+        db,
+        "URETIM_SEVK",
+        f"{order.order_no}: hammadde dış üreticiye sevk edildi",
+        user=user,
+        ref_type="PRODUCTION_ORDER",
+        ref_id=order.id,
+    )
+    return _order_out(db, order)
 
 
 @router.post("/{order_id}/complete", response_model=OrderOut, response_model_by_alias=True)
@@ -233,7 +250,17 @@ def complete(order_id: int, body: CompleteIn, db: Db, user: ProductionUser) -> O
         output_lot_no=body.output_lot_no,
         user_id=user.id,
     )
-    return _order_out(db, order)
+    out = _order_out(db, order)
+    audit.log(
+        db,
+        "URETIM_TAMAM",
+        f"{order.order_no} tamamlandı: {tr_number(order.received_qty or 0)} teslim alındı",
+        user=user,
+        ref_type="PRODUCTION_ORDER",
+        ref_id=order.id,
+    )
+    alarms.run_rules(db, user)  # verim sapması hemen görünsün
+    return out
 
 
 class CancelIn(BaseModel):
@@ -244,4 +271,14 @@ class CancelIn(BaseModel):
 def cancel(order_id: int, db: Db, user: ProductionUser, body: CancelIn | None = None) -> OrderOut:
     """Taslak emir iptal edilir; sevk edilmiş emirde gönderilen hammadde ana depoya iade edilir."""
     note = body.note if body is not None else None
-    return _order_out(db, production.cancel_order(db, order_id, note=note, user_id=user.id))
+    order = production.cancel_order(db, order_id, note=note, user_id=user.id)
+    audit.log(
+        db,
+        "URETIM_IPTAL",
+        f"{order.order_no} iptal edildi" + (f": {note}" if note else ""),
+        user=user,
+        severity=Severity.UYARI,
+        ref_type="PRODUCTION_ORDER",
+        ref_id=order.id,
+    )
+    return _order_out(db, order)

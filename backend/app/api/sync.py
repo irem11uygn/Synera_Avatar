@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.api.deps import Db, require_role
 from app.models import User
 from app.models.enums import BaseUnit, LotStatus, PaymentMethod, UserRole
-from app.services import sales
+from app.services import audit, sales
 from app.services.sync import pull_changes
 
 router = APIRouter(prefix="/sync", tags=["senkronizasyon"])
@@ -136,6 +136,15 @@ def push(body: PushIn, db: Db, user: Annotated[User, Depends(require_role(UserRo
             for sale in body.sales
         ],
     )
+    saved = [r for r in results if r.sale_no and r.status != sales.PushStatus.DUPLICATE]
+    if saved:
+        audit.log(
+            db,
+            "SATIS_SENKRON",
+            f"Telefondan {len(saved)} satış alındı ({body.device_id}): "
+            + ", ".join(r.sale_no or "" for r in saved),
+            user=user,
+        )
     return PushResponse(
         results=[
             PushResultOut(

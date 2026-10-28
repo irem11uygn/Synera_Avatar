@@ -7,11 +7,21 @@ from sqlalchemy import select
 from app.api.auth import UserOut, user_out
 from app.api.deps import AdminUser, Db
 from app.models import User
-from app.models.enums import UserRole
+from app.models.enums import Severity, UserRole
+from app.services import audit
 from app.services import users as service
 from app.services.lookups import get_or_404
 
 router = APIRouter(prefix="/users", tags=["kullanıcılar"])
+
+ROLE_NAMES = {
+    UserRole.YONETICI: "yönetici",
+    UserRole.DEPO: "depo",
+    UserRole.URETIM: "üretim",
+    UserRole.KALITE: "kalite",
+    UserRole.MAGAZA: "mağaza",
+    UserRole.SATIS: "satış",
+}
 
 
 class UserCreateIn(BaseModel):
@@ -20,6 +30,7 @@ class UserCreateIn(BaseModel):
     role: UserRole
     password: str = Field(min_length=1, max_length=200)
     warehouse_id: int | None = None
+    email: str | None = Field(default=None, max_length=120)
 
 
 class UserUpdateIn(BaseModel):
@@ -27,6 +38,7 @@ class UserUpdateIn(BaseModel):
     role: UserRole
     active: bool
     warehouse_id: int | None = None
+    email: str | None = Field(default=None, max_length=120)
 
 
 class UserAdminOut(UserOut):
@@ -51,18 +63,53 @@ def list_users(db: Db, _: AdminUser) -> list[UserAdminOut]:
 
 
 @router.post("", response_model=UserAdminOut, status_code=201)
-def create(body: UserCreateIn, db: Db, _: AdminUser) -> UserAdminOut:
-    return _out(db, service.create_user(db, **body.model_dump()))
+def create(body: UserCreateIn, db: Db, admin: AdminUser) -> UserAdminOut:
+    user = service.create_user(db, **body.model_dump())
+    audit.log(
+        db,
+        "KULLANICI",
+        f"Kullanıcı eklendi: {user.username} ({ROLE_NAMES[user.role]})",
+        user=admin,
+        ref_type="USER",
+        ref_id=user.id,
+    )
+    return _out(db, user)
 
 
 @router.put("/{user_id}", response_model=UserAdminOut)
 def update(user_id: int, body: UserUpdateIn, db: Db, admin: AdminUser) -> UserAdminOut:
     user = get_or_404(db, User, user_id, "Kullanıcı")
-    return _out(db, service.update_user(db, user, acting=admin, **body.model_dump()))
+    before = (user.role, user.active)
+    service.update_user(db, user, acting=admin, **body.model_dump())
+    changes = []
+    if before[0] != user.role:
+        changes.append(f"rol {ROLE_NAMES[before[0]]} → {ROLE_NAMES[user.role]}")
+    if before[1] != user.active:
+        changes.append("aktifleştirildi" if user.active else "pasifleştirildi")
+    audit.log(
+        db,
+        "KULLANICI",
+        f"Kullanıcı değişti: {user.username}" + (f" ({', '.join(changes)})" if changes else ""),
+        user=admin,
+        severity=Severity.UYARI if changes else Severity.BILGI,
+        ref_type="USER",
+        ref_id=user.id,
+    )
+    return _out(db, user)
 
 
 @router.post("/{user_id}/reset-password", response_model=ResetPasswordOut)
-def reset_password(user_id: int, body: ResetPasswordIn, db: Db, _: AdminUser) -> ResetPasswordOut:
+def reset_password(user_id: int, body: ResetPasswordIn, db: Db, admin: AdminUser) -> ResetPasswordOut:
     """Geçici şifre verir; kullanıcı ilk girişte değiştirmek zorundadır, açık oturumları kapanır."""
     user = get_or_404(db, User, user_id, "Kullanıcı")
-    return ResetPasswordOut(temporary_password=service.reset_password(db, user, body.new_password))
+    password = service.reset_password(db, user, body.new_password)
+    audit.log(
+        db,
+        "SIFRE_SIFIRLANDI",
+        f"{user.username} kullanıcısının şifresi sıfırlandı",
+        user=admin,
+        severity=Severity.UYARI,
+        ref_type="USER",
+        ref_id=user.id,
+    )
+    return ResetPasswordOut(temporary_password=password)

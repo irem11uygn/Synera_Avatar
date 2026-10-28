@@ -145,6 +145,7 @@ def _load_users(session: Session, rows: list[dict[str, Any]], warehouses: dict[s
                 role=UserRole(row["role"]),
                 password_hash=hash_password(row["password"]),
                 warehouse_id=warehouse.id if warehouse else None,
+                email=row.get("email"),
             )
         )
 

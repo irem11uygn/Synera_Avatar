@@ -9,7 +9,9 @@ from sqlalchemy import select
 
 from app.api.deps import Db, SalesDeskUser, WebUser
 from app.api.fields import UtcDateTime
+from app.domain.money import tr_number
 from app.models import CustomerReturn, Lot, OnwardDelivery, Partner, Sale, SaleLine, Warehouse
+from app.services import audit
 from app.services.lookups import get_or_404
 from app.services.returns import add_onward_delivery, create_return
 
@@ -90,7 +92,16 @@ def create(body: ReturnIn, db: Db, user: SalesDeskUser) -> ReturnOut:
         reason=body.reason,
         user_id=user.id,
     )
-    return _return_rows(db, CustomerReturn.id == record.id)[0]
+    out = _return_rows(db, CustomerReturn.id == record.id)[0]
+    audit.log(
+        db,
+        "IADE",
+        f"Müşteri iadesi: {out.lot_no}, {tr_number(record.qty)} — {body.reason}",
+        user=user,
+        ref_type="RETURN",
+        ref_id=record.id,
+    )
+    return out
 
 
 @router.get("/returns", response_model=list[ReturnOut])
@@ -132,4 +143,13 @@ def create_onward(sale_line_id: int, body: OnwardIn, db: Db, user: SalesDeskUser
         source_note=body.source_note,
         user_id=user.id,
     )
-    return _onward_out(db, delivery)
+    out = _onward_out(db, delivery)
+    audit.log(
+        db,
+        "DAGITIM",
+        f"İkinci kademe dağıtım bildirildi: {out.recipient_name}, {tr_number(delivery.qty)}",
+        user=user,
+        ref_type="SALE_LINE",
+        ref_id=sale_line_id,
+    )
+    return out

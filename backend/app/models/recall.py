@@ -6,7 +6,7 @@ from sqlalchemy import BigInteger, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
-from app.models.enums import AlertKind, RecallResolution, RecallStatus
+from app.models.enums import AlertKind, RecallResolution, RecallStatus, Severity
 from app.models.types import TIMESTAMP, IdMixin, db_enum, utcnow
 
 
@@ -38,8 +38,12 @@ class Alert(IdMixin, Base):
     __tablename__ = "alerts"
 
     kind: Mapped[AlertKind] = mapped_column(db_enum(AlertKind))
+    severity: Mapped[Severity] = mapped_column(db_enum(Severity), default=Severity.UYARI)
     ref_type: Mapped[str] = mapped_column(String(30))
     ref_id: Mapped[int] = mapped_column(BigInteger)
     message: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=utcnow)
     acknowledged_at: Mapped[datetime | None] = mapped_column(TIMESTAMP)
+    acknowledged_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    # Kural motorunun aynı durum için ikinci alarm açmaması: ör. "BLOKE_STOK:12" (olay alarmlarında boş).
+    rule_key: Mapped[str | None] = mapped_column(String(120), unique=True)

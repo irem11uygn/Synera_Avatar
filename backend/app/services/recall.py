@@ -20,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.errors import InvalidInput, InvalidState
-from app.models import Alert, Lot, Recall, RecallLot, StockBalance, User
+from app.models import Lot, Recall, RecallLot, StockBalance, User
 from app.models.enums import LotStatus, RecallResolution, RecallStatus
 from app.models.types import utcnow
 from app.services.adjustments import create_adjustment
@@ -161,11 +161,3 @@ def held_by_customers(view: RecallView) -> dict[str, Decimal]:
     for recipient in view.recipients:
         totals[recipient.base_unit] = totals.get(recipient.base_unit, Decimal(0)) + recipient.qty
     return totals
-
-
-def acknowledge_alert(session: Session, alert_id: int) -> Alert:
-    alert = get_or_404(session, Alert, alert_id, "Uyarı")
-    if alert.acknowledged_at is None:
-        alert.acknowledged_at = utcnow()
-        session.flush()
-    return alert

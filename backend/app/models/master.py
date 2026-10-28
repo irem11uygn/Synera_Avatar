@@ -24,6 +24,7 @@ class User(IdMixin, Base):
     warehouse_id: Mapped[int | None] = mapped_column(ForeignKey("warehouses.id"))  # satış: araç deposu
     active: Mapped[bool] = mapped_column(default=True)
     must_change_password: Mapped[bool] = mapped_column(default=False)  # yönetici şifreyi sıfırladıysa
+    email: Mapped[str | None] = mapped_column(String(120))  # alarm ve rapor e-postaları için
 
 
 class AuthSession(Base):

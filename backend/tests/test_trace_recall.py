@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from app.demo import build_demo_scenario
 from app.models import Alert, Lot, Partner, Product, SaleLine, StockBalance, Warehouse
-from app.models.enums import LotOrigin, LotStatus
+from app.models.enums import AlertKind, LotOrigin, LotStatus
 from app.services.integrity import check_invariants
 from tests.helpers import auth_header, by_code, lot_by_no
 
@@ -242,12 +242,18 @@ def test_at12_offline_sale_after_recall_is_flagged_in_the_list(client, admin, se
     assert [(r["customer"], r["lot_no"], D(r["qty"])) for r in flagged] == [("Market C", but.lot_no, D(2))]
     assert body["violation_count"] == 1
 
+    # Geri çağırma başlatılınca da alarm açılır (GERI_CAGIRMA, bloke lotta stok); ihlal ayrı, kritik.
     alerts = client.get(f"{API}/alerts", params={"only_open": True}, headers=admin).json()
-    assert len(alerts) == 1 and but.lot_no in alerts[0]["message"]
-    acked = client.post(f"{API}/alerts/{alerts[0]['id']}/ack", headers=admin).json()
-    assert acked["acknowledged_at"] is not None
-    assert client.get(f"{API}/alerts", params={"only_open": True}, headers=admin).json() == []
-    assert session.scalars(select(Alert)).one().acknowledged_at is not None
+    violations = [a for a in alerts if a["kind"] == "GERI_CAGIRMA_IHLALI"]
+    assert len(violations) == 1 and but.lot_no in violations[0]["message"]
+    assert violations[0]["severity"] == "KRITIK"
+    assert {a["kind"] for a in alerts} >= {"GERI_CAGIRMA", "BLOKE_STOK"}
+    acked = client.post(f"{API}/alerts/{violations[0]['id']}/ack", headers=admin).json()
+    assert acked["acknowledged_at"] is not None and acked["acknowledged_by_name"]
+    still_open = client.get(f"{API}/alerts", params={"only_open": True}, headers=admin).json()
+    assert violations[0]["id"] not in {a["id"] for a in still_open}
+    violation = session.scalars(select(Alert).where(Alert.kind == AlertKind.GERI_CAGIRMA_IHLALI)).one()
+    assert violation.acknowledged_at is not None
 
 
 def test_returns_value_back_exactly_what_left(client, admin, session, demo):

@@ -3,19 +3,19 @@
 from decimal import Decimal
 
 from fastapi import APIRouter, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.csv_export import csv_response
 from app.api.deps import Db, QualityUser, WebUser
 from app.api.fields import UtcDateTime
 from app.api.trace import RecipientOut, StockItemOut, TracedLotOut
-from app.models import Alert, Recall
-from app.models.enums import AlertKind, RecallResolution, RecallStatus
+from app.models import Recall
+from app.models.enums import RecallResolution, RecallStatus, Severity
+from app.services import alarms, audit
 from app.services.lookups import get_or_404
 from app.services.recall import (
     RecallView,
-    acknowledge_alert,
     close_recall,
     held_by_customers,
     recall_view,
@@ -24,7 +24,6 @@ from app.services.recall import (
 from app.services.trace import OnwardStatus
 
 router = APIRouter(prefix="/recalls", tags=["geri çağırma"])
-alerts_router = APIRouter(prefix="/alerts", tags=["geri çağırma"])
 
 ONWARD_TEXT = {
     OnwardStatus.KAYITLI: "Kesin (kayıtlı)",
@@ -66,18 +65,6 @@ class RecallOut(RecallSummaryOut):
     recipients: list[RecipientOut]
 
 
-class AlertOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    kind: AlertKind
-    ref_type: str
-    ref_id: int
-    message: str
-    created_at: UtcDateTime
-    acknowledged_at: UtcDateTime | None
-
-
 def _summary(view: RecallView) -> dict:
     recall = view.recall
     return {
@@ -113,7 +100,20 @@ def _recall_out(view: RecallView) -> RecallOut:
 def create(body: RecallIn, db: Db, user: QualityUser) -> RecallOut:
     """Kaynak lot ve bütün türevleri tek işlemde bloke edilir; liste hemen döner."""
     recall = start_recall(db, lot_no=body.lot_no.strip(), reason=body.reason, user_id=user.id)
-    return _recall_out(recall_view(db, recall))
+    view = recall_view(db, recall)
+    audit.log(
+        db,
+        "GERI_CAGIRMA",
+        f"{recall.recall_no} başlatıldı: kaynak {view.source_lot_no}, {len(view.lots)} lot bloke, "
+        f"{view.customer_count} müşteri. Neden: {recall.reason}",
+        user=user,
+        severity=Severity.KRITIK,
+        ref_type="RECALL",
+        ref_id=recall.id,
+    )
+    alarms.recall_started(db, recall, user, view.source_lot_no, max(len(view.lots) - 1, 0))
+    alarms.run_rules(db, user)  # bloke lotta stok kalmışsa hemen görünsün
+    return _recall_out(view)
 
 
 @router.get("", response_model=list[RecallSummaryOut])
@@ -194,17 +194,15 @@ def export_csv(recall_id: int, db: Db, _: WebUser) -> Response:
 @router.post("/{recall_id}/close", response_model=RecallOut)
 def close(recall_id: int, body: RecallCloseIn, db: Db, user: QualityUser) -> RecallOut:
     recall = close_recall(db, recall_id, resolution=body.resolution, note=body.note, user_id=user.id)
+    audit.log(
+        db,
+        "GERI_CAGIRMA_KAPANDI",
+        f"{recall.recall_no} kapatıldı: "
+        + ("imha" if body.resolution == RecallResolution.IMHA else "serbest bırakıldı")
+        + (f" — {body.note}" if body.note else ""),
+        user=user,
+        severity=Severity.UYARI,
+        ref_type="RECALL",
+        ref_id=recall.id,
+    )
     return _recall_out(recall_view(db, recall))
-
-
-@alerts_router.get("", response_model=list[AlertOut])
-def list_alerts(db: Db, _: WebUser, only_open: bool = False) -> list[Alert]:
-    query = select(Alert).order_by(Alert.id.desc())
-    if only_open:
-        query = query.where(Alert.acknowledged_at.is_(None))
-    return list(db.scalars(query))
-
-
-@alerts_router.post("/{alert_id}/ack", response_model=AlertOut)
-def acknowledge(alert_id: int, db: Db, _: QualityUser) -> Alert:
-    return acknowledge_alert(db, alert_id)

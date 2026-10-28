@@ -10,8 +10,10 @@ from sqlalchemy import select
 from app.api.deps import Db, ProductionUser, WebUser
 from app.api.fields import UtcDateTime
 from app.api.purchases import ExtraCostOut
+from app.domain.money import tr_number
 from app.models import Cutting, CuttingRecipe, Product
 from app.models.enums import AllocationMethod, CuttingStatus, RecipeLineType, Species
+from app.services import alarms, audit
 from app.services import cutting as service
 from app.services.lookups import get_or_404, lot_by_no
 
@@ -107,7 +109,7 @@ def get_recipe(recipe_id: int, db: Db, _: WebUser) -> RecipeOut:
 
 
 @router.post("/cutting-recipes", response_model=RecipeOut, status_code=201)
-def create_recipe(body: RecipeIn, db: Db, _: ProductionUser) -> RecipeOut:
+def create_recipe(body: RecipeIn, db: Db, user: ProductionUser) -> RecipeOut:
     recipe = service.create_recipe(
         db,
         code=body.code.strip(),
@@ -117,6 +119,14 @@ def create_recipe(body: RecipeIn, db: Db, _: ProductionUser) -> RecipeOut:
         default_method=body.default_method,
         tolerance_kg=body.tolerance_kg,
         lines=[service.RecipeLineInput(**line.model_dump()) for line in body.lines],
+    )
+    audit.log(
+        db,
+        "RECETE",
+        f"Parçalama reçetesi {recipe.code} eklendi",
+        user=user,
+        ref_type="RECIPE",
+        ref_id=recipe.id,
     )
     return _recipe_out(db, recipe)
 
@@ -277,6 +287,14 @@ def create(body: CuttingIn, db: Db, user: ProductionUser) -> CuttingOut:
         method=body.method,
         user_id=user.id,
     )
+    audit.log(
+        db,
+        "PARCALAMA",
+        f"Parçalama {cutting.cutting_no} açıldı: {body.input_lot_no}, {tr_number(cutting.input_qty)} kg",
+        user=user,
+        ref_type="CUTTING",
+        ref_id=cutting.id,
+    )
     return _cutting_out(service.cutting_summary(db, cutting))
 
 
@@ -308,4 +326,14 @@ def preview(cutting_id: int, body: ActualsIn, db: Db, _: ProductionUser) -> Cutt
 @router.post("/cuttings/{cutting_id}/approve", response_model=CuttingOut)
 def approve(cutting_id: int, db: Db, user: ProductionUser) -> CuttingOut:
     cutting = service.approve_cutting(db, cutting_id, user_id=user.id)
-    return _cutting_out(service.cutting_summary(db, cutting))
+    out = _cutting_out(service.cutting_summary(db, cutting))
+    audit.log(
+        db,
+        "PARCALAMA_ONAY",
+        f"Parçalama {cutting.cutting_no} onaylandı; parça lotları açıldı",
+        user=user,
+        ref_type="CUTTING",
+        ref_id=cutting.id,
+    )
+    alarms.run_rules(db, user)  # fire sapması hemen görünsün
+    return out

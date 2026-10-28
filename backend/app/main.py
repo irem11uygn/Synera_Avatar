@@ -1,6 +1,8 @@
-"""FastAPI uygulaması: router kaydı, hata biçimi ve günlük ayarı."""
+"""FastAPI uygulaması: router kaydı, hata biçimi, günlük ayarı ve e-posta göndericisi."""
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -8,10 +10,14 @@ from app import __version__
 from app.api import (
     adjustments,
     ai,
+    alarms,
+    audit,
     auth,
+    calc,
     cutting,
     health,
     lots,
+    mail,
     master,
     operations,
     production,
@@ -29,8 +35,24 @@ from app.api import (
 )
 from app.api.errors import register_error_handlers
 from app.config import get_settings
+from app.db import get_sessionmaker
+from app.services.mail import MailWorker
 
 API_PREFIX = "/api/v1"
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """SMTP tanımlıysa giden kutusu göndericisini başlatır; tanımlı değilse e-postalar kuyrukta bekler."""
+    smtp = get_settings().smtp
+    worker = MailWorker(smtp, get_sessionmaker()) if smtp else None
+    if worker:
+        worker.start()
+    try:
+        yield
+    finally:
+        if worker:
+            worker.stop()
 
 
 def create_app() -> FastAPI:
@@ -42,6 +64,7 @@ def create_app() -> FastAPI:
         title="AVATAR — Synera",
         description="Üretim, maliyet, satış ve lot izlenebilirliği API'si",
         version=__version__,
+        lifespan=lifespan,
     )
     register_error_handlers(app)
     routers = (
@@ -62,7 +85,11 @@ def create_app() -> FastAPI:
         adjustments.router,
         trace.router,
         recalls.router,
-        recalls.alerts_router,
+        alarms.router,
+        alarms.settings_router,
+        audit.router,
+        mail.router,
+        calc.router,
         reports.router,
         ai.router,
         sync.router,

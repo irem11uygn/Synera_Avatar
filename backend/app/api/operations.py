@@ -11,7 +11,9 @@ from app.api.deps import CountUser, Db, SellerUser, StoreUser, WebUser
 from app.api.fields import UtcDateTime
 from app.domain.clock import business_today
 from app.models import StockCount, User, Warehouse
-from app.models.enums import BaseUnit, PaymentMethod, SaleChannel
+from app.models.enums import BaseUnit, PaymentMethod, SaleChannel, Severity
+from app.services import alarms, audit
+from app.services.charts import charts, fill_rate
 from app.services.dashboard import EXPIRY_WARNING_DAYS, dashboard
 from app.services.day_end import day_end
 from app.services.lookups import get_or_404
@@ -70,10 +72,58 @@ class DashboardOut(_FromModel):
 
 
 @router.get("/dashboard", response_model=DashboardOut)
-def get_dashboard(db: Db, _: WebUser) -> DashboardOut:
+def get_dashboard(db: Db, user: WebUser) -> DashboardOut:
     """Bugün ilgilenilecek işler: SKT'si yaklaşan/geçen partiler, kritik stok, açık geri çağırmalar."""
-    data = dashboard(db)
+    data = dashboard(db, alarms.visible_kinds(user))
     return DashboardOut.model_validate({**vars(data), "expiry_warning_days": EXPIRY_WARNING_DAYS})
+
+
+class EkpPointOut(_FromModel):
+    label: str
+    day: date
+    actual: Decimal
+    forecast: Decimal | None
+
+
+class SliceOut(_FromModel):
+    label: str
+    value: Decimal
+
+
+class PartCostOut(_FromModel):
+    label: str
+    kg: Decimal
+    unit_cost: Decimal
+
+
+class ShipmentOut(_FromModel):
+    customer: str
+    qty_by_unit: dict[str, Decimal]
+    amount: Decimal
+
+
+class ChartsOut(_FromModel):
+    ekp_history: list[EkpPointOut]
+    ekp_synthetic: list[EkpPointOut]
+    target_qty: Decimal
+    actual_qty: Decimal
+    fill_rate_pct: Decimal | None
+    target_label: str
+    cost_order_no: str | None
+    cost_slices: list[SliceOut]
+    cost_ekp: Decimal | None
+    parts_cutting_no: str | None
+    part_costs: list[PartCostOut]
+    shipments: list[ShipmentOut]
+
+
+@router.get("/dashboard/charts", response_model=ChartsOut)
+def get_charts(db: Db, _: WebUser) -> ChartsOut:
+    """Panel grafikleri: EKP geçmişi ve model tahmini, hedef/gerçekleşen, maliyet dağılımı, sevkiyat."""
+    data = charts(db)
+    return ChartsOut.model_validate(
+        {**vars(data), "fill_rate_pct": fill_rate(data.target_qty, data.actual_qty)}
+    )
 
 
 # --- Gün sonu ---
@@ -218,7 +268,19 @@ def create_count(body: StockCountIn, db: Db, user: CountUser) -> StockCountOut:
         note=body.note,
         lines=[CountLineInput(line.lot_no, line.counted_qty) for line in body.lines],
     )
-    return _count_out(db, count)
+    out = _count_out(db, count)
+    short = [line for line in out.lines if line.difference < 0]
+    audit.log(
+        db,
+        "SAYIM",
+        f"Sayım {out.count_no} ({out.warehouse_code}): {len(out.lines)} lot, {len(short)} eksik"
+        + (f", eksik değeri {sum((line.shortage_value for line in short), Decimal(0))} €" if short else ""),
+        user=user,
+        severity=Severity.UYARI if short else Severity.BILGI,
+        ref_type="STOCK_COUNT",
+        ref_id=count.id,
+    )
+    return out
 
 
 @router.get("/stock-counts", response_model=list[StockCountOut])

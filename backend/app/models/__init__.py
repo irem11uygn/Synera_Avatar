@@ -2,6 +2,7 @@
 
 from app.db import Base
 from app.models.ai import AiForecast
+from app.models.audit import AppSetting, AuditEvent, MailMessage
 from app.models.cutting import Cutting, CuttingOutput, CuttingRecipe, CuttingRecipeLine
 from app.models.inventory import Lot, LotLink, StockBalance, StockMovement
 from app.models.master import AuthSession, NumberSequence, Partner, Product, User, Warehouse
@@ -16,6 +17,8 @@ __all__ = [
     "Adjustment",
     "AiForecast",
     "Alert",
+    "AppSetting",
+    "AuditEvent",
     "AuthSession",
     "Base",
     "CustomerReturn",
@@ -25,6 +28,7 @@ __all__ = [
     "CuttingRecipeLine",
     "Lot",
     "LotLink",
+    "MailMessage",
     "NumberSequence",
     "OnwardDelivery",
     "Partner",
