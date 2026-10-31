@@ -1,6 +1,6 @@
 # Teslim Kontrol Listesi
 
-> Durum (27 Ekim 2026): içerik maddeleri hazır ve denetlendi (kabul testleri 23/23, `reports/kabul_testleri.md`). Kalanlar: son commit, GitHub'a yükleme ve herkese açma, APK'nın Releases'e eklenmesi, video, e-posta.
+> Durum (31 Ekim 2026): içerik maddeleri hazır ve denetlendi (kabul testleri 23/23, `reports/kabul_testleri.md`); demo videosu hazır. Kalanlar (1 Kasım): GitHub'a yükleme ve herkese açma, APK'nın Releases'e eklenmesi, videonun yüklenmesi, e-posta.
 
 Son teslim: **1 Kasım 2026 23:59** (Türkiye saati esas). Hedef: 1 Kasım öğleden sonra.
 Kaynak: yarışma e-postası ve şartname §7. Kimlikler `requirements.md`'den.
@@ -26,10 +26,10 @@ Kaynak: yarışma e-postası ve şartname §7. Kimlikler `requirements.md`'den.
 
 ## Video (CR-002, CR-003)
 
-- [ ] Süre ≤ 15 dakika
-- [ ] Görev 1, 2 ve 3 uçtan uca gösterildi; iki YZ modeli gösterildi
-- [ ] ET-2026-001'den etkilenen marketlerin (A 30 / B 25 / C 30) bulunması açıkça gösterildi
-- [ ] Kotlin uygulamasıyla satış ve geri çağrılan lotun satış engeli gösterildi
+- [x] Süre ≤ 15 dakika
+- [x] Görev 1, 2 ve 3 uçtan uca gösterildi; iki YZ modeli gösterildi
+- [x] ET-2026-001'den etkilenen marketlerin (A 30 / B 25 / C 30) bulunması açıkça gösterildi
+- [x] Kotlin uygulamasıyla satış ve geri çağrılan lotun satış engeli gösterildi
 - [ ] YouTube "liste dışı" veya Drive; **bağlantıya sahip herkes izleyebiliyor** (oturum kapalı tarayıcıda denendi)
 
 ## E-posta (CR-004) — ekip gönderir

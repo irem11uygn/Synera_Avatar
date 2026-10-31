@@ -2,7 +2,7 @@
 
 Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok hareketlerini, gerçek maliyeti ve lot izlenebilirliğini yöneten sistem: merkezi sunucu ve MySQL, web yönetim/raporlama arayüzü, Kotlin Android satış uygulaması (yerelde SQLite) ve iki yapay zekâ modeli (üretim verimi/EKP tahmini, parçalama verimi tahmini).
 
-> **Durum (28 Ekim 2026):** Bütün şartname maddeleri uygulandı ve sınandı; sistem gerçek bir işletmede kullanılacak biçimde genişletildi. Sunucu, web ve Android'de çalışan parçalar:
+> **Durum (31 Ekim 2026):** Bütün şartname maddeleri uygulandı ve sınandı; sistem gerçek bir işletmede kullanılacak biçimde genişletildi. Sunucu, web ve Android'de çalışan parçalar:
 >
 > - **Görev 1:** fason (dış) üretim, birim maliyet (EKP) 18,16 €.
 > - **Görev 2:** parçalama, kuruşu kuruşuna maliyet dağıtımı, Kotlin ile lot bazlı satış.
@@ -14,8 +14,10 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 > - **E-posta:** kritik alarmlar yönetici ve kaliteye; rapor e-postası (günlük özet, maliyet, müşterilere geri çağırma bildirimi), giden kutusu, SMTP isteğe bağlı.
 > - **Panel ve hesaplayıcılar:** EKP gerçek/model grafiği, hedef/gerçekleşen, maliyet halkası, 3B parça maliyeti, sevkiyat; EKP ve parçalama "ne olur" hesaplayıcıları; mal kabulde faturadan doldur.
 > - **Turkuaz + 3B görünüm:** turkuaz menü, cam kartlar, eğilen 3B kartlar ve izometrik sütunlar.
+> - **Güvenlik:** API ve e-posta sunucusu yalnız bu bilgisayara açık, 97 API ucunun yetkisi her rolle otomatik sınanıyor, telefon oturum anahtarı şifreli (Android Keystore), yedekleme/geri yükleme, canlı saldırı denemesi 27/27 reddedildi — [docs/guvenlik/guvenlik_denetimi.md](docs/guvenlik/guvenlik_denetimi.md).
+> - **Ayarlar ve güvenli satış:** web ve telefonda Ayarlar (şifre, açık oturumlar, bildirimler, dil); telefon satıştan hemen önce lot durumunu sunucudan tazeler, eski veriyle satışta uyarır; liste fiyatının altındaki satış yöneticiye bildirilir; **kalite blokesi (karantina)** ve geri çağırmada müşteri iletişim kaydı.
 >
-> Testler: 237 sunucu, 4 yapay zekâ, 30 web, 22 Android ve **23 kabul testi** (AT-01…AT-15). Kalan teslim adımları: video, GitHub'a yükleme, e-posta ([docs/submission_checklist.md](docs/submission_checklist.md)).
+> Testler: 284 sunucu, 4 yapay zekâ, 37 web, 31 Android ve **23 kabul testi** (AT-01…AT-15) — [reports/test_results.md](reports/test_results.md). Teslim kontrol listesi: [docs/submission_checklist.md](docs/submission_checklist.md).
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
@@ -50,7 +52,8 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 | 16 | Raporlar (T-22) ve web/Android arayüzü | Tamamlandı — 28 Ekim'de sade tasarımla yeniden yapıldı |
 | 17 | Kabul testleri (T-23), yeniden işleme, temiz kurulum provası | Tamamlandı — 23/23 kabul testi |
 | 18 | Denetim düzeltmeleri, gerçek kullanım özellikleri, yeni arayüz, dil seçeneği | Tamamlandı — 28 Ekim |
-| 19 | Video, GitHub, e-posta (T-27, T-28) | 31 Ekim – 1 Kasım |
+| 19 | Güvenlik denetimi, Ayarlar, güvenli satış, kalite blokesi, demo videosu (T-27) | Tamamlandı — 31 Ekim |
+| 20 | GitHub'a yükleme ve teslim e-postası (T-28) | 1 Kasım |
 
 Ayrıntılı iş listesi ve günlük durum: [docs/development_plan.md](docs/development_plan.md).
 
