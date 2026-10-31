@@ -58,7 +58,8 @@ createRoot(document.getElementById('root')!).render(
             darkItemSelectedColor: '#ffffff',
             darkGroupTitleColor: 'rgba(255,255,255,0.92)',
           },
-          Table: { headerBg: 'rgba(240,249,247,0.9)', headerColor: '#3f5655', cellPaddingBlock: 12, rowHoverBg: '#f0f9f7' },
+          // Başlık zemini opak: sağa sabitlenen sütun (İşlem) kaydırılınca arkadaki başlık yazısı görünmesin.
+          Table: { headerBg: '#f2faf8', headerColor: '#3f5655', cellPaddingBlock: 12, rowHoverBg: '#f0f9f7' },
           Card: { headerFontSize: 16 },
           Button: { fontWeight: 600, primaryShadow: '0 6px 14px -8px rgba(13,148,136,0.8)' },
         },
