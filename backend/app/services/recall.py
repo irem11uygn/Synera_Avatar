@@ -14,19 +14,21 @@ açık geri çağırmada olmayan lotlar yeniden satılabilir olur.
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.errors import InvalidInput, InvalidState
-from app.models import Lot, Recall, RecallLot, StockBalance, User
-from app.models.enums import LotStatus, RecallResolution, RecallStatus
+from app.models import Lot, Partner, Recall, RecallContact, RecallLot, StockBalance, User
+from app.models.enums import ContactOutcome, LotStatus, RecallResolution, RecallStatus
 from app.models.types import utcnow
 from app.services.adjustments import create_adjustment
 from app.services.lookups import get_or_404, lot_by_no
 from app.services.lot_graph import descendants
 from app.services.numbering import next_document_no
+from app.services.quality import held_lot_ids
 from app.services.trace import Recipient, StockItem, TracedLot, recipients_of, stock_of, traced_lots
 
 
@@ -108,7 +110,7 @@ def close_recall(
                     Recall.id != recall.id,
                 )
             )
-        )
+        ) | held_lot_ids(session, lot_ids)  # açık kalite blokesindeki lot kapalı kalır
         for lot in session.scalars(select(Lot).where(Lot.id.in_(lot_ids)).with_for_update()):
             if lot.id not in still_blocked:
                 lot.status = LotStatus.AKTIF
@@ -122,6 +124,20 @@ def close_recall(
 
 
 @dataclass(frozen=True)
+class ContactView:
+    id: int
+    customer_id: int
+    customer: str
+    outcome: ContactOutcome
+    note: str | None
+    user_name: str | None
+    created_at: datetime
+
+
+REACHED = (ContactOutcome.ULASILDI, ContactOutcome.URUN_KALMADI)
+
+
+@dataclass(frozen=True)
 class RecallView:
     recall: Recall
     source_lot_no: str
@@ -129,6 +145,21 @@ class RecallView:
     lots: list[TracedLot]
     stock: list[StockItem]
     recipients: list[Recipient]
+    contacts: list[ContactView]  # yeniden eskiye
+
+    def latest_outcomes(self) -> dict[int, ContactOutcome]:
+        """Müşteri başına son iletişim sonucu (kaydı olmayan müşteri listede yok = bekliyor)."""
+        latest: dict[int, ContactOutcome] = {}
+        for contact in self.contacts:
+            latest.setdefault(contact.customer_id, contact.outcome)
+        return latest
+
+    def contact_counts(self) -> dict[str, int]:
+        latest = self.latest_outcomes()
+        customers = {r.customer_id for r in self.recipients}
+        reached = sum(1 for c in customers if latest.get(c) in REACHED)
+        unreached = sum(1 for c in customers if latest.get(c) == ContactOutcome.ULASILAMADI)
+        return {"reached": reached, "unreached": unreached, "pending": len(customers) - reached - unreached}
 
     @property
     def customer_count(self) -> int:
@@ -152,7 +183,53 @@ def recall_view(session: Session, recall: Recall) -> RecallView:
         lots=traced_lots(session, depths),
         stock=stock_of(session, depths.keys()),
         recipients=recipients_of(session, depths.keys()),
+        contacts=contacts_of(session, recall.id),
     )
+
+
+def contacts_of(session: Session, recall_id: int) -> list[ContactView]:
+    rows = session.execute(
+        select(RecallContact, Partner.name, User.full_name)
+        .join(Partner, Partner.id == RecallContact.partner_id)
+        .outerjoin(User, User.id == RecallContact.user_id)
+        .where(RecallContact.recall_id == recall_id)
+        .order_by(RecallContact.id.desc())
+    ).all()
+    return [
+        ContactView(c.id, c.partner_id, name, c.outcome, c.note, user_name, c.created_at)
+        for c, name, user_name in rows
+    ]
+
+
+def add_contact(
+    session: Session,
+    recall: Recall,
+    *,
+    partner_id: int,
+    outcome: ContactOutcome,
+    note: str | None = None,
+    user_id: int | None = None,
+) -> RecallContact:
+    """Müşteriyle iletişimi kaydeder (yalnız eklenir); yalnız açık geri çağırmada, etkilenen müşteriye."""
+    if recall.status != RecallStatus.ACIK:
+        raise InvalidState(
+            f"{recall.recall_no} kapatılmış; iletişim kaydı eklenemez.", recall_no=recall.recall_no
+        )
+    lot_ids = list(session.scalars(select(RecallLot.lot_id).where(RecallLot.recall_id == recall.id)))
+    if partner_id not in {r.customer_id for r in recipients_of(session, lot_ids)}:
+        raise InvalidInput(
+            "Bu müşteri bu geri çağırmadan etkilenen alıcılar arasında değil.", partner_id=partner_id
+        )
+    contact = RecallContact(
+        recall_id=recall.id,
+        partner_id=partner_id,
+        outcome=outcome,
+        note=(note or "").strip() or None,
+        user_id=user_id,
+    )
+    session.add(contact)
+    session.flush()
+    return contact
 
 
 def held_by_customers(view: RecallView) -> dict[str, Decimal]:

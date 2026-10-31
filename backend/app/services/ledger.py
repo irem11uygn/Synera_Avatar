@@ -121,7 +121,8 @@ def post_movement(
 
     if lot.status == LotStatus.BLOKE and movement_type not in ALLOWED_ON_BLOCKED and not allow_blocked:
         raise LotBlocked(
-            f"{lot.lot_no} lotu geri çağırma nedeniyle bloke; bu işlem yapılamaz.", lot_no=lot.lot_no
+            f"{lot.lot_no} lotu bloke (geri çağırma ya da kalite blokesi); bu işlem yapılamaz.",
+            lot_no=lot.lot_no,
         )
     if qty < 0 and balance.qty + qty < 0:
         raise InsufficientStock(

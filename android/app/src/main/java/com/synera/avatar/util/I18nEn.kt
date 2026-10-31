@@ -4,7 +4,7 @@ package com.synera.avatar.util
 // Eksik anahtar ekranda Türkçe görünür; I18nTest eksik ve kullanılmayan anahtarları bildirir.
 
 internal val EN: Map<String, String> = mapOf(
-    "{lot} lotu geri çağrıldı; satılamaz." to "Lot {lot} has been recalled; it cannot be sold.",
+    "{lot} lotu satışa kapalı (geri çağırma ya da kalite blokesi); satılamaz." to "Lot {lot} is closed to sale (recall or quality hold); it cannot be sold.",
     "{lot} lotunda araçta bu kadar kullanılabilir miktar yok." to "Not enough of lot {lot} available in the van.",
     "Sunucu hatası (HTTP {code})." to "Server error (HTTP {code}).",
     "Sunucuya ulaşılamadı. Bağlantıyı ve sunucu adresini kontrol edin." to "Cannot reach the server. Check the connection and the server address.",
@@ -15,7 +15,7 @@ internal val EN: Map<String, String> = mapOf(
     "Oturum bilgisi eski sürümden; satışları göndermek için yeniden giriş yapın." to "Session is from an old version; sign in again to send sales.",
     "Araç deposu bilinmiyor; yeniden giriş yapın." to "Van is unknown; please sign in again.",
     "Sunucu satışı reddetti." to "The server rejected the sale.",
-    "Bu lot geri çağrıldı; satılamaz." to "This lot has been recalled; it cannot be sold.",
+    "Bu lot satışa kapalı (geri çağırma ya da kalite blokesi); satılamaz." to "This lot is closed to sale (recall or quality hold); it cannot be sold.",
     "Bu lotun son kullanma tarihi geçmiş; satılamaz." to "This lot is past its expiry date; it cannot be sold.",
     "Geçerli bir miktar yazın (en çok 3 ondalık, binlik ayırıcı olmadan)." to "Enter a valid quantity (at most 3 decimals, no thousands separator).",
     "Miktar sıfırdan büyük olmalı." to "Quantity must be greater than zero.",
@@ -78,7 +78,7 @@ internal val EN: Map<String, String> = mapOf(
     "Bugün" to "Today",
     "kasada olmalı" to "should be in the cash box",
     "Dikkat" to "Attention",
-    "Geri çağrıldı: satmayın, ana depoya iade edin." to "Recalled: do not sell, return it to the main warehouse.",
+    "Satışa kapalı (geri çağırma ya da kalite blokesi): satmayın, ana depoya iade edin." to "Closed to sale (recall or quality hold): do not sell, return it to the main warehouse.",
     "Son kullanma tarihi geçti ({date}): satmayın, depoya iade edin." to "Past expiry date ({date}): do not sell, return it to the warehouse.",
     "{label} — önce bunu satın." to "{label} — sell this first.",
     "Ürün ya da lot ara" to "Search product or lot",

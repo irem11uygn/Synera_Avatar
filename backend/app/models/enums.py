@@ -141,6 +141,14 @@ class RecallResolution(StrEnum):
     SERBEST = "SERBEST"
 
 
+class ContactOutcome(StrEnum):
+    """Geri çağırmada müşteriyle iletişimin sonucu (müşteri başına son kayıt durumu gösterir)."""
+
+    ULASILDI = "ULASILDI"  # ulaşıldı, bilgilendirildi; ürün ayrılacak/iade edilecek
+    ULASILAMADI = "ULASILAMADI"  # aranacak
+    URUN_KALMADI = "URUN_KALMADI"  # ulaşıldı; elde ürün kalmamış (tüketilmiş ya da satılmış)
+
+
 class AlertKind(StrEnum):
     GERI_CAGIRMA_IHLALI = "GERI_CAGIRMA_IHLALI"
     SKT_IHLALI = "SKT_IHLALI"  # son kullanma tarihi geçmiş parti satıldı (çevrimdışı)

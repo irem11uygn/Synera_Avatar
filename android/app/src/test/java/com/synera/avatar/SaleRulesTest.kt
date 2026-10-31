@@ -29,7 +29,7 @@ class SaleRulesTest {
 
     @Test
     fun `geri cagrilmis ve suresi gecmis lot satilamaz, miktar kullanilabiliri asamaz`() {
-        assertTrue(SaleRules.lineError("ADET", "BLOKE", 1_000, 85_000)!!.contains("geri çağrıldı"))
+        assertTrue(SaleRules.lineError("ADET", "BLOKE", 1_000, 85_000)!!.contains("satışa kapalı"))
         assertTrue(SaleRules.lineError("ADET", "AKTIF", 1_000, 85_000, expired = true)!!.contains("son kullanma"))
         assertNull(SaleRules.lineError("ADET", "AKTIF", 30_000, 85_000))
         assertEquals(

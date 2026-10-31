@@ -1,9 +1,12 @@
 // Lot ayrıntısı (FR-112, FR-302): köken, depo bakiyeleri, lot ağı (kaynak ve çıktı lotları) ve
 // bütün hareketler — kim, ne zaman, hangi belgeyle, ne kadar, hangi tutar. Hareketlerin toplamı
 // lotun kalan miktar ve değerine eşit olmalıdır (NFR-004); ekranda bu denetim de gösterilir.
+// Kalite blokesi (karantina): geri çağırmadan bağımsız; lotu satışa ve kullanıma kapatır, nedeni ve
+// geçmişi burada görünür (yalnız yönetici ve kalite koyar/kaldırır).
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -22,7 +25,8 @@ import {
 import { useState } from 'react'
 import { api } from '../api/client'
 import { refreshBusinessData, useWarehouses } from '../api/queries'
-import type { BaseUnit, LotDetail, Movement, MovementType } from '../api/types'
+import type { BaseUnit, LotDetail, Movement, MovementType, QualityHold } from '../api/types'
+import { useSession } from '../auth/context'
 import { FormModal } from '../components/FormModal'
 import { Link } from '../components/Link'
 import { Page } from '../components/Page'
@@ -32,6 +36,7 @@ import { compare, sum } from '../lib/decimal'
 import { formatDate, formatDateTime, formatMoney, formatQty, formatUnitCost } from '../lib/format'
 import { LINK_PROCESS, LOT_ORIGIN, MOVEMENT_TYPE } from '../lib/labels'
 import { tracePath } from '../lib/paths'
+import { can } from '../lib/roles'
 import { navigate } from '../lib/router'
 import { decimalRule, toApiDecimal } from '../lib/rules'
 import { t } from '../lib/i18n'
@@ -166,6 +171,58 @@ function ReverseModal({ movement, lotNo, onClose }: { movement: Movement | null;
   )
 }
 
+/** Kalite blokesi koy (reason) ya da kaldır (note); yanıt lotun güncel hâlidir. */
+function HoldModal({ lot, mode, onClose }: { lot: LotDetail; mode: 'hold' | 'release' | null; onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (values: { reason?: string; note?: string }) =>
+      api<LotDetail>(`/lots/${encodeURIComponent(lot.lot_no)}/${mode}`, { method: 'POST', body: values }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['lot', lot.lot_no], data)
+      return refreshBusinessData(queryClient)
+    },
+  })
+  if (!mode) return null
+  const hold = mode === 'hold'
+  return (
+    <FormModal<{ reason?: string; note?: string }>
+      title={hold ? t('{lot}: kalite blokesi koy', { lot: lot.lot_no }) : t('{lot}: kalite blokesini kaldır', { lot: lot.lot_no })}
+      open
+      onClose={onClose}
+      onSubmit={(values) => mutation.mutateAsync(values)}
+      okText={hold ? t('Blokeye al') : t('Blokeyi kaldır')}
+    >
+      <Typography.Paragraph>
+        {hold
+          ? t('Lot soruşturma bitene kadar satışa ve kullanıma kapanır: mağazada ve araçta satılamaz, aktarılamaz, üretimde kullanılamaz. Bu lottan yapılmış lotlar etkilenmez; şüphe doğrulanırsa geri çağırma başlatın.')
+          : t('Lot açık bir geri çağırmada değilse yeniden satışa açılır. Kayıt silinmez; kim, ne zaman, hangi notla kaldırdı saklanır.')}
+      </Typography.Paragraph>
+      {hold ? (
+        <Form.Item name="reason" label={t('Neden')} rules={[{ required: true, whitespace: true, message: t('Nedeni yazın.') }]}>
+          <Input.TextArea rows={2} maxLength={500} placeholder={t('Ambalajda şişme; laboratuvar sonucu bekleniyor')} />
+        </Form.Item>
+      ) : (
+        <Form.Item name="note" label={t('Not')}>
+          <Input.TextArea rows={2} maxLength={500} placeholder={t('Laboratuvar sonucu temiz')} />
+        </Form.Item>
+      )}
+    </FormModal>
+  )
+}
+
+const HOLD_COLUMNS: TableColumnsType<QualityHold> = [
+  { title: t('Konuldu'), dataIndex: 'placed_at', render: formatDateTime },
+  { title: t('Neden'), dataIndex: 'reason' },
+  { title: t('Koyan'), dataIndex: 'placed_by_name', render: (v: string | null) => v ?? '—' },
+  {
+    title: t('Kaldırıldı'),
+    dataIndex: 'released_at',
+    render: (v: string | null) => (v ? formatDateTime(v) : <Tag color="error">{t('Açık')}</Tag>),
+  },
+  { title: t('Kaldıran'), dataIndex: 'released_by_name', render: (v: string | null) => v ?? '—' },
+  { title: t('Not'), dataIndex: 'release_note', render: (v: string | null) => v ?? '—' },
+]
+
 const LINK_COLUMNS: TableColumnsType<LinkRow> = [
   { title: t('Lot'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
   { title: t('Miktar'), dataIndex: 'qty', align: 'right', render: (qty: string) => formatQty(qty) },
@@ -188,8 +245,10 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
     queryKey: ['movements', lotNo],
     queryFn: () => api<Movement[]>(`/lots/${encodeURIComponent(lotNo)}/movements`),
   })
+  const { user } = useSession()
   const [wasting, setWasting] = useState(false)
   const [reversing, setReversing] = useState<Movement | null>(null)
+  const [holdMode, setHoldMode] = useState<'hold' | 'release' | null>(null)
 
   if (lot.isError) {
     return (
@@ -201,6 +260,8 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
   if (lot.isPending) return <Spin />
 
   const data = lot.data
+  const activeHold = data.holds.find((h) => !h.released_at)
+  const canHold = can(user.role, 'quality')
   const totalQty = movements.data ? sum(movements.data.map((m) => m.qty), 3) : null
   const totalValue = movements.data ? sum(movements.data.map((m) => m.value), 2) : null
   const reversed = new Set((movements.data ?? []).flatMap((m) => (m.reversal_of_id ? [m.reversal_of_id] : [])))
@@ -219,9 +280,44 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
           <Button onClick={() => navigate(tracePath(data.lot_no))}>{t('İleri izle')}</Button>
           <Button onClick={() => navigate(tracePath(data.lot_no, 'backward'))}>{t('Geri izle')}</Button>
           {data.balances.length > 0 && <Button onClick={() => setWasting(true)}>{t('Fire / imha')}</Button>}
+          {canHold &&
+            (activeHold ? (
+              <Button onClick={() => setHoldMode('release')}>{t('Blokeyi kaldır')}</Button>
+            ) : (
+              <Button danger onClick={() => setHoldMode('hold')}>
+                {t('Kalite blokesi koy')}
+              </Button>
+            ))}
         </>
       }
     >
+      {data.status === 'BLOKE' && (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+          title={t('Satışa ve kullanıma kapalı')}
+          description={
+            <>
+              {activeHold && (
+                <div>
+                  {t('Kalite blokesi: {reason} — {who}, {at}', {
+                    reason: activeHold.reason,
+                    who: activeHold.placed_by_name ?? '—',
+                    at: formatDateTime(activeHold.placed_at),
+                  })}
+                </div>
+              )}
+              {data.open_recalls.length > 0 && (
+                <div>
+                  {t('Açık geri çağırma: {list}', { list: data.open_recalls.join(', ') })}{' '}
+                  <Link to="/geri-cagirma">{t('Geri çağırmalar')}</Link>
+                </div>
+              )}
+            </>
+          }
+        />
+      )}
       <Card size="small" style={{ marginBottom: 16 }}>
         <Descriptions
           size="small"
@@ -327,6 +423,12 @@ export default function LotDetailPage({ lotNo }: { lotNo: string }) {
         />
       </Card>
       <WasteModal lot={data} open={wasting} onClose={() => setWasting(false)} />
+      {data.holds.length > 0 && (
+        <Card size="small" title={t('Kalite blokeleri')} style={{ marginBottom: 16 }}>
+          <Table<QualityHold> rowKey="id" size="small" pagination={false} scroll={{ x: 'max-content' }} dataSource={data.holds} columns={HOLD_COLUMNS} />
+        </Card>
+      )}
+      <HoldModal lot={data} mode={holdMode} onClose={() => setHoldMode(null)} />
       <ReverseModal movement={reversing} lotNo={data.lot_no} onClose={() => setReversing(null)} />
     </Page>
   )

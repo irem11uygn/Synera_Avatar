@@ -122,6 +122,8 @@ Miktar farkları (FR-109) bu iki tablodan okunur: planned_qty ↔ received_qty (
 |---|---|---|
 | `recalls` | recall_no, source_lot_id, reason, status (`ACIK`/`KAPANDI`), resolution (`IMHA`/`SERBEST`), started_at, started_by, closed_at, close_note | — |
 | `recall_lots` | recall_id, lot_id, depth | Birincil anahtar (recall_id, lot_id). Başlatma anındaki etkilenen lotların kaydı. |
+| `recall_contacts` | recall_id, partner_id, outcome (`ULASILDI`/`ULASILAMADI`/`URUN_KALMADI`), note, user_id, created_at | Göç `e8a4c2f6b1d3`. Yalnız eklenir; müşterinin durumu son kaydıdır, kaydı olmayan "bekliyor". Yalnız açık geri çağırmada ve etkilenen müşteriye. |
+| `quality_holds` | lot_id, reason, placed_by, placed_at, released_by, released_at, release_note | Göç `e8a4c2f6b1d3`. Geri çağırmadan bağımsız kalite blokesi (karantina): açıkken lot `BLOKE` (satış, transfer, üretim engelli). Kaldırınca lot ancak açık geri çağırmada değilse `AKTIF` olur; geri çağırma "serbest" kapanırken açık blokedeki lot kapalı kalır. |
 | `alerts` | kind (`GERI_CAGIRMA_IHLALI`; bonus için anomali türleri eklenebilir), ref_type, ref_id, message, created_at, acknowledged_at | Uyarı listesi web ana ekranında görünür. |
 
 ### 2.9 Yapay zekâ ve senkronizasyon
@@ -214,4 +216,4 @@ Kullanılabilir miktar = `stock.qty_milli` − Σ (sync_state = `BEKLIYOR` olan 
 | `alert_subscriptions` | Kullanıcı × alarm türü, açık/kapalı (birincil anahtar ikisi). Kayıt yoksa rolün varsayılanı |
 | `alerts.kind` (yeni değerler) | SKT_YAKLASIYOR, SAYIM_FARKI |
 
-Toplam 37 tablo.
+Toplam 39 tablo (31 Ekim: `recall_contacts`, `quality_holds`).

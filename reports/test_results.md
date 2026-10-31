@@ -570,3 +570,12 @@ Emülatör (Medium_Phone, demo yığını):
 **Tarayıcı (demo):**
 - Lotlar "Kalan değer" azalan: 1.302,55 € > 88,15 € > 52,09 € … (sayı sırası).
 - Sol menüde Tab ile odak: beyaz çizgi.
+
+## 31 Ekim 2026 (dördüncü tur) — kalite blokesi ve geri çağırma iletişim kaydı
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **284 geçti**. Yeni `tests/test_quality.py` (4 test): bloke lot mağazada satılamaz, kaldırılınca satılır; bloke ve geri çağırma birbirini serbest bırakmaz; kurallar (boş neden 422, çift bloke 409, depo 403); iletişim kaydı, sayaçlar, CSV "Son iletişim", kapanmış geri çağırmada 409. `test_schema`: 39 tablo, göç ile model birebir (`alembic check`). |
+| Web | `npm test`, `npx tsc -b`, `npm run lint` | 37 geçti; tip ve lint temiz |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | 31 geçti; APK derlendi |
+| Kabul | `sh scripts/kabul_testleri.sh` | **23/23** (sıfırdan kurulum, yeni göç dahil) |

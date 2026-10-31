@@ -40,7 +40,7 @@ abstract class SalesDao {
     open suspend fun saveSale(sale: SaleEntity, lines: List<SaleLineEntity>) {
         for ((lotId, lotLines) in lines.groupBy { it.lotId }) {
             val lotNo = lotLines.first().lotNo
-            if (lotStatus(lotId) == "BLOKE") throw SaleNotAllowed(t("{lot} lotu geri çağrıldı; satılamaz.", "lot" to lotNo))
+            if (lotStatus(lotId) == "BLOKE") throw SaleNotAllowed(t("{lot} lotu satışa kapalı (geri çağırma ya da kalite blokesi); satılamaz.", "lot" to lotNo))
             if (lotLines.sumOf { it.qtyMilli } > (availableMilli(lotId) ?: 0)) {
                 throw SaleNotAllowed(t("{lot} lotunda araçta bu kadar kullanılabilir miktar yok.", "lot" to lotNo))
             }

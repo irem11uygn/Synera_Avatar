@@ -64,7 +64,9 @@ Hatalı giriş: aynı kullanıcı adı ya da adres için 5 dakikada 10 deneme; s
 | POST | `/purchases` | Y | Alış belgesi; her satır yeni lot + `ALIS_GIRIS`. Fatura ≠ miktar × fiyat ise açıklama ister. |
 | GET | `/purchases`, `/purchases/{id}` | Y | — |
 | GET | `/lots` | Y | `?product_id=&status=&warehouse_id=&q=` |
-| GET | `/lots/{lot_no}` | Y | Lot ayrıntısı: köken, tedarikçi, durum, kalan miktar/değer, birim maliyet, depo bakiyeleri, bir düzey ebeveyn/çocuk |
+| GET | `/lots/{lot_no}` | Y | Lot ayrıntısı: köken, tedarikçi, durum, kalan miktar/değer, birim maliyet, depo bakiyeleri, bir düzey ebeveyn/çocuk, kalite blokeleri (`holds`), lotu kapalı tutan açık geri çağırmalar (`open_recalls`) |
+| POST | `/lots/{lot_no}/hold` | Y, K | Kalite blokesi `{reason}`: lot `BLOKE` olur (türevlerine dokunmaz). Zaten blokedeyse 409 |
+| POST | `/lots/{lot_no}/release` | Y, K | Blokeyi kaldır `{note?}`: lot açık geri çağırmada değilse `AKTIF`. Açık bloke yoksa 409 |
 | GET | `/lots/{lot_no}/movements` | Y | Lotun bütün hareketleri (geçmişe dönük inceleme): zaman, tür, depo, miktar, değer, belge türü + numarası (`doc_no`), kullanıcı (`user_name`; örnek kayıtlarda boş) |
 | GET | `/stock` | Y | `?warehouse_id=&product_id=` lot × depo bakiyeleri (sıfır olmayanlar), lot durumu, SKT, birim maliyet |
 
@@ -115,7 +117,8 @@ Hatalı giriş: aynı kullanıcı adı ya da adres için 5 dakikada 10 deneme; s
 | POST | `/recalls` | Y | Geri çağırma başlat: etkilenen bütün lotlar bloke |
 | GET | `/recalls`, `/recalls/{id}` | Y | Etkilenen lotlar, alıcılar, miktarlar, satış belgeleri, iletişim, ihlaller |
 | GET | `/recalls/{id}/export.csv` | Y | İletişim listesi dosyası |
-| POST | `/recalls/{id}/close` | Y | Kapat: `IMHA` veya `SERBEST` |
+| POST | `/recalls/{id}/close` | Y | Kapat: `IMHA` veya `SERBEST` (açık kalite blokesindeki lot serbest bırakılmaz) |
+| POST | `/recalls/{id}/contacts` | Y, K | Müşteriyle iletişim kaydı `{partner_id, outcome: ULASILDI/ULASILAMADI/URUN_KALMADI, note}` → güncel geri çağırma (201). Yanıtta `contacts` (yeniden eskiye) ve `contact_counts` (`reached`, `unreached`, `pending`); CSV'de "Son iletişim" sütunu. Kapanmış geri çağırma 409, etkilenmeyen müşteri 422 |
 | GET | `/alerts` | Y | Uyarılar (ör. geri çağırma ihlali) |
 | POST | `/alerts/{id}/ack` | Y | Uyarıyı okundu işaretle |
 

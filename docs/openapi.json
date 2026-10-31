@@ -1409,6 +1409,122 @@
         }
       }
     },
+    "/api/v1/lots/{lot_no}/hold": {
+      "post": {
+        "tags": [
+          "lotlar"
+        ],
+        "summary": "Hold Lot",
+        "description": "Kalite blokesi: lot soruşturma bitene kadar satışa ve kullanıma kapanır (türevlerine dokunmaz).",
+        "operationId": "hold_lot_api_v1_lots__lot_no__hold_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lot_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lot No"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HoldIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lots/{lot_no}/release": {
+      "post": {
+        "tags": [
+          "lotlar"
+        ],
+        "summary": "Release Lot",
+        "description": "Kalite blokesini kaldırır; lot açık bir geri çağırmada değilse yeniden satışa açılır.",
+        "operationId": "release_lot_api_v1_lots__lot_no__release_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lot_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lot No"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/lots/{lot_no}/movements": {
       "get": {
         "tags": [
@@ -3142,6 +3258,64 @@
         },
         "responses": {
           "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recalls/{recall_id}/contacts": {
+      "post": {
+        "tags": [
+          "geri çağırma"
+        ],
+        "summary": "Create Contact",
+        "description": "Müşteriyle iletişim kaydı (ulaşıldı / ulaşılamadı / ürün kalmamış + not). Yalnız eklenir.",
+        "operationId": "create_contact_api_v1_recalls__recall_id__contacts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recall_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Recall Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -5276,6 +5450,58 @@
         ],
         "title": "CompleteIn"
       },
+      "ContactCountsOut": {
+        "properties": {
+          "reached": {
+            "type": "integer",
+            "title": "Reached"
+          },
+          "unreached": {
+            "type": "integer",
+            "title": "Unreached"
+          },
+          "pending": {
+            "type": "integer",
+            "title": "Pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reached",
+          "unreached",
+          "pending"
+        ],
+        "title": "ContactCountsOut"
+      },
+      "ContactIn": {
+        "properties": {
+          "partner_id": {
+            "type": "integer",
+            "title": "Partner Id"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/ContactOutcome"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "partner_id",
+          "outcome"
+        ],
+        "title": "ContactIn"
+      },
       "ContactOut": {
         "properties": {
           "person": {
@@ -5331,6 +5557,16 @@
           "address"
         ],
         "title": "ContactOut"
+      },
+      "ContactOutcome": {
+        "type": "string",
+        "enum": [
+          "ULASILDI",
+          "ULASILAMADI",
+          "URUN_KALMADI"
+        ],
+        "title": "ContactOutcome",
+        "description": "Geri çağırmada müşteriyle iletişimin sonucu (müşteri başına son kayıt durumu gösterir)."
       },
       "CostOut": {
         "properties": {
@@ -6963,6 +7199,94 @@
         ],
         "title": "HealthResponse"
       },
+      "HoldIn": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "HoldIn"
+      },
+      "HoldOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "placed_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placed By Name"
+          },
+          "placed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Placed At"
+          },
+          "released_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Released By Name"
+          },
+          "released_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Released At"
+          },
+          "release_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reason",
+          "placed_by_name",
+          "placed_at",
+          "released_by_name",
+          "released_at",
+          "release_note"
+        ],
+        "title": "HoldOut"
+      },
       "InputCostOut": {
         "properties": {
           "doc_no": {
@@ -7497,6 +7821,20 @@
             },
             "type": "array",
             "title": "Children"
+          },
+          "holds": {
+            "items": {
+              "$ref": "#/components/schemas/HoldOut"
+            },
+            "type": "array",
+            "title": "Holds"
+          },
+          "open_recalls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Open Recalls"
           }
         },
         "type": "object",
@@ -7518,7 +7856,9 @@
           "expiry_date",
           "balances",
           "parents",
-          "children"
+          "children",
+          "holds",
+          "open_recalls"
         ],
         "title": "LotDetailOut"
       },
@@ -9652,6 +9992,63 @@
         ],
         "title": "RecallCloseIn"
       },
+      "RecallContactOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "customer_id": {
+            "type": "integer",
+            "title": "Customer Id"
+          },
+          "customer": {
+            "type": "string",
+            "title": "Customer"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/ContactOutcome"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "customer_id",
+          "customer",
+          "outcome",
+          "note",
+          "user_name",
+          "created_at"
+        ],
+        "title": "RecallContactOut"
+      },
       "RecallIn": {
         "properties": {
           "lot_no": {
@@ -9763,6 +10160,9 @@
             "type": "object",
             "title": "Held By Customers"
           },
+          "contact_counts": {
+            "$ref": "#/components/schemas/ContactCountsOut"
+          },
           "lots": {
             "items": {
               "$ref": "#/components/schemas/TracedLotOut"
@@ -9783,6 +10183,13 @@
             },
             "type": "array",
             "title": "Recipients"
+          },
+          "contacts": {
+            "items": {
+              "$ref": "#/components/schemas/RecallContactOut"
+            },
+            "type": "array",
+            "title": "Contacts"
           }
         },
         "type": "object",
@@ -9801,9 +10208,11 @@
           "customer_count",
           "violation_count",
           "held_by_customers",
+          "contact_counts",
           "lots",
           "stock",
-          "recipients"
+          "recipients",
+          "contacts"
         ],
         "title": "RecallOut"
       },
@@ -9911,6 +10320,9 @@
             },
             "type": "object",
             "title": "Held By Customers"
+          },
+          "contact_counts": {
+            "$ref": "#/components/schemas/ContactCountsOut"
           }
         },
         "type": "object",
@@ -9928,7 +10340,8 @@
           "lot_count",
           "customer_count",
           "violation_count",
-          "held_by_customers"
+          "held_by_customers",
+          "contact_counts"
         ],
         "title": "RecallSummaryOut"
       },
@@ -10269,6 +10682,24 @@
           "recall_violation"
         ],
         "title": "RecipientOut"
+      },
+      "ReleaseIn": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "title": "ReleaseIn"
       },
       "ReportCode": {
         "type": "string",

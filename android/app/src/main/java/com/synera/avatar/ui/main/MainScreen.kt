@@ -219,7 +219,7 @@ private fun SalesTab(viewModel: MainViewModel, onNewSale: () -> Unit, padding: P
         items(blocked, key = { "b-${it.lotId}" }) {
             Panel(tone = Tone.DANGER) {
                 Text("${it.productName} · ${it.lotNo}", style = MaterialTheme.typography.titleSmall)
-                Text(t("Geri çağrıldı: satmayın, ana depoya iade edin."), color = MaterialTheme.colorScheme.error)
+                Text(t("Satışa kapalı (geri çağırma ya da kalite blokesi): satmayın, ana depoya iade edin."), color = MaterialTheme.colorScheme.error)
             }
         }
         items(expired, key = { "x-${it.lotId}" }) {

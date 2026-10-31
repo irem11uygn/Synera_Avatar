@@ -140,6 +140,19 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Yeni uyarılar: SKT yaklaşan/geçen lot, sayım farkı. Göç `d7f3b9a2c4e1` (37 tablo).
 - docker-compose'a Mailpit (`axllent/mailpit:v1.32.0`, 8025 arayüz, 1025 SMTP); `.env.example` yeni değişkenlerle. Değişken adları `SMTP_PASS`, `MAIL_FROM` (eski `SMTP_PASSWORD`, `SMTP_FROM` de okunur).
 
+### 31 Ekim 2026 (dördüncü tur) — kalite blokesi ve geri çağırma iletişim kaydı
+- Göç `e8a4c2f6b1d3` (39 tablo): `quality_holds`, `recall_contacts`. Var olan tablolara dokunulmadı.
+- **Kalite blokesi (karantina):**
+  - Geri çağırmadan bağımsızdır; lot kartından konur ve kaldırılır (yönetici, kalite).
+  - Açıkken lot satışa, transfere ve üretime kapalıdır (web, telefon, defter aynı kuralla).
+  - Kaldırınca lot ancak açık geri çağırmada değilse satışa açılır. Geri çağırma "serbest" kapanırken açık blokedeki lot kapalı kalır.
+  - Nedeni, kimin koyup kaldırdığı ve notu saklanır; denetim günlüğüne `KALITE_BLOKESI` / `KALITE_BLOKESI_KALDIRILDI` yazılır.
+- **Geri çağırmada müşteri iletişim kaydı:**
+  - Ulaşıldı / ulaşılamadı / ürün kalmamış + not; kayıtlar yalnız eklenir.
+  - Müşteri başına son durum ve sayaçlar (ulaşıldı, ulaşılamadı, bekliyor) gösterilir; iletişim CSV'sinde "Son iletişim" sütunu var.
+  - Denetim günlüğüne `GERI_CAGIRMA_ILETISIM` yazılır.
+- Bloke mesajları genelleşti: "satışa kapalı (geri çağırma ya da kalite blokesi)" (defter, telefon).
+
 ### 31 Ekim 2026 (üçüncü tur) — güvenli satış, fiyat denetimi, tablo sıralama, erişilebilirlik
 - Telefon: satış kaydından hemen önce lot durumları sunucudan tazelenir; bu arada geri çağrılan lot satılamaz. Bağlantı yokken veri 4 saatten eskiyse açık onay istenir. Çevrimdışı şeritte son eşitleme zamanı yazar, veri eskiyse kırmızıdır.
 - Liste fiyatının altındaki satış (telefon ve mağaza) engellenmez:

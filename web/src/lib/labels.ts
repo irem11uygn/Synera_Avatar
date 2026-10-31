@@ -4,6 +4,7 @@
 import type {
   AlertKind,
   AllocationMethod,
+  ContactOutcome,
   CuttingStatus,
   LinkProcess,
   LotOrigin,
@@ -117,6 +118,13 @@ export const RECALL_RESOLUTION: Record<RecallResolution, string> = {
   SERBEST: t('Sorun yok, satışa aç (lotlar yeniden satılabilir)'),
 }
 
+/** Geri çağırmada müşteriyle iletişimin sonucu; müşterinin durumu son kaydıdır. */
+export const CONTACT_OUTCOME: Record<ContactOutcome, string> = {
+  ULASILDI: t('Ulaşıldı, bilgilendirildi'),
+  ULASILAMADI: t('Ulaşılamadı'),
+  URUN_KALMADI: t('Ulaşıldı; elde ürün kalmamış'),
+}
+
 export const SALE_CHANNEL: Record<SaleChannel, string> = { ANDROID: t('Araç (telefon)'), WEB: t('Mağaza') }
 
 export const PAYMENT_METHOD: Record<PaymentMethod, string> = {
@@ -170,6 +178,9 @@ export const AUDIT_ACTION: Record<string, string> = {
   SIFRE_DEGISTI: t('Şifre değişti'),
   OTURUMLAR_KAPATILDI: t('Diğer oturumlar kapatıldı'),
   LISTE_ALTI_FIYAT: t('Liste fiyatının altında satış'),
+  GERI_CAGIRMA_ILETISIM: t('Geri çağırma iletişimi'),
+  KALITE_BLOKESI: t('Kalite blokesi'),
+  KALITE_BLOKESI_KALDIRILDI: t('Kalite blokesi kaldırıldı'),
   SIFRE_SIFIRLANDI: t('Şifre sıfırlandı'),
   KULLANICI: t('Kullanıcı'),
   MAL_KABUL: t('Mal kabul'),

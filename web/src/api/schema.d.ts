@@ -486,6 +486,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lots/{lot_no}/hold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hold Lot
+         * @description Kalite blokesi: lot soruşturma bitene kadar satışa ve kullanıma kapanır (türevlerine dokunmaz).
+         */
+        post: operations["hold_lot_api_v1_lots__lot_no__hold_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lots/{lot_no}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Release Lot
+         * @description Kalite blokesini kaldırır; lot açık bir geri çağırmada değilse yeniden satışa açılır.
+         */
+        post: operations["release_lot_api_v1_lots__lot_no__release_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lots/{lot_no}/movements": {
         parameters: {
             query?: never;
@@ -989,6 +1029,26 @@ export interface paths {
         put?: never;
         /** Close */
         post: operations["close_api_v1_recalls__recall_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recalls/{recall_id}/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Contact
+         * @description Müşteriyle iletişim kaydı (ulaşıldı / ulaşılamadı / ürün kalmamış + not). Yalnız eklenir.
+         */
+        post: operations["create_contact_api_v1_recalls__recall_id__contacts_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1688,6 +1748,23 @@ export interface components {
             /** Output Lot No */
             output_lot_no?: string | null;
         };
+        /** ContactCountsOut */
+        ContactCountsOut: {
+            /** Reached */
+            reached: number;
+            /** Unreached */
+            unreached: number;
+            /** Pending */
+            pending: number;
+        };
+        /** ContactIn */
+        ContactIn: {
+            /** Partner Id */
+            partner_id: number;
+            outcome: components["schemas"]["ContactOutcome"];
+            /** Note */
+            note?: string | null;
+        };
         /** ContactOut */
         ContactOut: {
             /** Person */
@@ -1699,6 +1776,12 @@ export interface components {
             /** Address */
             address: string | null;
         };
+        /**
+         * ContactOutcome
+         * @description Geri çağırmada müşteriyle iletişimin sonucu (müşteri başına son kayıt durumu gösterir).
+         * @enum {string}
+         */
+        ContactOutcome: "ULASILDI" | "ULASILAMADI" | "URUN_KALMADI";
         /** CostOut */
         CostOut: {
             /** Raw Materials */
@@ -2207,6 +2290,31 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** HoldIn */
+        HoldIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** HoldOut */
+        HoldOut: {
+            /** Id */
+            id: number;
+            /** Reason */
+            reason: string;
+            /** Placed By Name */
+            placed_by_name: string | null;
+            /**
+             * Placed At
+             * Format: date-time
+             */
+            placed_at: string;
+            /** Released By Name */
+            released_by_name: string | null;
+            /** Released At */
+            released_at: string | null;
+            /** Release Note */
+            release_note: string | null;
+        };
         /** InputCostOut */
         InputCostOut: {
             /** Doc No */
@@ -2363,6 +2471,10 @@ export interface components {
             parents: components["schemas"]["LinkOut"][];
             /** Children */
             children: components["schemas"]["LinkOut"][];
+            /** Holds */
+            holds: components["schemas"]["HoldOut"][];
+            /** Open Recalls */
+            open_recalls: string[];
         };
         /**
          * LotOrigin
@@ -3002,6 +3114,25 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** RecallContactOut */
+        RecallContactOut: {
+            /** Id */
+            id: number;
+            /** Customer Id */
+            customer_id: number;
+            /** Customer */
+            customer: string;
+            outcome: components["schemas"]["ContactOutcome"];
+            /** Note */
+            note: string | null;
+            /** User Name */
+            user_name: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** RecallIn */
         RecallIn: {
             /** Lot No */
@@ -3042,12 +3173,15 @@ export interface components {
             held_by_customers: {
                 [key: string]: string;
             };
+            contact_counts: components["schemas"]["ContactCountsOut"];
             /** Lots */
             lots: components["schemas"]["TracedLotOut"][];
             /** Stock */
             stock: components["schemas"]["StockItemOut"][];
             /** Recipients */
             recipients: components["schemas"]["RecipientOut"][];
+            /** Contacts */
+            contacts: components["schemas"]["RecallContactOut"][];
         };
         /**
          * RecallResolution
@@ -3092,6 +3226,7 @@ export interface components {
             held_by_customers: {
                 [key: string]: string;
             };
+            contact_counts: components["schemas"]["ContactCountsOut"];
         };
         /** RecipeIn */
         RecipeIn: {
@@ -3194,6 +3329,11 @@ export interface components {
             onward_unknown_qty: string;
             /** Recall Violation */
             recall_violation: boolean;
+        };
+        /** ReleaseIn */
+        ReleaseIn: {
+            /** Note */
+            note?: string | null;
         };
         /**
          * ReportCode
@@ -4932,6 +5072,76 @@ export interface operations {
             };
         };
     };
+    hold_lot_api_v1_lots__lot_no__hold_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lot_no: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HoldIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LotDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    release_lot_api_v1_lots__lot_no__release_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lot_no: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReleaseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LotDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     lot_movements_api_v1_lots__lot_no__movements_get: {
         parameters: {
             query?: never;
@@ -6056,6 +6266,41 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_contact_api_v1_recalls__recall_id__contacts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recall_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

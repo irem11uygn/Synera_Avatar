@@ -8,7 +8,7 @@ from app.models.inventory import Lot, LotLink, StockBalance, StockMovement
 from app.models.master import AuthSession, NumberSequence, Partner, Product, User, Warehouse
 from app.models.production import ProductionInput, ProductionOrder
 from app.models.purchasing import Purchase, PurchaseCost, PurchaseLine
-from app.models.recall import Alert, Recall, RecallLot
+from app.models.recall import Alert, QualityHold, Recall, RecallContact, RecallLot
 from app.models.sales import CustomerReturn, OnwardDelivery, Sale, SaleLine
 from app.models.sync import SyncCounter
 from app.models.transfers import Adjustment, StockCount, StockCountLine, Transfer, TransferLine
@@ -39,7 +39,9 @@ __all__ = [
     "Purchase",
     "PurchaseCost",
     "PurchaseLine",
+    "QualityHold",
     "Recall",
+    "RecallContact",
     "RecallLot",
     "Sale",
     "SaleLine",

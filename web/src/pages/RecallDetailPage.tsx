@@ -1,6 +1,6 @@
 // Geri çağırma ayrıntısı (FR-306…FR-308, FR-310): etkilenen lotlar, bizdeki stok, market bazında
 // miktar + iletişim + satış belgeleri + ikinci kademe; CSV iletişim listesi; iade alma, ikinci kademe
-// kaydı ve kapatma (imha / serbest).
+// kaydı, müşteriyle iletişim kaydı (ulaşıldı / ulaşılamadı / ürün kalmamış) ve kapatma (imha / serbest).
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -25,7 +25,8 @@ import {
 import { useState } from 'react'
 import { api, errorMessage } from '../api/client'
 import { refreshBusinessData, usePartners, useWarehouses } from '../api/queries'
-import type { Recall, RecallResolution, Recipient, Trace } from '../api/types'
+import type { ContactOutcome, Recall, RecallContact, RecallResolution, Recipient, Trace } from '../api/types'
+import { useSession } from '../auth/context'
 import { Stat } from '../components/Stat'
 import { FormModal } from '../components/FormModal'
 import { Link } from '../components/Link'
@@ -37,8 +38,9 @@ import { TraceFlow } from '../components/TraceFlow'
 import { compare, sum } from '../lib/decimal'
 import { downloadFile } from '../lib/download'
 import { formatDateTime, formatQty, unitLabel } from '../lib/format'
-import { LOT_ORIGIN, RECALL_RESOLUTION, RECALL_STATUS, WAREHOUSE_KIND, options } from '../lib/labels'
+import { CONTACT_OUTCOME, LOT_ORIGIN, RECALL_RESOLUTION, RECALL_STATUS, WAREHOUSE_KIND, options } from '../lib/labels'
 import { tracePath } from '../lib/paths'
+import { can } from '../lib/roles'
 import { decimalRule, toApiDecimal } from '../lib/rules'
 import { t } from '../lib/i18n'
 
@@ -152,6 +154,44 @@ function OnwardModal({ recipient, onClose }: { recipient: Recipient | null; onCl
   )
 }
 
+type ContactValues = { outcome: ContactOutcome; note?: string }
+
+const CONTACT_TONE: Record<ContactOutcome, string> = { ULASILDI: 'success', URUN_KALMADI: 'success', ULASILAMADI: 'error' }
+
+/** Müşteriyle iletişim kaydı: yalnız eklenir; müşterinin durumu son kaydıdır. */
+function ContactModal({ recall, recipient, onClose }: { recall: Recall; recipient: Recipient | null; onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (values: ContactValues) =>
+      api<Recall>(`/recalls/${recall.id}/contacts`, {
+        method: 'POST',
+        body: { ...values, partner_id: recipient!.customer_id },
+      }),
+    onSuccess: (data) => queryClient.setQueryData(['recall', recall.id], data),
+  })
+  if (!recipient) return null
+  return (
+    <FormModal<ContactValues>
+      title={t('{customer}: iletişim kaydı', { customer: recipient.customer })}
+      open
+      onClose={onClose}
+      onSubmit={(values) => mutation.mutateAsync(values)}
+      initialValues={{ outcome: 'ULASILDI' }}
+      okText={t('Kaydet')}
+    >
+      <Typography.Paragraph type="secondary">
+        {[recipient.contact.person, recipient.contact.phone, recipient.contact.email].filter(Boolean).join(' · ')}
+      </Typography.Paragraph>
+      <Form.Item name="outcome" label={t('Sonuç')} rules={[{ required: true }]}>
+        <Radio.Group options={options(CONTACT_OUTCOME)} style={{ display: 'grid', gap: 8 }} />
+      </Form.Item>
+      <Form.Item name="note" label={t('Not')}>
+        <Input.TextArea rows={2} maxLength={500} placeholder={t('Ürünü ayırdı, yarın iade edecek')} />
+      </Form.Item>
+    </FormModal>
+  )
+}
+
 function CloseModal({ recall, open, onClose }: { recall: Recall; open: boolean; onClose: () => void }) {
   const queryClient = useQueryClient()
   const mutation = useMutation({
@@ -187,8 +227,10 @@ export default function RecallDetailPage({ id }: { id: number }) {
     queryFn: () => api<Trace>(`/trace/forward/${encodeURIComponent(sourceLot!)}`),
     enabled: Boolean(sourceLot),
   })
+  const { user } = useSession()
   const [returning, setReturning] = useState<Recipient | null>(null)
   const [onward, setOnward] = useState<Recipient | null>(null)
+  const [contacting, setContacting] = useState<Recipient | null>(null)
   const [closing, setClosing] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
@@ -227,12 +269,40 @@ export default function RecallDetailPage({ id }: { id: number }) {
       .filter(Boolean)
       .join(' + ') || '0'
 
+  // Müşteri başına son iletişim (kayıtlar yeniden eskiye gelir).
+  const latest = new Map<number, RecallContact>()
+  for (const contact of data.contacts) if (!latest.has(contact.customer_id)) latest.set(contact.customer_id, contact)
+  const contactColumn: TableColumnsType<Recipient>[number] = {
+    title: t('İletişim'),
+    key: 'contact',
+    render: (_, r) => {
+      const last = latest.get(r.customer_id)
+      return last ? (
+        <Space orientation="vertical" size={0}>
+          <Tag color={CONTACT_TONE[last.outcome]}>{CONTACT_OUTCOME[last.outcome]}</Tag>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            {formatDateTime(last.created_at)}
+          </Typography.Text>
+        </Space>
+      ) : (
+        <Tag>{t('Bekliyor')}</Tag>
+      )
+    },
+  }
+  const canContact = open && can(user.role, 'quality')
+  const counts = data.contact_counts
+
   const actionColumn: TableColumnsType<Recipient>[number] = {
     title: t('İşlem'),
     key: 'actions',
     fixed: 'right',
     render: (_, r) => (
       <Space orientation="vertical" size={4}>
+        {canContact && (
+          <Button size="small" type="primary" onClick={() => setContacting(r)}>
+            {t('İletişim kaydet')}
+          </Button>
+        )}
         <Button size="small" onClick={() => setReturning(r)} disabled={compare(r.qty, '0') <= 0}>
           {t('İade al')}
         </Button>
@@ -301,17 +371,50 @@ export default function RecallDetailPage({ id }: { id: number }) {
         )}
       </Card>
 
-      <Card size="small" title={t('Geri çağırma listesi: alıcılar, miktarlar, iletişim')} style={{ marginBottom: 16 }}>
+      <Card
+        size="small"
+        title={t('Geri çağırma listesi: alıcılar, miktarlar, iletişim')}
+        extra={
+          <Space size={4} wrap>
+            <Tag color="success">{t('Ulaşıldı: {n}', { n: counts.reached })}</Tag>
+            <Tag color="error">{t('Ulaşılamadı: {n}', { n: counts.unreached })}</Tag>
+            <Tag>{t('Bekliyor: {n}', { n: counts.pending })}</Tag>
+          </Space>
+        }
+        style={{ marginBottom: 16 }}
+      >
         <Table<Recipient>
           rowKey={(r) => `${r.customer_id}-${r.lot_no}`}
           size="small"
           pagination={false}
           scroll={{ x: 'max-content' }}
           dataSource={data.recipients}
-          columns={[...RECIPIENT_COLUMNS, actionColumn]}
+          columns={[...RECIPIENT_COLUMNS, contactColumn, actionColumn]}
           locale={{ emptyText: t('Etkilenen lotlardan satış yapılmamış.') }}
         />
       </Card>
+
+      {data.contacts.length > 0 && (
+        <Card size="small" title={t('İletişim kayıtları')} style={{ marginBottom: 16 }}>
+          <Table<RecallContact>
+            rowKey="id"
+            size="small"
+            pagination={false}
+            dataSource={data.contacts}
+            columns={[
+              { title: t('Zaman'), dataIndex: 'created_at', render: formatDateTime },
+              { title: t('Müşteri'), dataIndex: 'customer' },
+              {
+                title: t('Sonuç'),
+                dataIndex: 'outcome',
+                render: (o: ContactOutcome) => <Tag color={CONTACT_TONE[o]}>{CONTACT_OUTCOME[o]}</Tag>,
+              },
+              { title: t('Not'), dataIndex: 'note', render: (v: string | null) => v ?? '—' },
+              { title: t('Kaydeden'), dataIndex: 'user_name', render: (v: string | null) => v ?? '—' },
+            ]}
+          />
+        </Card>
+      )}
 
       <Row gutter={16}>
         <Col xs={24} lg={12}>
@@ -358,6 +461,7 @@ export default function RecallDetailPage({ id }: { id: number }) {
       <ReturnModal recipient={returning} onClose={() => setReturning(null)} />
       <OnwardModal recipient={onward} onClose={() => setOnward(null)} />
       <CloseModal recall={data} open={closing} onClose={() => setClosing(false)} />
+      <ContactModal recall={data} recipient={contacting} onClose={() => setContacting(null)} />
     </Page>
   )
 }

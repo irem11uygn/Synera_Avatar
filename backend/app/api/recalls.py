@@ -1,5 +1,6 @@
 """Geri çağırma ve uyarılar (FR-306, FR-307, FR-310)."""
 
+from datetime import UTC
 from decimal import Decimal
 
 from fastapi import APIRouter, Response
@@ -10,12 +11,14 @@ from app.api.csv_export import csv_response
 from app.api.deps import Db, QualityUser, WebUser
 from app.api.fields import UtcDateTime
 from app.api.trace import RecipientOut, StockItemOut, TracedLotOut
+from app.domain.clock import business_zone
 from app.models import Recall
-from app.models.enums import RecallResolution, RecallStatus, Severity
+from app.models.enums import ContactOutcome, RecallResolution, RecallStatus, Severity
 from app.services import alarms, audit
 from app.services.lookups import get_or_404
 from app.services.recall import (
     RecallView,
+    add_contact,
     close_recall,
     held_by_customers,
     recall_view,
@@ -42,6 +45,35 @@ class RecallCloseIn(BaseModel):
     note: str | None = Field(default=None, max_length=500)
 
 
+class ContactIn(BaseModel):
+    partner_id: int
+    outcome: ContactOutcome
+    note: str | None = Field(default=None, max_length=500)
+
+
+class RecallContactOut(BaseModel):
+    id: int
+    customer_id: int
+    customer: str
+    outcome: ContactOutcome
+    note: str | None
+    user_name: str | None
+    created_at: UtcDateTime
+
+
+class ContactCountsOut(BaseModel):
+    reached: int  # son kayıt: ulaşıldı ya da ürün kalmamış
+    unreached: int  # son kayıt: ulaşılamadı
+    pending: int  # hiç kaydı yok
+
+
+CONTACT_TEXT = {
+    ContactOutcome.ULASILDI: "Ulaşıldı",
+    ContactOutcome.ULASILAMADI: "Ulaşılamadı",
+    ContactOutcome.URUN_KALMADI: "Ulaşıldı; elde ürün kalmamış",
+}
+
+
 class RecallSummaryOut(BaseModel):
     id: int
     recall_no: str
@@ -57,12 +89,14 @@ class RecallSummaryOut(BaseModel):
     customer_count: int
     violation_count: int
     held_by_customers: dict[str, Decimal]
+    contact_counts: ContactCountsOut
 
 
 class RecallOut(RecallSummaryOut):
     lots: list[TracedLotOut]
     stock: list[StockItemOut]
     recipients: list[RecipientOut]
+    contacts: list[RecallContactOut]
 
 
 def _summary(view: RecallView) -> dict:
@@ -82,6 +116,7 @@ def _summary(view: RecallView) -> dict:
         "customer_count": view.customer_count,
         "violation_count": view.violation_count,
         "held_by_customers": held_by_customers(view),
+        "contact_counts": view.contact_counts(),
     }
 
 
@@ -92,6 +127,7 @@ def _recall_out(view: RecallView) -> RecallOut:
             "lots": [TracedLotOut.model_validate(lot) for lot in view.lots],
             "stock": [StockItemOut.model_validate(item) for item in view.stock],
             "recipients": [RecipientOut.model_validate(r) for r in view.recipients],
+            "contacts": [RecallContactOut.model_validate(c, from_attributes=True) for c in view.contacts],
         }
     )
 
@@ -146,9 +182,16 @@ def export_csv(recall_id: int, db: Db, _: WebUser) -> Response:
         "Satış belgeleri",
         "Sonrası",
         "Çevrimdışı ihlal",
+        "Son iletişim",
     ]
+    latest = {}
+    for contact in view.contacts:  # yeniden eskiye: müşteri başına ilk görülen en yenisi
+        latest.setdefault(contact.customer_id, contact)
     rows: list[list[object]] = []
     for r in view.recipients:
+        last = latest.get(r.customer_id)
+        when = last.created_at.replace(tzinfo=UTC).astimezone(business_zone()) if last else None
+        last_text = f"{CONTACT_TEXT[last.outcome]} ({when:%d.%m.%Y %H:%M})" if last and when else "Bekliyor"
         unit = "kg" if r.base_unit == "KG" else "adet"
         documents = ", ".join(s.sale_no for s in r.sales)
         rows.append(
@@ -167,6 +210,7 @@ def export_csv(recall_id: int, db: Db, _: WebUser) -> Response:
                 documents,
                 ONWARD_TEXT[r.onward_status],
                 r.recall_violation,
+                last_text,
             ]
         )
         for item in r.onward_items:
@@ -186,6 +230,7 @@ def export_csv(recall_id: int, db: Db, _: WebUser) -> Response:
                     documents,
                     "Kesin (müşterinin bildirimi)",
                     False,
+                    "",
                 ]
             )
     return csv_response(f"{view.recall.recall_no}_iletisim_listesi.csv", header, rows)
@@ -206,3 +251,24 @@ def close(recall_id: int, body: RecallCloseIn, db: Db, user: QualityUser) -> Rec
         ref_id=recall.id,
     )
     return _recall_out(recall_view(db, recall))
+
+
+@router.post("/{recall_id}/contacts", response_model=RecallOut, status_code=201)
+def create_contact(recall_id: int, body: ContactIn, db: Db, user: QualityUser) -> RecallOut:
+    """Müşteriyle iletişim kaydı (ulaşıldı / ulaşılamadı / ürün kalmamış + not). Yalnız eklenir."""
+    recall = get_or_404(db, Recall, recall_id, "Geri çağırma")
+    contact = add_contact(
+        db, recall, partner_id=body.partner_id, outcome=body.outcome, note=body.note, user_id=user.id
+    )
+    view = recall_view(db, recall)
+    customer = next(c.customer for c in view.contacts if c.id == contact.id)
+    audit.log(
+        db,
+        "GERI_CAGIRMA_ILETISIM",
+        f"{recall.recall_no}: {customer} — {CONTACT_TEXT[contact.outcome]}"
+        + (f" ({contact.note})" if contact.note else ""),
+        user=user,
+        ref_type="RECALL",
+        ref_id=recall.id,
+    )
+    return _recall_out(view)

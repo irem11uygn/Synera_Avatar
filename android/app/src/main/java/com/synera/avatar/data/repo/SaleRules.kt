@@ -83,7 +83,7 @@ object SaleRules {
     ): String? {
         val remaining = availableMilli - alreadyInDraftMilli
         return when {
-            lotStatus == "BLOKE" -> t("Bu lot geri çağrıldı; satılamaz.")
+            lotStatus == "BLOKE" -> t("Bu lot satışa kapalı (geri çağırma ya da kalite blokesi); satılamaz.")
             expired -> t("Bu lotun son kullanma tarihi geçmiş; satılamaz.")
             qtyMilli == null -> t("Geçerli bir miktar yazın (en çok 3 ondalık, binlik ayırıcı olmadan).")
             qtyMilli <= 0 -> t("Miktar sıfırdan büyük olmalı.")
