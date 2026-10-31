@@ -12,6 +12,7 @@ import { formatDateTime, formatMoney, formatQty } from '../lib/format'
 import { ALLOCATION_METHOD } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 const COLUMNS: TableColumnsType<Cutting> = [
   {
@@ -50,7 +51,7 @@ export default function CuttingListPage() {
         rowKey="id"
         size="middle"
         loading={cuttings.isPending}
-        columns={COLUMNS}
+        columns={sortable(COLUMNS)}
         dataSource={cuttings.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}

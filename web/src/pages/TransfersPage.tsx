@@ -16,6 +16,7 @@ import { formatDate, formatDateTime, formatQty, unitLabel } from '../lib/format'
 import { TRANSFER_REASON } from '../lib/labels'
 import { decimalRule, toApiDecimal } from '../lib/rules'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 type LineValues = { lot_no?: string; qty?: string }
 type FormValues = {
@@ -91,7 +92,7 @@ export default function TransfersPage() {
         rowKey="id"
         size="middle"
         loading={transfers.isPending}
-        columns={COLUMNS}
+        columns={sortable(COLUMNS)}
         dataSource={transfers.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}

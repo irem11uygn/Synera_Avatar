@@ -32,9 +32,16 @@ data class CartLine(
     val qtyMilli: Long,
     val unitPriceCents: Long,
     val picks: List<LotPick>,
+    val listPriceCents: Long? = null,
 ) {
     val amountCents: Long = picks.sumOf { SaleRules.amountCents(it.qtyMilli, unitPriceCents) }
+
+    /** Liste fiyatının yüzde kaç altında satılıyor (null: altında değil); sunucu da yöneticiye bildirir. */
+    val discountPercent: Int? = SaleRules.discountPercent(unitPriceCents, listPriceCents)
 }
+
+/** Sunucuya ulaşılamadı ve yerel lot bilgisi eski: kayıttan önce kullanıcı onayı istenir. */
+data class StaleWarning(val lastPullMillis: Long?)
 
 /** Satılabilir ürün özeti (ürün seçme listesi). */
 data class ProductChoice(val productId: Long, val name: String, val baseUnit: String, val priceCents: Long?, val sellableMilli: Long, val nearestExpiry: String?)
@@ -52,12 +59,17 @@ data class SaleUiState(
     val error: String? = null,
     val saving: Boolean = false,
     val saved: Boolean = false,
+    val staleWarning: StaleWarning? = null,
 ) {
     val totalCents: Long get() = lines.sumOf { it.amountCents }
 }
 
 /** Satış sihirbazı: kayıt telefonda yapılır, gönderim arka planda (bağlantı yoksa sonra). */
-class SaleViewModel(private val repository: AvatarRepository, private val today: () -> LocalDate = LocalDate::now) : ViewModel() {
+class SaleViewModel(
+    private val repository: AvatarRepository,
+    private val today: () -> LocalDate = LocalDate::now,
+    private val now: () -> Long = System::currentTimeMillis,
+) : ViewModel() {
     val customers: StateFlow<List<CustomerEntity>> = repository.observeCustomers().asState(emptyList())
     val stock: StateFlow<List<VanStockRow>> = repository.observeVanStock().asState(emptyList())
 
@@ -132,7 +144,7 @@ class SaleViewModel(private val repository: AvatarRepository, private val today:
             _ui.update { it.copy(lineError = t("Araçta satılabilir miktar yetmiyor: {qty} eksik.", "qty" to Quantity.format(short, first.baseUnit))) }
             return
         }
-        val line = CartLine(productId, first.productName, first.baseUnit, qty, price, picks)
+        val line = CartLine(productId, first.productName, first.baseUnit, qty, price, picks, first.salePriceCents)
         _ui.update { it.copy(lines = it.lines + line, editingProductId = null, qtyText = "", priceText = "", lineError = null, error = null) }
     }
 
@@ -140,16 +152,30 @@ class SaleViewModel(private val repository: AvatarRepository, private val today:
 
     fun selectPayment(method: String) = _ui.update { it.copy(payment = method, error = null, step = Step.SUMMARY) }
 
-    fun save() {
+    /**
+     * Kayıttan hemen önce lot durumları sunucudan tazelenir; bu arada geri çağrılan lot kaydedilmez.
+     * Sunucuya ulaşılamazsa ve yerel bilgi eskiyse kullanıcı açıkça onaylamadan kaydedilmez
+     * (confirmedStale). Bağlantısız araçta satış durmasın diye tam engel konmaz.
+     */
+    fun save(confirmedStale: Boolean = false) {
         val state = _ui.value
         val customer = state.customerId
         when {
+            state.saving -> return
             customer == null -> _ui.update { it.copy(error = t("Müşteriyi seçin."), step = Step.CUSTOMER) }
             state.lines.isEmpty() -> _ui.update { it.copy(error = t("En az bir ürün ekleyin."), step = Step.PRODUCTS) }
             state.payment == null -> _ui.update { it.copy(error = t("Ödeme türünü seçin."), step = Step.PAYMENT) }
             else -> {
-                _ui.update { it.copy(saving = true, error = null) }
+                _ui.update { it.copy(saving = true, error = null, staleWarning = null) }
                 viewModelScope.launch {
+                    val fresh = repository.refreshBeforeSale()
+                    if (!fresh && !confirmedStale) {
+                        val last = repository.lastPullAtMillis()
+                        if (SaleRules.isStale(last, now())) {
+                            _ui.update { it.copy(saving = false, staleWarning = StaleWarning(last)) }
+                            return@launch
+                        }
+                    }
                     try {
                         repository.createSale(
                             customer,
@@ -166,6 +192,8 @@ class SaleViewModel(private val repository: AvatarRepository, private val today:
             }
         }
     }
+
+    fun dismissStaleWarning() = _ui.update { it.copy(staleWarning = null) }
 
     private fun <T> Flow<T>.asState(initial: T): StateFlow<T> =
         stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)

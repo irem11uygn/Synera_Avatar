@@ -24,8 +24,9 @@ createRoot(document.getElementById('root')!).render(
       locale={lang === 'en' ? enUS : trTR}
       theme={{
         // Turkuaz + 3B: turkuaz ana renk, yuvarlak köşeler, 15 px yazı, büyük dokunma alanları.
+        // Ana renk #0f766e: beyaz yazıyla 5,47:1 (WCAG AA 4,5:1; açık ton #0d9488 3,74:1 ile kalıyordu).
         token: {
-          colorPrimary: '#0d9488',
+          colorPrimary: '#0f766e',
           colorInfo: '#1d4ed8',
           colorSuccess: '#2e7d32',
           colorWarning: '#b45309',
@@ -49,12 +50,13 @@ createRoot(document.getElementById('root')!).render(
             itemMarginInline: 10,
             darkItemBg: 'transparent',
             darkSubMenuItemBg: 'transparent',
-            darkItemColor: 'rgba(255,255,255,0.88)',
-            darkItemHoverBg: 'rgba(255,255,255,0.14)',
+            // Geçişin en açık yerinde bile en az 4,5:1 (WCAG AA); seçili ve üzerine gelinen satır koyulaşır.
+            darkItemColor: 'rgba(255,255,255,0.95)',
+            darkItemHoverBg: 'rgba(4,47,46,0.22)',
             darkItemHoverColor: '#ffffff',
-            darkItemSelectedBg: 'rgba(255,255,255,0.24)',
+            darkItemSelectedBg: 'rgba(4,47,46,0.35)',
             darkItemSelectedColor: '#ffffff',
-            darkGroupTitleColor: 'rgba(255,255,255,0.66)',
+            darkGroupTitleColor: 'rgba(255,255,255,0.92)',
           },
           Table: { headerBg: 'rgba(240,249,247,0.9)', headerColor: '#3f5655', cellPaddingBlock: 12, rowHoverBg: '#f0f9f7' },
           Card: { headerFontSize: 16 },

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compare, divide, fromScaled, multiply, parseUserDecimal, sum, toScaled } from './decimal'
+import { compare, discountPercent, divide, fromScaled, multiply, parseUserDecimal, sum, toScaled } from './decimal'
 
 describe('ondalık hesap (kayan nokta yok)', () => {
   it('ölçekleme ve geri çevirme kayıpsız', () => {
@@ -54,5 +54,15 @@ describe('kullanıcı girişi', () => {
     expect(parseUserDecimal('12a', 3)).toBeNull()
     expect(parseUserDecimal('1,2345', 3)).toBeNull()
     expect(parseUserDecimal('', 3)).toBeNull()
+  })
+})
+
+describe('liste fiyatı altı', () => {
+  it('yüzde olarak bulunur; liste fiyatı ve üstü indirim değildir', () => {
+    expect(discountPercent('20.80', '26.00')).toBe(20)
+    expect(discountPercent('24.89', '24.90')).toBe(1)
+    expect(discountPercent('24.90', '24.90')).toBeNull()
+    expect(discountPercent('30.00', '24.90')).toBeNull()
+    expect(discountPercent('10.00', null)).toBeNull()
   })
 })

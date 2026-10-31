@@ -20,6 +20,21 @@ object SaleRules {
             .movePointRight(2)
             .longValueExact()
 
+    /**
+     * Geri çağırma telefona yalnız eşitlemeyle gelir. Son başarılı eşitleme bundan eskiyse (ya da hiç
+     * yoksa) yerel lot durumu bayat sayılır: satıştan önce kullanıcı açıkça uyarılır.
+     */
+    const val STALE_AFTER_MILLIS = 4 * 60 * 60 * 1000L
+
+    fun isStale(lastPullMillis: Long?, nowMillis: Long): Boolean =
+        lastPullMillis == null || nowMillis - lastPullMillis > STALE_AFTER_MILLIS
+
+    /** Liste fiyatının altındaysa yüzde kaç altında (tam sayıya yuvarlı, en az 1); değilse null. */
+    fun discountPercent(unitPriceCents: Long, listPriceCents: Long?): Int? {
+        if (listPriceCents == null || listPriceCents <= 0 || unitPriceCents >= listPriceCents) return null
+        return ((listPriceCents - unitPriceCents) * 100.0 / listPriceCents).let { Math.round(it).toInt().coerceAtLeast(1) }
+    }
+
     fun isExpired(lot: VanStockRow, today: LocalDate): Boolean =
         lot.expiryDate?.let { LocalDate.parse(it).isBefore(today) } ?: false
 

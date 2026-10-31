@@ -13,6 +13,7 @@ import { LotStatusTag } from '../components/StatusTags'
 import { formatDate, formatMoney, formatQty, formatUnitCost } from '../lib/format'
 import { LOT_ORIGIN } from '../lib/labels'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 const COLUMNS: TableColumnsType<Lot> = [
   { title: t('Lot no'), dataIndex: 'lot_no', render: (lotNo: string) => <Link to={`/lotlar/${lotNo}`}>{lotNo}</Link> },
@@ -70,7 +71,7 @@ export default function LotsPage() {
         rowKey="id"
         size="middle"
         loading={lots.isPending}
-        columns={COLUMNS}
+        columns={sortable(COLUMNS)}
         dataSource={lots.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}

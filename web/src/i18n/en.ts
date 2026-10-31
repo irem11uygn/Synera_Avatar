@@ -42,6 +42,8 @@ export const EN: Record<string, string> = {
   "Ayarlar": "Settings",
   "Telefondan çevrimdışı satışta son kullanma tarihi geçmiş lot satılmışsa.": "When an expired lot was sold offline on a phone.",
   "Diğer oturumlar kapatıldı": "Other sessions closed",
+  "Liste fiyatının altında satış": "Sale below list price",
+  "Liste fiyatının %{pct} altında; yöneticiye bildirilir.": "{pct}% below list price; the manager is notified.",
   "Hesabım": "My account",
   "Tanımlı değil": "Not set",
   "Ad ve e-posta adresini yönetici değiştirir (Yönetim → Kullanıcılar). E-posta bildirimleri ve size gönderilen raporlar bu adrese gider.": "Your name and e-mail address are changed by an administrator (Administration → Users). E-mail notifications and reports sent to you go to this address.",

@@ -14,6 +14,7 @@ import { formatMoney, formatQty, formatUnitCost, unitLabel } from '../lib/format
 import { options, PRODUCT_KIND } from '../lib/labels'
 import { decimalRule, fromApiDecimal, textOrNull, toApiDecimal } from '../lib/rules'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 type FormValues = {
   code: string
@@ -147,7 +148,7 @@ export default function ProductsPage() {
         rowKey="id"
         size="middle"
         loading={products.isPending}
-        columns={columns}
+        columns={sortable(columns)}
         dataSource={rows}
         pagination={false}
         scroll={{ x: 'max-content' }}

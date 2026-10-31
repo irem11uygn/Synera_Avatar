@@ -12,7 +12,7 @@ import type { PaymentMethod, Product, Sale, StockRow } from '../api/types'
 import { useSession } from '../auth/context'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
-import { compare, multiply, parseUserDecimal, sum } from '../lib/decimal'
+import { compare, discountPercent, multiply, parseUserDecimal, sum } from '../lib/decimal'
 import { allocate, type Pick } from '../lib/fefo'
 import { formatDate, formatMoney, formatQty, todayIso } from '../lib/format'
 import { options, PAYMENT_METHOD } from '../lib/labels'
@@ -253,15 +253,25 @@ export default function StoreSalePage() {
               {
                 title: t('Birim fiyat'),
                 width: 150,
-                render: (_, c) => (
-                  <Input
-                    value={c.line.priceText}
-                    inputMode="decimal"
-                    suffix="€"
-                    onChange={(e) => update(c.line.key, { priceText: e.target.value })}
-                    aria-label={t('{product} birim fiyatı', { product: c.line.product.name })}
-                  />
-                ),
+                render: (_, c) => {
+                  const below = discountPercent(c.price, c.line.product.sale_price)
+                  return (
+                    <>
+                      <Input
+                        value={c.line.priceText}
+                        inputMode="decimal"
+                        suffix="€"
+                        onChange={(e) => update(c.line.key, { priceText: e.target.value })}
+                        aria-label={t('{product} birim fiyatı', { product: c.line.product.name })}
+                      />
+                      {below !== null && (
+                        <Tag color="warning" style={{ marginTop: 4 }}>
+                          {t('Liste fiyatının %{pct} altında; yöneticiye bildirilir.', { pct: below })}
+                        </Tag>
+                      )}
+                    </>
+                  )
+                },
               },
               { title: t('Tutar'), align: 'right', render: (_, c) => <span className="num">{formatMoney(c.amount)}</span> },
               {

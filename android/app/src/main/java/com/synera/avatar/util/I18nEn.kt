@@ -165,4 +165,13 @@ internal val EN: Map<String, String> = mapOf(
     "Yeni şifrede hem harf hem rakam olmalı." to "The new password must contain both letters and digits.",
     "Yeni şifre eskisiyle aynı olamaz." to "The new password cannot be the same as the old one.",
     "Yeni şifre ile tekrarı aynı değil." to "The new password and its repetition do not match.",
+    // --- Ayarlar ve şifre ---
+    "Geri çağırma bilgisi eski olabilir; satıştan önce uyarılırsınız." to "Recall information may be out of date; you will be warned before a sale.",
+    "Lotlar denetleniyor…" to "Checking lots…",
+    "Bilgiler eski olabilir" to "Information may be out of date",
+    "Sunucuya ulaşılamadı. Geri çağırma bilgisi en son {time} güncellendi; bu sürede geri çağrılan bir ürünü satıyor olabilirsiniz. Mümkünse bağlantı kurup eşitleyin." to "Cannot reach the server. Recall information was last updated at {time}; you may be selling a product recalled since then. Connect and sync if you can.",
+    "Sunucuya ulaşılamadı ve telefon hiç eşitlenmedi; geri çağrılan ürünler bilinmiyor. Mümkünse bağlantı kurup eşitleyin." to "Cannot reach the server and the phone has never synced; recalled products are unknown. Connect and sync if you can.",
+    "Yine de kaydet" to "Save anyway",
+    "Liste fiyatının %{pct} altında" to "{pct}% below list price",
+    "Liste fiyatının %{pct} altında; satış yöneticiye bildirilir." to "{pct}% below list price; the sale is reported to the manager.",
 )

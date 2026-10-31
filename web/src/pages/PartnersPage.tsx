@@ -13,6 +13,7 @@ import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { textOrNull } from '../lib/rules'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 type Role = 'supplier' | 'customer' | 'subcontractor'
 
@@ -146,7 +147,7 @@ export default function PartnersPage() {
         rowKey="id"
         size="middle"
         loading={partners.isPending}
-        columns={columns}
+        columns={sortable(columns)}
         dataSource={rows}
         pagination={false}
         scroll={{ x: 'max-content' }}

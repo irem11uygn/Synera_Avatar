@@ -264,7 +264,7 @@ Web birim testleri: `web/` klasöründe `npm test`.
 
 ### Android uygulaması
 
-Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), gerçek telefonda web portu `http://<bilgisayarın-yerel-ip>:8080`; kullanıcı `satis1` / `satis123`. Oturum belirteci telefonda Android Keystore anahtarıyla şifreli saklanır.
+Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), gerçek telefonda web portu `http://<bilgisayarın-yerel-ip>:8080`; kullanıcı `satis1` / `satis123`. Oturum belirteci telefonda Android Keystore anahtarıyla şifreli saklanır. Telefon satışı kaydetmeden hemen önce lot durumlarını sunucudan tazeler (bu arada geri çağrılan lot satılamaz); bağlantı yokken veri 4 saatten eskiyse satıcıyı uyarır (`docs/senkronizasyon.md` §4). Liste fiyatının altındaki satış engellenmez, ekranda gösterilir ve yöneticinin denetim günlüğüne yazılır. Erişilebilirlik denetimi: [docs/erisilebilirlik.md](docs/erisilebilirlik.md).
 
 ### Bilinen sınırlamalar
 

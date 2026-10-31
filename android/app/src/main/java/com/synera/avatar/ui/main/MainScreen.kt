@@ -166,11 +166,20 @@ private fun SyncBanner(viewModel: MainViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val pending by viewModel.pendingCount.collectAsStateWithLifecycle()
     val meta by viewModel.syncMeta.collectAsStateWithLifecycle()
+    // Çevrimdışıyken geri çağırma bilgisinin ne kadar eski olduğu da yazılır; eskiyse kırmızı.
+    val lastPull = meta?.lastPullAtMillis
+    val stale = SaleRules.isStale(lastPull, System.currentTimeMillis())
+    val offlineNote = buildString {
+        append(" ")
+        append(lastPull?.let { t("Son eşitleme: {time}", "time" to Dates.dateTime(it)) } ?: t("Henüz eşitlenmedi."))
+        if (stale) append(" · ").append(t("Geri çağırma bilgisi eski olabilir; satıştan önce uyarılırsınız."))
+    }
+    val offlineTone = if (stale) Tone.DANGER else Tone.WARNING
     when {
         ui.syncing -> Banner(t("Eşitleniyor…"), Tone.BRAND)
         ui.error != null -> Banner(ui.error.orEmpty(), Tone.DANGER)
-        ui.offline && pending > 0 -> Banner(t("Bağlantı yok. {n} satış telefonda bekliyor; bağlantı gelince kendiliğinden gönderilir.", "n" to pending), Tone.WARNING)
-        ui.offline -> Banner(t("Bağlantı yok. Satış yapabilirsiniz; bağlantı gelince gönderilir."), Tone.WARNING)
+        ui.offline && pending > 0 -> Banner(t("Bağlantı yok. {n} satış telefonda bekliyor; bağlantı gelince kendiliğinden gönderilir.", "n" to pending) + offlineNote, offlineTone)
+        ui.offline -> Banner(t("Bağlantı yok. Satış yapabilirsiniz; bağlantı gelince gönderilir.") + offlineNote, offlineTone)
         pending > 0 -> Banner(t("{n} satış gönderilmeyi bekliyor.", "n" to pending), Tone.WARNING)
         ui.report != null -> Banner(describe(ui.report!!), Tone.SUCCESS)
         else -> {

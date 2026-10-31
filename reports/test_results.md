@@ -542,3 +542,31 @@ Emülatör (Medium_Phone, demo yığını):
   3. Kısa şifre telefonda reddedildi.
   4. Geçerli şifreyle `change-password` 200, ardından `sync/pull` 200 ("20 kayıt güncellendi").
   5. Kopya sonra silindi.
+
+## 31 Ekim 2026 (üçüncü tur) — güvenli satış, fiyat denetimi, tablo sıralama, erişilebilirlik
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **280 geçti**. Yeni: liste altı satış kaydedilir, uyarı döner ve denetim günlüğüne yazılır; liste fiyatında satış işaretlenmez. |
+| Biçim | `ruff format --check` + `ruff check` | Temiz |
+| Yapay zekâ | `… api sh -c "cd /ml && pytest -q"` | 4 geçti |
+| Web | `npm test`, `npx tsc -b`, `npm run lint` | **37 geçti** (yeni `sort.test.ts` 4, liste altı yüzde 1); tip ve lint temiz |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | **31 geçti** (yeni: eski veri eşiği, liste altı yüzde); APK derlendi |
+| Kabul | `sh scripts/kabul_testleri.sh` | **23/23** (sıfırdan kurulum) |
+| Canlı güvenlik (demo, nginx) | `PROJE=avatar-yeni sh scripts/guvenlik_denemesi.sh` | 27/27 reddedildi |
+
+**Emülatör** (atılacak kopya `avatar-ayar`, API 18210; sonra silindi):
+- **Liste altı fiyat:** Kuzu sırt (liste 26,00 €) 20,80 € yazılınca "Liste fiyatının %20 altında; satış yöneticiye bildirilir." çıktı. Özette rozet göründü. Satış gönderildi; denetim günlüğünde `LISTE_ALTI_FIYAT` uyarısı var ("%20 altında").
+- **Geri çağrılan lot:**
+  1. Satış özet adımındayken BUT-PRC-2026-012 web'den geri çağrıldı (GC-2026-001).
+  2. "Satışı kaydet" önce `sync/pull` yaptı (200).
+  3. Satış kaydedilmedi: "BUT-PRC-2026-012 lotu geri çağrıldı; satılamaz." Sunucuya gönderim yapılmadı.
+- **Eski veri:**
+  1. Sunucu durduruldu; son eşitleme 5 saat geriye alındı.
+  2. Ana ekran şeridi kırmızı: "Son eşitleme: 31.10.2026 09:23 · Geri çağırma bilgisi eski olabilir".
+  3. Satışta "Bilgiler eski olabilir" onayı çıktı.
+  4. "Yine de kaydet" denince satış telefonda bekledi; sunucu açılınca gönderildi (`sync/push` 200).
+
+**Tarayıcı (demo):**
+- Lotlar "Kalan değer" azalan: 1.302,55 € > 88,15 € > 52,09 € … (sayı sırası).
+- Sol menüde Tab ile odak: beyaz çizgi.

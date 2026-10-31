@@ -49,9 +49,22 @@ sequenceDiagram
 | Telefondaki saat yanlışsa | Cihaz zamanı yalnız bilgi olarak saklanır (`sold_at`). Belge numarası ve sıralama sunucu zamanıyla (`received_at`) yapılır. |
 | Para ve miktar hassasiyeti | API'de ondalık **metin** olarak taşınır ("24.90"). Telefonda kuruş ve gram cinsinden **tam sayı** tutulur. Kayan noktalı sayı hiçbir yerde kullanılmaz (ADR-006). |
 
-## 4. Özel durum: çevrimdışıyken geri çağrılmış lot satıldı
+## 4. Satıştan hemen önce lot denetimi (güvenli satış)
 
-Telefon son eşitlemeden sonra bloke edilen bir lotu, haberi olmadan satabilir. Mal müşteriye gitmiştir. Bu yüzden sunucu satışı **reddetmez**, reddetseydi izi kaybolurdu (ADR-004). Bunun yerine:
+Geri çağırma telefona ancak eşitlemeyle ulaşır. Bu yüzden "Satışı kaydet"e basılınca:
+
+1. **Bağlantı varsa** telefon en çok 3 saniyelik hızlı bir çekme (`GET /sync/pull`) yapar. Sepetteki bir lot bu arada geri çağrıldıysa kayıttaki yerel denetim (`SalesDao.saveSale`) satışı **kaydetmez**; ekranda "… lotu geri çağrıldı; satılamaz." yazar.
+2. **Bağlantı yoksa** ve son başarılı eşitleme **4 saatten eskiyse** (ya da hiç eşitlenmemişse) açık bir uyarı çıkar: "Geri çağırma bilgisi en son {zaman} güncellendi; bu sürede geri çağrılan bir ürünü satıyor olabilirsiniz." Satıcı "Yine de kaydet" der ya da vazgeçer. Tam engel konmaz: bağlantısız araçta satış durmasın.
+3. Ana ekrandaki "Bağlantı yok" şeridi son eşitleme zamanını yazar. Veri 4 saatten eskiyse şerit kırmızı olur.
+
+Kural `SaleRules.isStale` (birim testli) ve `AvatarRepository.refreshBeforeSale` içinde. Emülatörde üç senaryo denendi (31 Ekim):
+- Özet adımındayken web'den geri çağrılan lot kayıtta engellendi.
+- Sunucu kapalı ve veri 5 saat eskiyken uyarı çıktı; onaylanınca satış telefonda bekledi, sunucu açılınca gönderildi.
+- Çevrimdışı şeritte son eşitleme zamanı göründü.
+
+## 5. Özel durum: çevrimdışıyken geri çağrılmış lot satıldı
+
+Bütün bu önlemlere rağmen bağlantısız telefon, son eşitlemeden sonra bloke edilen bir lotu satabilir (uyarı onaylandıysa). Mal müşteriye gitmiştir. Bu yüzden sunucu satışı **reddetmez**, reddetseydi izi kaybolurdu (ADR-004). Bunun yerine:
 
 1. Satış ve stok hareketi kaydedilir. Satış `recall_violation` olarak işaretlenir; telefona `ACCEPTED_WITH_WARNING` döner.
 2. Yöneticiye **uyarı** düşer: web'de menüde sayı ve "Uyarılar" ekranı.
@@ -59,7 +72,7 @@ Telefon son eşitlemeden sonra bloke edilen bir lotu, haberi olmadan satabilir. 
 
 Bu senaryo otomatik testle denetlenir (`backend/tests/test_trace_recall.py::test_at12_offline_sale_after_recall_is_flagged_in_the_list`). Emülatörde uçak moduyla da denendi.
 
-## 5. Tutarlılığın sınanması
+## 6. Tutarlılığın sınanması
 
 | Sınama | Nerede |
 |---|---|

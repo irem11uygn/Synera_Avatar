@@ -140,6 +140,19 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Yeni uyarılar: SKT yaklaşan/geçen lot, sayım farkı. Göç `d7f3b9a2c4e1` (37 tablo).
 - docker-compose'a Mailpit (`axllent/mailpit:v1.32.0`, 8025 arayüz, 1025 SMTP); `.env.example` yeni değişkenlerle. Değişken adları `SMTP_PASS`, `MAIL_FROM` (eski `SMTP_PASSWORD`, `SMTP_FROM` de okunur).
 
+### 31 Ekim 2026 (üçüncü tur) — güvenli satış, fiyat denetimi, tablo sıralama, erişilebilirlik
+- Telefon: satış kaydından hemen önce lot durumları sunucudan tazelenir; bu arada geri çağrılan lot satılamaz. Bağlantı yokken veri 4 saatten eskiyse açık onay istenir. Çevrimdışı şeritte son eşitleme zamanı yazar, veri eskiyse kırmızıdır.
+- Liste fiyatının altındaki satış (telefon ve mağaza) engellenmez:
+  - Ekranda "% … altında" diye gösterilir.
+  - Sunucu satışı `ACCEPTED_WITH_WARNING` döndürür.
+  - Denetim günlüğüne `LISTE_ALTI_FIYAT` (uyarı) yazılır.
+  - Göç gerekmedi.
+- Web: 11 liste tablosunda sütuna göre sıralama. Ondalıklar sayı, metinler Türkçe alfabe, tarihler zaman sırasıyla (`lib/sort.ts`).
+- Erişilebilirlik (`docs/erisilebilirlik.md`):
+  - Ana turkuaz beyaz yazıyla 3,74:1 idi → #0f766e ile 5,47:1 (web ve telefon).
+  - Sol menü geçişi, menü yazısı ve grup başlıkları en az 4,5:1.
+  - Menüde klavye odak çizgisi beyaz.
+
 ### 31 Ekim 2026 (ikinci tur) — Ayarlar (web ve telefon)
 - Web: **Ayarlar** sayfası (`/ayarlar`, herkese):
   - Hesabım ve Dil bölümleri.

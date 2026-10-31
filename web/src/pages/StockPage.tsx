@@ -11,6 +11,7 @@ import { LotStatusTag } from '../components/StatusTags'
 import { sum } from '../lib/decimal'
 import { formatDate, formatQty, formatUnitCost } from '../lib/format'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 type View = 'lot' | 'product'
 
@@ -100,7 +101,7 @@ export default function StockPage() {
           rowKey={(row) => `${row.warehouse_id}-${row.lot_no}`}
           size="middle"
           loading={stock.isPending}
-          columns={LOT_COLUMNS}
+          columns={sortable(LOT_COLUMNS)}
           dataSource={stock.data}
           pagination={false}
           scroll={{ x: 'max-content' }}
@@ -110,7 +111,7 @@ export default function StockPage() {
           rowKey="key"
           size="middle"
           loading={stock.isPending}
-          columns={PRODUCT_COLUMNS}
+          columns={sortable(PRODUCT_COLUMNS)}
           dataSource={stock.data ? totalsByProduct(stock.data) : undefined}
           pagination={false}
           scroll={{ x: 'max-content' }}

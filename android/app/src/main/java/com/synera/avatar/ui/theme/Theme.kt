@@ -13,8 +13,9 @@ import androidx.compose.ui.unit.sp
 
 /** Web arayüzüyle aynı turkuaz kimlik; anlam taşıyan renk (kırmızı/turuncu/yeşil) yalnız durumlarda. */
 object Brand {
-    val Primary = Color(0xFF0D9488)
-    val PrimaryDeep = Color(0xFF0F766E)
+    // Üst çubuk ve düğmelerde beyaz yazıyla 5,47:1 (WCAG AA 4,5:1; açık ton 0D9488 3,74:1 ile kalıyordu).
+    val Primary = Color(0xFF0F766E)
+    val PrimaryDeep = Color(0xFF115E59)
     val PrimarySoft = Color(0xFFDFF5F1)
     val Danger = Color(0xFFC62828)
     val DangerSoft = Color(0xFFFDECEC)

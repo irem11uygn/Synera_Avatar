@@ -3,6 +3,7 @@ package com.synera.avatar
 import com.synera.avatar.data.local.VanStockRow
 import com.synera.avatar.data.repo.SaleRules
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -57,6 +58,25 @@ class SaleRulesTest {
         val (picks, short) = SaleRules.allocate(lots, productId = 5, qtyMilli = 6_000, today = today)
         assertEquals(listOf("SUC-1" to 4_000L, "SUC-3" to 2_000L), picks.map { it.lot.lotNo to it.qtyMilli })
         assertEquals(0L, short)
+    }
+
+    @Test
+    fun `dort saatten eski ya da hic yapilmamis esitleme bayat sayilir`() {
+        val now = 1_000_000_000L
+        val hour = 60 * 60 * 1000L
+        assertTrue(SaleRules.isStale(null, now))
+        assertTrue(SaleRules.isStale(now - 4 * hour - 1, now))
+        assertFalse(SaleRules.isStale(now - 4 * hour, now))
+        assertFalse(SaleRules.isStale(now - 10 * 60 * 1000L, now))
+    }
+
+    @Test
+    fun `liste fiyatinin altindaki satis yuzdesiyle bulunur`() {
+        assertEquals(20, SaleRules.discountPercent(1200, 1500))
+        assertEquals(1, SaleRules.discountPercent(2489, 2490)) // 1 kuruş altı bile görünür
+        assertNull(SaleRules.discountPercent(2490, 2490))
+        assertNull(SaleRules.discountPercent(2600, 2490)) // liste üstü indirim değildir
+        assertNull(SaleRules.discountPercent(1000, null)) // liste fiyatı tanımsız
     }
 
     @Test

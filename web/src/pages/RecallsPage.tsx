@@ -15,6 +15,7 @@ import { formatDateTime, formatQty } from '../lib/format'
 import { RECALL_STATUS } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 const COLUMNS: TableColumnsType<RecallSummary> = [
   {
@@ -105,7 +106,7 @@ export default function RecallsPage() {
           rowKey="id"
           size="small"
           loading={recalls.isPending}
-          columns={COLUMNS}
+          columns={sortable(COLUMNS)}
           dataSource={recalls.data}
           pagination={false}
           scroll={{ x: 'max-content' }}

@@ -169,6 +169,7 @@ export const AUDIT_ACTION: Record<string, string> = {
   CIKIS: t('Çıkış'),
   SIFRE_DEGISTI: t('Şifre değişti'),
   OTURUMLAR_KAPATILDI: t('Diğer oturumlar kapatıldı'),
+  LISTE_ALTI_FIYAT: t('Liste fiyatının altında satış'),
   SIFRE_SIFIRLANDI: t('Şifre sıfırlandı'),
   KULLANICI: t('Kullanıcı'),
   MAL_KABUL: t('Mal kabul'),

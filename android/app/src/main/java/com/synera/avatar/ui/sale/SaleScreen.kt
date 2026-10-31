@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.synera.avatar.data.local.Payment
+import com.synera.avatar.data.repo.SaleRules
 import com.synera.avatar.ui.main.paymentLabel
 import com.synera.avatar.ui.theme.Badge
 import com.synera.avatar.ui.theme.Banner
@@ -106,13 +108,40 @@ private fun BottomBar(viewModel: SaleViewModel) {
                         modifier = Modifier.height(52.dp),
                     ) { Text(t("Ödemeye geç")) }
                     Step.PAYMENT -> {}
-                    Step.SUMMARY -> Button(onClick = viewModel::save, enabled = !ui.saving, modifier = Modifier.height(52.dp)) {
-                        Text(if (ui.saving) t("Kaydediliyor…") else t("Satışı kaydet"))
+                    Step.SUMMARY -> Button(onClick = { viewModel.save() }, enabled = !ui.saving, modifier = Modifier.height(52.dp)) {
+                        Text(if (ui.saving) t("Lotlar denetleniyor…") else t("Satışı kaydet"))
                     }
                 }
             }
         }
     }
+    ui.staleWarning?.let { warning -> StaleDialog(warning, viewModel) }
+}
+
+/** Sunucuya ulaşılamadı ve geri çağırma bilgisi eski: satıcı bilerek onaylamadan kayıt yapılmaz. */
+@Composable
+private fun StaleDialog(warning: StaleWarning, viewModel: SaleViewModel) {
+    AlertDialog(
+        onDismissRequest = viewModel::dismissStaleWarning,
+        title = { Text(t("Bilgiler eski olabilir")) },
+        text = {
+            Text(
+                warning.lastPullMillis?.let { last ->
+                    val time = Dates.dateTime(last)
+                    t("Sunucuya ulaşılamadı. Geri çağırma bilgisi en son {time} güncellendi; bu sürede geri çağrılan bir ürünü satıyor olabilirsiniz. Mümkünse bağlantı kurup eşitleyin.", "time" to time)
+                } ?: t("Sunucuya ulaşılamadı ve telefon hiç eşitlenmedi; geri çağrılan ürünler bilinmiyor. Mümkünse bağlantı kurup eşitleyin."),
+            )
+        },
+        confirmButton = { TextButton(onClick = { viewModel.save(confirmedStale = true) }) { Text(t("Yine de kaydet")) } },
+        dismissButton = { TextButton(onClick = viewModel::dismissStaleWarning) { Text(t("Vazgeç")) } },
+    )
+}
+
+/** Liste fiyatının altında satış: engellenmez, açıkça gösterilir; sunucu yöneticiye bildirir. */
+@Composable
+private fun DiscountNote(percent: Int?) {
+    percent ?: return
+    Badge(t("Liste fiyatının %{pct} altında", "pct" to percent), Tone.WARNING)
 }
 
 @Composable
@@ -165,6 +194,7 @@ private fun ProductStep(viewModel: SaleViewModel) {
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            DiscountNote(line.discountPercent)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text(Money.format(line.amountCents), style = MaterialTheme.typography.titleSmall)
@@ -214,6 +244,15 @@ private fun ProductStep(viewModel: SaleViewModel) {
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             modifier = Modifier.weight(1f),
                         )
+                    }
+                    Money.parseInput(ui.priceText)?.let { typed ->
+                        SaleRules.discountPercent(typed, choice.priceCents)?.let { pct ->
+                            Text(
+                                t("Liste fiyatının %{pct} altında; satış yöneticiye bildirilir.", "pct" to pct),
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                     }
                     ui.lineError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -270,6 +309,7 @@ private fun SummaryStep(viewModel: SaleViewModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     line.picks.forEach { Badge("${it.lot.lotNo} · ${Quantity.format(it.qtyMilli, line.baseUnit)}", Tone.NORMAL) }
                 }
+                DiscountNote(line.discountPercent)
                 HorizontalDivider(Modifier.padding(top = 8.dp))
             }
         }

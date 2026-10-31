@@ -12,6 +12,7 @@ import { formatDate, formatMoney, formatQty, formatUnitCost } from '../lib/forma
 import { PURCHASE_COST_KIND } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 type Line = Purchase['lines'][number]
 
@@ -74,7 +75,7 @@ export default function PurchasesPage() {
         rowKey="id"
         size="middle"
         loading={purchases.isPending}
-        columns={COLUMNS}
+        columns={sortable(COLUMNS)}
         dataSource={purchases.data}
         pagination={false}
         scroll={{ x: 'max-content' }}

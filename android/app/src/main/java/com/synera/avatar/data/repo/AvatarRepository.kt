@@ -137,6 +137,25 @@ class AvatarRepository(
         return uuid
     }
 
+    /**
+     * Satış kaydından hemen önce lot durumlarını sunucudan tazeler: bu arada geri çağrılan lot, kayıttaki
+     * yerel denetimde (SalesDao.saveSale) yakalanır. Bağlantı yoksa ya da süre dolarsa false döner;
+     * satış eldeki bilgiyle sürer, bilgi eskiyse ekran uyarır (SaleRules.isStale).
+     */
+    suspend fun refreshBeforeSale(timeoutMillis: Long = 3_000): Boolean {
+        val session = sessions.current() ?: return false
+        return try {
+            withTimeoutOrNull(timeoutMillis) {
+                syncLock.withLock { pullChanges(session) }
+                true
+            } ?: false
+        } catch (e: ApiException) {
+            false
+        }
+    }
+
+    suspend fun lastPullAtMillis(): Long? = dao.syncMeta()?.lastPullAtMillis
+
     /** Önce bekleyen satışları gönderir, sonra sunucudaki değişiklikleri çeker (ADR-004). */
     suspend fun sync(): SyncReport =
         syncLock.withLock {

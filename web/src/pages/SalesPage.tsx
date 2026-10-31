@@ -21,6 +21,7 @@ import { can } from '../lib/roles'
 import { navigate } from '../lib/router'
 import { decimalRule, toApiDecimal } from '../lib/rules'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 type ReturnTarget = { sale: Sale; line: SaleLine }
 type ReturnValues = { qty: string; warehouse_id?: number; reason?: string }
@@ -157,7 +158,7 @@ export default function SalesPage() {
         rowKey="id"
         loading={sales.isPending}
         dataSource={data}
-        columns={columns}
+        columns={sortable(columns)}
         pagination={{ pageSize: 20, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
         locale={{ emptyText: day ? t('{day} günü satış yok.', { day: formatDate(day) }) : t('Henüz satış yok.') }}

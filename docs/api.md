@@ -322,7 +322,7 @@ Yanıt:
 
 Kurallar (T-15): her satış kendi alt işleminde yazılır; biri reddedilirse yalnız o geri alınır, numara boşa harcanmaz. `warehouse_id` kullanıcının araç deposu değilse bütün istek `FORBIDDEN`. Bir gönderimde en çok 200 satış, satışta en çok 50 satır.
 
-Durumlar: `ACCEPTED`, `ACCEPTED_WITH_WARNING` (ör. çevrimdışıyken geri çağrılmış lot satıldı — kaydedildi, ihlal işaretlendi), `DUPLICATE` (daha önce kaydedilmiş; ilk sonuç döner), `REJECTED` (ör. `INSUFFICIENT_STOCK`; `error` alanıyla).
+Durumlar: `ACCEPTED`, `ACCEPTED_WITH_WARNING` (ör. çevrimdışıyken geri çağrılmış lot satıldı — kaydedildi, ihlal işaretlendi; ya da birim fiyat ürünün liste fiyatının altında — kaydedildi, denetim günlüğüne `LISTE_ALTI_FIYAT` uyarısı yazıldı; aynı kural mağaza satışında da geçerli), `DUPLICATE` (daha önce kaydedilmiş; ilk sonuç döner), `REJECTED` (ör. `INSUFFICIENT_STOCK`; `error` alanıyla).
 
 `GET /sync/pull?since=1840` yanıtı:
 

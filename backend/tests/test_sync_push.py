@@ -6,8 +6,18 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import func, select
 
-from app.models import Alert, Partner, Product, Sale, SaleLine, StockBalance, StockMovement, Warehouse
-from app.models.enums import DocType, LotOrigin, LotStatus, MovementType
+from app.models import (
+    Alert,
+    AuditEvent,
+    Partner,
+    Product,
+    Sale,
+    SaleLine,
+    StockBalance,
+    StockMovement,
+    Warehouse,
+)
+from app.models.enums import DocType, LotOrigin, LotStatus, MovementType, Severity
 from app.services.integrity import check_invariants
 from app.services.ledger import create_lot, post_transfer
 from tests.helpers import auth_header, by_code, lot_by_no
@@ -174,3 +184,24 @@ def test_manager_sees_sales_with_cost(client, seller, session, van):
     )
     assert (D(listed["total_amount"]), D(listed["total_cost"])) == (D("48.00"), D("38.80"))
     assert listed["sold_at"].endswith("Z")
+
+
+def test_sale_below_list_price_is_recorded_and_flagged_for_the_manager(client, seller, session, van):
+    load_van(session, van)
+    by_code(session, Product, "ET").sale_price = D("15.00")
+    session.flush()
+    [result] = push(client, seller, sale(session, van, price="12.00"))
+    assert result["status"] == "ACCEPTED_WITH_WARNING"  # indirim engellenmez, işaretlenir
+    assert result["warnings"] == ["Liste fiyatının altında satış (ET-2026-001); yöneticiye bildirildi."]
+    event = session.scalars(select(AuditEvent).where(AuditEvent.action == "LISTE_ALTI_FIYAT")).one()
+    assert event.severity == Severity.UYARI and event.username == "satis1"
+    assert "12,00 € (liste 15,00 €, %20 altında)" in event.message
+
+
+def test_sale_at_list_price_is_not_flagged(client, seller, session, van):
+    load_van(session, van)
+    by_code(session, Product, "ET").sale_price = D("12.00")
+    session.flush()
+    [result] = push(client, seller, sale(session, van, price="12.00"))
+    assert result["warnings"] == []
+    assert session.scalars(select(AuditEvent).where(AuditEvent.action == "LISTE_ALTI_FIYAT")).first() is None

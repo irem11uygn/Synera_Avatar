@@ -9,6 +9,7 @@ import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { navigate } from '../lib/router'
 import { t } from '../lib/i18n'
+import { sortable } from '../lib/sort'
 
 export default function ProductionListPage() {
   const orders = useQuery({ queryKey: ['orders'], queryFn: () => api<Order[]>('/production-orders') })
@@ -28,7 +29,7 @@ export default function ProductionListPage() {
         rowKey="id"
         size="middle"
         loading={orders.isPending}
-        columns={ORDER_COLUMNS}
+        columns={sortable(ORDER_COLUMNS)}
         dataSource={orders.data}
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}

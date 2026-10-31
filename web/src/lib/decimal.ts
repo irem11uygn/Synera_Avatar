@@ -75,3 +75,10 @@ export function parseUserDecimal(input: string, maxFraction: number): string | n
   const fraction = text.split('.')[1] ?? ''
   return fraction.length > maxFraction ? null : text
 }
+
+/** Fiyat liste fiyatının altındaysa yüzde kaç altında (tam sayı, en az 1); değilse null. Sunucu da işaretler. */
+export function discountPercent(price: string | null, listPrice: string | null | undefined): number | null {
+  if (!price || !listPrice || compare(listPrice, '0') <= 0 || compare(price, listPrice) >= 0) return null
+  const pct = Number(divide(multiply(sum([listPrice, `-${price}`], 2), '100', 2), listPrice, 2))
+  return Math.max(1, Math.round(pct))
+}

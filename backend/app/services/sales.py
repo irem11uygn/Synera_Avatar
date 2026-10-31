@@ -36,6 +36,7 @@ from app.models.enums import (
     WarehouseKind,
 )
 from app.models.types import utcnow
+from app.services import audit
 from app.services.alarms import raise_alarm
 from app.services.ledger import post_movement
 from app.services.lookups import warehouse_or_404
@@ -150,6 +151,7 @@ def _record_sale(
     )
     session.add(sale)
     session.flush()
+    below_list: list[str] = []
     for line_no, (line, lot) in enumerate(zip(data.lines, lots, strict=True), start=1):
         movement = post_movement(
             session,
@@ -177,6 +179,13 @@ def _record_sale(
         )
         product = session.get(Product, lot.product_id)
         unit = "adet" if product is not None and product.base_unit == BaseUnit.ADET else "kg"
+        if product is not None and _below_list(line.unit_price, product.sale_price):
+            list_price = product.sale_price
+            pct = _discount_pct(line.unit_price, list_price).quantize(Decimal("0.1"))
+            below_list.append(
+                f"{lot.lot_no} {tr_number(line.unit_price, 2)} € "
+                f"(liste {tr_number(list_price, 2)} €, %{tr_number(pct)} altında)"
+            )
         if lot.status == LotStatus.BLOKE:
             raise_alarm(
                 session,
@@ -201,8 +210,27 @@ def _record_sale(
                 ref_id=sale.id,
                 user=user,
             )
+    if below_list:
+        # Satış engellenmez (indirim satıcının işi olabilir) ama yönetici denetim günlüğünde görür.
+        audit.log(
+            session,
+            "LISTE_ALTI_FIYAT",
+            f"{sale.sale_no} ({customer.name}): liste fiyatının altında satış — {'; '.join(below_list)}",
+            user=user,
+            severity=Severity.UYARI,
+            ref_type="SALE",
+            ref_id=sale.id,
+        )
     session.flush()
     return sale
+
+
+def _below_list(unit_price: Decimal, list_price: Decimal | None) -> bool:
+    return list_price is not None and list_price > 0 and unit_price < list_price
+
+
+def _discount_pct(unit_price: Decimal, list_price: Decimal) -> Decimal:
+    return (list_price - unit_price) / list_price * 100
 
 
 @dataclass(frozen=True)
@@ -275,24 +303,28 @@ def _sellable_lot(session: Session, line: SaleLineInput, *, sale_day: date, offl
 
 def _warnings(session: Session, sale: Sale) -> list[str]:
     rows = session.execute(
-        select(Lot.lot_no, Lot.status, Lot.expiry_date)
+        select(Lot.lot_no, Lot.status, Lot.expiry_date, SaleLine.unit_price, Product.sale_price)
         .join(SaleLine, SaleLine.lot_id == Lot.id)
+        .join(Product, Product.id == SaleLine.product_id)
         .where(SaleLine.sale_id == sale.id)
         .order_by(SaleLine.line_no)
     ).all()
     sale_day = business_today(sale.sold_at)
     warnings = []
     if sale.recall_violation:
-        blocked = ", ".join(no for no, status, _ in rows if status == LotStatus.BLOKE) or "bloke lot"
+        blocked = ", ".join(no for no, status, *_ in rows if status == LotStatus.BLOKE) or "bloke lot"
         warnings.append(
             f"Geri çağrılmış lot satıldı ({blocked}); satış kaydedildi, ihlal yöneticiye bildirildi."
         )
-    expired = [no for no, _, expiry in rows if expiry is not None and expiry < sale_day]
+    expired = [no for no, _, expiry, *_ in rows if expiry is not None and expiry < sale_day]
     if expired:
         warnings.append(
             f"Son kullanma tarihi geçmiş parti satıldı ({', '.join(expired)}); "
             "satış kaydedildi, yöneticiye bildirildi."
         )
+    below = [no for no, _, _, price, list_price in rows if _below_list(price, list_price)]
+    if below:
+        warnings.append(f"Liste fiyatının altında satış ({', '.join(below)}); yöneticiye bildirildi.")
     return warnings
 
 
