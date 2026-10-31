@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 
 from app.config import SmtpSettings, get_settings
 from app.demo import build_demo_scenario
+from app.domain.clock import business_today
 from app.models import (
     AiForecast,
     Alert,
@@ -150,7 +151,7 @@ def _purchase(client, headers, session, lot_no, price):
     body = {
         "supplier_id": by_code(session, Partner, "TED-ET").id,
         "doc_no": f"FAT-{lot_no}",
-        "doc_date": "2026-10-28",
+        "doc_date": business_today().isoformat(),
         "lines": [
             {
                 "product_id": by_code(session, Product, "ET").id,

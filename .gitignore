@@ -30,3 +30,6 @@ build/
 local.properties
 *.iml
 captures/
+
+# Veritabanı yedekleri (scripts/yedekle.sh); kişisel/ticari veri içerir, depoya girmez
+yedekler/

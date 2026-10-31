@@ -52,3 +52,18 @@ export function can(role: UserRole, action: Action): boolean {
 }
 
 export const WEB_ROLES: UserRole[] = ['YONETICI', 'DEPO', 'URETIM', 'KALITE', 'MAGAZA']
+
+// Verisini sunucunun yalnız bazı rollere verdiği ekranlar (docs/guvenlik/api_yetki_matrisi.md). Adres elle
+// yazılınca hata kutusu yerine "yetkiniz yok" sayfası çıkar. Diğer ekranları her ofis rolü okuyabilir
+// (alarm bağlantıları da oraya gider); yapamayacağı işin düğmesi can() ile gizlenir.
+const PAGE_ROLES: Record<string, UserRole[]> = {
+  '/kullanicilar': ['YONETICI'],
+  '/denetim': ['YONETICI'],
+  '/alarm-ayarlari': ['YONETICI'],
+  '/gun-sonu': ['YONETICI', 'MAGAZA'],
+}
+
+export function canOpenPage(path: string, role: UserRole): boolean {
+  const page = Object.keys(PAGE_ROLES).find((key) => path === key || path.startsWith(`${key}/`))
+  return !page || PAGE_ROLES[page].includes(role)
+}

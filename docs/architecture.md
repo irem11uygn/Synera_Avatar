@@ -252,8 +252,11 @@ sequenceDiagram
 | SQL enjeksiyonu | Yalnız ORM / parametreli sorgu. |
 | CORS | Yalnız web arayüzünün adresi. Docker'da web ile API aynı adresten sunulduğu için (ters vekil) CORS gerekmez. |
 | Gizli bilgiler | Ortam değişkenlerinden okunur; depoda yalnız `.env.example`. Demo kullanıcı parolaları README'de "yalnız demo" diye belirtilir. |
-| Web oturumu | Belirteç `sessionStorage`'da tutulur (sekme kapanınca biter, sayfa yenilenince sürer). Web yalnız `YONETICI` rolüne açıktır; satış kullanıcısı girişte Türkçe uyarıyla reddedilir. "Çıkış" oturumu sunucuda da kapatır (`POST /auth/logout`). Herhangi bir istek 401 dönerse giriş ekranına dönülür. |
-| Android oturumu | Belirteç uygulamaya özel SharedPreferences'ta tutulur (prototip: şifrelenmeden). Sunucu 401 dönerse belirteç silinir, kullanıcı giriş ekranına döner. |
+| Web oturumu | Belirteç `sessionStorage`'da tutulur (sekme kapanınca biter, sayfa yenilenince sürer). Web beş ofis rolüne açıktır, menü role göre daralır; satış kullanıcısı girişte Türkçe uyarıyla reddedilir. Verisini sunucunun yalnız bazı rollere verdiği ekranlar (kullanıcılar, denetim, alarm ayarları, gün sonu) adresle açılınca "yetkiniz yok" sayfası çıkar. "Çıkış" oturumu sunucuda da kapatır (`POST /auth/logout`). Herhangi bir istek 401 dönerse giriş ekranına dönülür. |
+| Android oturumu | Belirteç Android Keystore'da üretilen AES-256 anahtarıyla AES-GCM ile şifrelenip SharedPreferences'ta tutulur (`TokenCipher.kt`); anahtar cihazdan çıkarılamaz. Sunucu 401 dönerse belirteç silinir, kullanıcı giriş ekranına döner. |
+| Yetki matrisi | Bütün uçların kimlik ve rol kuralı koddan üretilir (`app/access_matrix.py` → `docs/guvenlik/api_yetki_matrisi.md`); `tests/test_access_matrix.py` her uca girişsiz (401) ve izinli olmayan her rolle (403) istek atar. |
+| Ağ | DB yayımlanmaz; API ve Mailpit yalnız `127.0.0.1`'e bağlanır. Yerel ağa yalnız web (nginx) açıktır; güvenlik başlıkları ve `X-Real-IP` orada eklenir. API yanıtları `Cache-Control: no-store`. |
+| İlk kurulum | Demo dışı profillerde örnek şifreler geçicidir; `python -m app.create_admin` tek kullanımlık şifreyle ilk yöneticiyi açar. Denetim raporu: `docs/guvenlik/guvenlik_denetimi.md`. |
 | Android 17 yerel ağ izni | targetSdk 37 olan uygulamalar yerel ağ adreslerine (emülatörde 10.0.2.2, telefonda bilgisayarın yerel IP'si) ancak `ACCESS_LOCAL_NETWORK` çalışma anı izniyle erişebilir; izin yoksa TCP bağlantısı zaman aşımına uğrar. Uygulama izni yalnız sunucu adresi yerel ağdaysa girişte ister (`util/LocalNetwork.kt`). |
 
 ## 9. Günlük kaydı
@@ -278,7 +281,7 @@ flowchart LR
     B[Tarayıcı] -->|":8080"| WEBC["web — statik React + ters vekil"]
     WEBC -->|"/api → api:8000"| APIC["api — FastAPI + avatar_ml"]
     APIC --> DBC[("db — mysql:8.4<br/>kalıcı birim")]
-    PH[Android emülatör / telefon] -->|"http://10.0.2.2:8000 veya LAN IP"| APIC
+    PH[Android emülatör / telefon] -->|"emülatör: http://10.0.2.2:8000 · telefon: LAN IP, web portu"| WEBC
 ```
 
 - **Tek komut:** `docker compose up --build`. API açılışta önce veritabanının hazır olmasını bekler, sonra şema göçlerini (Alembic) uygular. Veritabanı boşsa `SEED_PROFILE` değişkenine göre örnek kayıtları yükler:
@@ -332,7 +335,7 @@ android/app/src/main/java/.../
 - Tedarikçiye iade akışı yok; gerekirse fire/imha ile kayda alınır.
 - Tek şirket, tek dil (Türkçe arayüz).
 - Kullanıcı yönetimi ekranı yok; kullanıcılar örnek kayıtlarla gelir.
-- Android ile sunucu arasında HTTP (şifresiz) kullanılır; yerel ağ demosu içindir. Gerçek kurulumda HTTPS gerekir ve `network_security_config.xml`'deki izin kaldırılmalıdır.
+- Android ile sunucu arasında HTTP (şifresiz) kullanılır; yerel ağ demosu içindir. Bu izin yalnız debug derlemesindedir (`src/debug/res/xml/network_security_config.xml`); yayın derlemesi yalnız HTTPS kabul eder. Gerçek kurulumda sunucu TLS'li bir ters vekil arkasında olmalı.
 
 ## 14. Tasarım doğrulaması
 

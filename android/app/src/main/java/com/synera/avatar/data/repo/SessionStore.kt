@@ -1,8 +1,11 @@
 package com.synera.avatar.data.repo
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.synera.avatar.BuildConfig
+import java.security.GeneralSecurityException
+import java.security.ProviderException
 import java.util.UUID
 
 data class Session(
@@ -15,18 +18,23 @@ data class Session(
 )
 
 /**
- * Sunucu adresi ve oturum belirteci, uygulamaya özel SharedPreferences'ta tutulur.
- * Prototip sınırlılığı: belirteç şifrelenmeden saklanır (yalnız bu uygulama okuyabilir).
+ * Sunucu adresi ve oturum bilgisi uygulamaya özel SharedPreferences'ta tutulur. Belirteç düz metin
+ * olarak yazılmaz: Android Keystore anahtarıyla şifrelenir (TokenCipher). Eski sürümün şifresiz
+ * belirteci ilk okumada şifrelenip silinir.
  */
-class SessionStore(context: Context) {
+class SessionStore(context: Context, private val cipher: TokenCipher = TokenCipher.keystore()) {
     private val prefs = context.getSharedPreferences("oturum", Context.MODE_PRIVATE)
+
+    /** Çözülmüş belirteç; her istekte Keystore'a gitmemek için yalnız bellekte tutulur. */
+    @Volatile
+    private var cachedToken: String? = null
 
     var serverUrl: String
         get() = prefs.getString(KEY_SERVER, null) ?: BuildConfig.DEFAULT_SERVER_URL
         set(value) = prefs.edit { putString(KEY_SERVER, value.trim()) }
 
     fun current(): Session? {
-        val token = prefs.getString(KEY_TOKEN, null) ?: return null
+        val token = readToken() ?: return null
         return Session(
             token = token,
             username = prefs.getString(KEY_USERNAME, "").orEmpty(),
@@ -39,7 +47,7 @@ class SessionStore(context: Context) {
     fun lastUsername(): String? = prefs.getString(KEY_USERNAME, null)
 
     fun save(session: Session) = prefs.edit {
-        putString(KEY_TOKEN, session.token)
+        storeToken(session.token)
         putString(KEY_USERNAME, session.username)
         putString(KEY_FULL_NAME, session.fullName)
         putString(KEY_WAREHOUSE, session.warehouseCode)
@@ -53,11 +61,47 @@ class SessionStore(context: Context) {
         }
 
     /** Çıkışta belirteç silinir; kullanıcı adı bir sonraki girişte veri temizliği kararı için kalır. */
-    fun clearToken() = prefs.edit { remove(KEY_TOKEN) }
+    fun clearToken() {
+        cachedToken = null
+        prefs.edit {
+            remove(KEY_TOKEN)
+            remove(KEY_PLAIN_TOKEN)
+        }
+    }
+
+    private fun readToken(): String? {
+        cachedToken?.let { return it }
+        prefs.getString(KEY_PLAIN_TOKEN, null)?.let { plain ->
+            prefs.edit { storeToken(plain) }
+            return plain
+        }
+        val sealed = prefs.getString(KEY_TOKEN, null) ?: return null
+        return cipher.open(sealed).also { opened ->
+            if (opened == null) prefs.edit { remove(KEY_TOKEN) } else cachedToken = opened
+        }
+    }
+
+    /**
+     * Keystore bu cihazda çalışmazsa belirteç diske hiç yazılmaz: oturum uygulama kapanana kadar
+     * bellekte sürer, sonra yeniden giriş istenir (şifresiz saklamaya geri dönülmez).
+     */
+    private fun SharedPreferences.Editor.storeToken(plain: String) {
+        cachedToken = plain
+        remove(KEY_PLAIN_TOKEN)
+        val sealed = try {
+            cipher.seal(plain)
+        } catch (e: GeneralSecurityException) {
+            null
+        } catch (e: ProviderException) {
+            null
+        }
+        if (sealed != null) putString(KEY_TOKEN, sealed) else remove(KEY_TOKEN)
+    }
 
     private companion object {
         const val KEY_SERVER = "server_url"
-        const val KEY_TOKEN = "token"
+        const val KEY_TOKEN = "token_sifreli"
+        const val KEY_PLAIN_TOKEN = "token" // eski sürüm, şifresiz
         const val KEY_USERNAME = "username"
         const val KEY_FULL_NAME = "full_name"
         const val KEY_WAREHOUSE = "warehouse_code"

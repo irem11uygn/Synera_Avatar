@@ -35,15 +35,15 @@ APK: `app/build/outputs/apk/debug/app-debug.apk`. Android Studio'da `android/` k
 ## Çalıştırma
 
 1. Sunucuyu başlatın (depo kökünde `docker compose up --build -d`).
-2. Uygulamayı emülatörde açın. Sunucu adresi varsayılan olarak `http://10.0.2.2:8000` gelir (emülatörün bilgisayara eriştiği adres). Gerçek telefonda bilgisayarın yerel ağ adresini yazın (ör. `http://192.168.1.20:8000`).
+2. Uygulamayı emülatörde açın. Sunucu adresi varsayılan olarak `http://10.0.2.2:8000` gelir (emülatörün bilgisayara eriştiği adres). Gerçek telefonda bilgisayarın yerel ağ adresini **web portuyla** yazın (ör. `http://192.168.1.20:8080`): API portu yalnız bilgisayarın kendisinden açılır, istekler nginx üzerinden `/api/` ile gider.
 3. `satis1` / `satis123` ile giriş yapın.
 
 **Android 17 notu:** targetSdk 37 olan uygulamalar yerel ağdaki adreslere ancak `ACCESS_LOCAL_NETWORK` ("Yakındaki cihazlar") çalışma anı izniyle erişebilir; izin yoksa bağlantı zaman aşımına uğrar. Uygulama bu izni yalnız sunucu adresi yerel ağdaysa girişte ister. İnternetteki bir sunucu için izin gerekmez.
 
 ## Bilinen sınırlamalar (prototip)
 
-- Sunucuyla HTTP konuşulur (`network_security_config.xml`); gerçek kurulumda HTTPS olmalı.
-- Oturum belirteci uygulamaya özel alanda şifrelenmeden saklanır.
+- Debug derlemesi (teslim APK'sı) yerel demo için HTTP'ye izin verir (`src/debug/res/xml/network_security_config.xml`); yayın derlemesi yalnız HTTPS kabul eder (`src/main/res/xml/...`). Gerçek kurulumda sunucu HTTPS arkasında olmalı.
+- Oturum belirteci Android Keystore'da üretilen AES-256 anahtarıyla AES-GCM ile şifrelenir (`data/repo/TokenCipher.kt`); eski sürümün şifresiz belirteci ilk açılışta şifrelenip silinir. Satış ve müşteri bilgilerinin tutulduğu yerel veritabanı uygulamaya özel alandadır ama şifreli değildir.
 - Geliştirme bilgisayarındaki proje yolu ASCII dışı karakter içerdiği için `gradle.properties`'te `android.overridePathCheck=true` var; ASCII yolda etkisizdir.
 
 İlgili gereksinimler: `docs/requirements.md` → FR-4xx, TR-001, TR-002, NFR-005.

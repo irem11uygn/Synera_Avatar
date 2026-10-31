@@ -36,6 +36,8 @@ export const EN: Record<string, string> = {
   "Sayfa bulunamadı": "Page not found",
   "Adres yanlış ya da kayıt silinmiş olabilir.": "The address is wrong or the record no longer exists.",
   "Ana sayfaya dön": "Back to home",
+  "Bu ekrana yetkiniz yok": "You do not have access to this screen",
+  "Bu ekran rolünüzün işine dahil değil; gerekiyorsa yöneticinize başvurun.": "This screen is not part of your role; ask your administrator if you need it.",
   "{n} okunmamış uyarı": "Unread alerts: {n}",
   "Ana sayfa": "Home",
   "Şifremi değiştir": "Change my password",

@@ -1,10 +1,10 @@
 """FastAPI uygulaması: router kaydı, hata biçimi, günlük ayarı ve e-posta göndericisi."""
 
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 
 from app import __version__
 from app.api import (
@@ -67,6 +67,15 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     register_error_handlers(app)
+
+    @app.middleware("http")
+    async def no_store(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+        """API yanıtları (iş verisi, CSV, kişisel bilgi) tarayıcıda ya da ara sunucuda saklanmasın."""
+        response = await call_next(request)
+        if request.url.path.startswith(API_PREFIX):
+            response.headers.setdefault("Cache-Control", "no-store")
+        return response
+
     routers = (
         health.router,
         auth.router,

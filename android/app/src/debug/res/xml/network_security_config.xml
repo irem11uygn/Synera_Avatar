@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Yalnız hata ayıklama (debug) derlemesi: yerel demo sunucusu ağda HTTP ile çalışır (emülatörde 10.0.2.2,
+     telefonda bilgisayarın yerel ağ adresi). Yayın (release) derlemesi src/main'deki ayarı kullanır: yalnız HTTPS. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

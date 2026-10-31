@@ -104,6 +104,8 @@ docker compose up --build -d
 | http://localhost:8000/docs | API belgesi (OpenAPI, deneme arayüzü) |
 | http://localhost:8000/api/v1/health | Servis ve veritabanı durumu |
 
+API portu (8000) ve Mailpit yalnız bu bilgisayardan açılır; yerel ağdaki telefon ve diğer bilgisayarlar web portunu kullanır (`http://<bilgisayarın-yerel-ip>:8080`, API istekleri aynı adresten `/api/` ile gider). API'yi ağa açmak gerekirse `.env`'de `API_BIND=0.0.0.0` (önerilmez: güvenlik başlıklarını ve giriş sınırının adres denetimini atlar).
+
 Parolaların varsayılan değerleri yalnız yerel kullanım içindir. Değiştirmek için `.env.example` dosyasını `.env` adıyla kopyalayıp düzenleyin.
 
 **8000 ya da 8080 portu başka bir uygulamada kullanılıyorsa** `.env` içinde `API_PORT` ve `WEB_PORT` değiştirilir (ör. 18000 ve 18080); adresler de buna göre değişir.
@@ -115,7 +117,13 @@ Parolaların varsayılan değerleri yalnız yerel kullanım içindir. Değiştir
 - Market B'nin şubelerine dağıtımı kayıtlıdır (15 + 10).
 - Görev 2 için KUZU-2026-012'den örnek parçalama yapılır.
 
-Yalnız ana verileri istiyorsanız `.env` içinde `SEED_PROFILE=base` yapın. Bütün firma ve kişi adları uydurmadır.
+Yalnız ana verileri istiyorsanız `.env` içinde `SEED_PROFILE=base` yapın: aşağıdaki kullanıcılar yine açılır ama şifreleri **geçicidir**, ilk girişte değiştirilmeden hiçbir işlem yapılamaz. `SEED_PROFILE=none` hiç kayıt yüklemez; ilk yönetici komut satırından açılır, tek kullanımlık şifre bir kez ekrana basılır:
+
+```bash
+docker compose exec api python -m app.create_admin <kullanici_adi> "<Ad Soyad>" [e-posta]
+```
+
+Bütün firma ve kişi adları uydurmadır.
 
 | Demo kullanıcısı | Şifre | Rol | Ne görür |
 |---|---|---|---|
@@ -126,7 +134,7 @@ Yalnız ana verileri istiyorsanız `.env` içinde `SEED_PROFILE=base` yapın. B�
 | `magaza1` | `magaza123` | Mağaza / kasa | Mağaza satışı, iade, gün sonu |
 | `satis1` | `satis123` | Satış elemanı | Yalnız telefon uygulaması (araç ARAC-01) |
 
-Bu şifreler yalnız yerel demo içindir. Yönetici **Kullanıcılar** ekranından yeni hesap açar; yeni hesap ve sıfırlanan şifre geçicidir, kullanıcı ilk girişte kendi şifresini belirler. Hatalı girişler sınırlıdır (5 dakikada 10 deneme).
+Bu şifreler yalnız yerel demo içindir (demo profili açılışta günlüğe bunu uyarı olarak yazar). Dışarıdan "üye ol" yoktur: yönetici **Kullanıcılar** ekranından yeni hesap açar; yeni hesap ve sıfırlanan şifre geçicidir, kullanıcı ilk girişte kendi şifresini belirler. Hatalı girişler sınırlıdır (5 dakikada 10 deneme).
 
 **Dil:** Web'de üst çubuktaki **TR / EN** seçimi, telefonda sağ üstteki menü. Seçim hatırlanır.
 
@@ -160,6 +168,26 @@ Uyarılar ve raporlar e-postayla gider. E-posta önce giden kutusuna yazılır; 
 3. Geri çağırma başlatın.
 
 İkisi de birkaç saniye içinde Mailpit'te görünür.
+
+### Güvenlik, yedekleme ve sürekli entegrasyon
+
+Denetim raporu: [docs/guvenlik/guvenlik_denetimi.md](docs/guvenlik/guvenlik_denetimi.md) (kontrol tablosu, düzeltilenler, kalan riskler). Bütün API uçlarının rol yetkisi: [docs/guvenlik/api_yetki_matrisi.md](docs/guvenlik/api_yetki_matrisi.md) (koddan üretilir, `tests/test_access_matrix.py` her ucu girişsiz ve yetkisiz rolle dener).
+
+**Canlı güvenlik denemesi** (sistem açıkken; 27 saldırı isteği atar, hepsinin reddedildiğini gösterir; veri değiştirmez, yalnız "Art arda hatalı giriş" alarmı ve e-postası oluşur; yeniden çalıştırmadan önce 5 dakika bekleyin):
+
+```bash
+sh scripts/guvenlik_denemesi.sh
+```
+
+**Yedekleme:** `sh scripts/yedekle.sh` veritabanının gzip'li dökümünü `yedekler/` klasörüne yazar (en yeni 14 yedek kalır). Geri yükleme `sh scripts/geri_yukle.sh yedekler/<dosya>`; çalışan sistemin verisini değiştirdiği için onay ister, sunucuyu durdurup yeniden başlatır. Yedeğin gerçekten geri yüklendiğini çalışan sisteme dokunmadan denemek için:
+
+```bash
+sh scripts/yedek_denemesi.sh
+```
+
+Yedekler kişisel ve ticari veri içerir; `yedekler/` git'e girmez. Düzenli çalıştırma (cron / Görev Zamanlayıcı) ve başka bir diske kopyalama kurulumu işletmeye aittir.
+
+**CI:** `.github/workflows/ci.yml` her push ve PR'da sunucu (ruff, pytest + MySQL, yapay zekâ), web (lint, test, derleme), Android (birim testleri + APK), bağımlılık açığı (pip-audit, npm audit) ve git geçmişinde gizli bilgi (gitleaks) denetimlerini çalıştırır.
 
 ### Şartname senaryosunu 5 dakikada denemek
 
@@ -224,7 +252,7 @@ Web birim testleri: `web/` klasöründe `npm test`.
 
 ### Android uygulaması
 
-Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), kullanıcı `satis1` / `satis123`.
+Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). Derleme, emülatörde çalıştırma ve Android 17 yerel ağ izni notu: [android/README.md](android/README.md). Kısaca: `android/` klasöründe `./gradlew assembleDebug testDebugUnitTest`; emülatörde sunucu adresi `http://10.0.2.2:8000` (API portu değiştiyse o port), gerçek telefonda web portu `http://<bilgisayarın-yerel-ip>:8080`; kullanıcı `satis1` / `satis123`. Oturum belirteci telefonda Android Keystore anahtarıyla şifreli saklanır.
 
 ### Bilinen sınırlamalar
 
@@ -237,7 +265,7 @@ Hazır APK: GitHub deposunun **Releases** bölümünde (`AVATAR_Synera.apk`). De
 - **Verim sapması alarmı** modelin test hatasına dayanır (σ = MAE × √(π/2)); veri sentetik olduğu için eşik gerçek işletmede yeniden ayarlanmalıdır (Yönetim → Alarm ve e-posta ayarları).
 - **E-posta:** varsayılan Mailpit yalnız yerel test içindir; gerçek gönderim için `.env`'de SMTP sunucusu tanımlanmalıdır. Rapor ekinde PDF yok, CSV var. Gönderim sınırı sunucu belleğinde tutulur (tek sunucu süreci için).
 - **Tek ana depo** varsayılır. Dış üretici ve araç depoları ayrıca tanımlanır.
-- **Şifreler yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli ve HTTPS arkasında çalıştırılmalıdır. Hatalı giriş sınırı sunucu belleğinde tutulur (tek sunucu süreci için).
+- **Şifreler yalnız yerel demo içindir.** Gerçek kullanımda `.env` ile değiştirilmeli, `SEED_PROFILE=base` ya da `none` kullanılmalı ve sistem HTTPS arkasında çalıştırılmalıdır (TLS sonlandıran ters vekil; bu depoda yok). Hatalı giriş sınırı sunucu belleğinde tutulur (tek sunucu süreci için). Teslim edilen APK debug derlemesidir ve yerel demo için HTTP'ye izin verir; yayın derlemesi yalnız HTTPS kabul eder. Diğer kalan riskler: [docs/guvenlik/guvenlik_denetimi.md](docs/guvenlik/guvenlik_denetimi.md) §C.
 
 ### Sorun giderme
 

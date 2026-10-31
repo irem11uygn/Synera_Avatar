@@ -121,7 +121,7 @@ def update_user(
 
 def reset_password(session: Session, user: User, new_password: str | None = None) -> str:
     """Geçici şifre verir (verilmezse üretilir); kullanıcı ilk girişte değiştirir. Geçici şifre döner."""
-    password = new_password or _temporary_password()
+    password = new_password or temporary_password()
     check_new_password(password)
     user.password_hash = hash_password(password)
     user.must_change_password = True
@@ -130,7 +130,8 @@ def reset_password(session: Session, user: User, new_password: str | None = None
     return password
 
 
-def _temporary_password() -> str:
+def temporary_password() -> str:
+    """Geçici şifre: 6 küçük harf + 4 rakam (kullanıcı ilk girişte değiştirir)."""
     letters = "".join(secrets.choice(string.ascii_lowercase) for _ in range(6))
     digits = "".join(secrets.choice(string.digits) for _ in range(4))
     return letters + digits

@@ -39,7 +39,7 @@ import { useSession } from './auth/context'
 import { AlarmBell } from './components/AlarmBell'
 import { LanguageSwitch } from './components/LanguageSwitch'
 import { LotSearch } from './components/LotSearch'
-import { ROLE } from './lib/roles'
+import { canOpenPage, ROLE } from './lib/roles'
 import { matchPath, navigate, usePath } from './lib/router'
 import { t } from './lib/i18n'
 
@@ -221,7 +221,23 @@ function NotFound() {
   )
 }
 
-function renderRoute(path: string): ReactNode {
+function Forbidden() {
+  return (
+    <Result
+      status="403"
+      title={t('Bu ekrana yetkiniz yok')}
+      subTitle={t('Bu ekran rolünüzün işine dahil değil; gerekiyorsa yöneticinize başvurun.')}
+      extra={
+        <Button type="primary" onClick={() => navigate('/')}>
+          {t('Ana sayfaya dön')}
+        </Button>
+      }
+    />
+  )
+}
+
+function renderRoute(path: string, role: UserRole): ReactNode {
+  if (!canOpenPage(path, role)) return <Forbidden />
   for (const route of ROUTES) {
     const params = matchPath(route.pattern, path)
     if (params) return route.render(params)
@@ -361,7 +377,7 @@ function Shell({
           </Dropdown>
         </header>
         <main className="shell-content">
-          <Suspense fallback={loading}>{renderRoute(path)}</Suspense>
+          <Suspense fallback={loading}>{renderRoute(path, role)}</Suspense>
         </main>
       </div>
     </div>

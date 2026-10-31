@@ -39,8 +39,14 @@ logger = logging.getLogger(__name__)
 PROFILES = ("none", "base", "demo")
 
 
-def load_profile(session: Session, seed_dir: Path, profile: str) -> bool:
-    """Profili yükler ve True döner. Veritabanında ürün varsa hiçbir şey yapmaz (False)."""
+def load_profile(
+    session: Session, seed_dir: Path, profile: str, *, temporary_passwords: bool = False
+) -> bool:
+    """Profili yükler ve True döner. Veritabanında ürün varsa hiçbir şey yapmaz (False).
+
+    temporary_passwords: örnek kullanıcıların (README'de yazan) şifreleri geçici sayılır; ilk girişte
+    değiştirilmeden hiçbir işlem yapılamaz. Demo dışındaki kurulumlarda açıktır (bkz. main).
+    """
     if profile not in PROFILES:
         raise ValueError(f"Bilinmeyen SEED_PROFILE: {profile!r} (geçerli: {', '.join(PROFILES)})")
     if profile == "none":
@@ -53,7 +59,7 @@ def load_profile(session: Session, seed_dir: Path, profile: str) -> bool:
     partners = _load_partners(session, data["partners"])
     warehouses = _load_warehouses(session, data["warehouses"], partners)
     products = _load_products(session, data["products"])
-    _load_users(session, data["users"], warehouses)
+    _load_users(session, data["users"], warehouses, temporary_passwords)
     _load_recipes(session, data["cutting_recipes"], products)
     for row in data["number_sequences"]:
         session.add(NumberSequence(prefix=row["prefix"], year=row["year"], last_no=row["last_no"]))
@@ -135,7 +141,9 @@ def _load_products(session: Session, rows: list[dict[str, Any]]) -> dict[str, Pr
     return products
 
 
-def _load_users(session: Session, rows: list[dict[str, Any]], warehouses: dict[str, Warehouse]) -> None:
+def _load_users(
+    session: Session, rows: list[dict[str, Any]], warehouses: dict[str, Warehouse], temporary_passwords: bool
+) -> None:
     for row in rows:
         warehouse = warehouses[row["warehouse_code"]] if "warehouse_code" in row else None
         session.add(
@@ -146,6 +154,7 @@ def _load_users(session: Session, rows: list[dict[str, Any]], warehouses: dict[s
                 password_hash=hash_password(row["password"]),
                 warehouse_id=warehouse.id if warehouse else None,
                 email=row.get("email"),
+                must_change_password=temporary_passwords,
             )
         )
 
@@ -218,8 +227,17 @@ def _load_purchases(
 def main() -> None:
     settings = get_settings()
     logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    demo = settings.seed_profile == "demo"
     with get_sessionmaker()() as session, session.begin():
-        load_profile(session, settings.seed_dir, settings.seed_profile)
+        loaded = load_profile(session, settings.seed_dir, settings.seed_profile, temporary_passwords=not demo)
+    if demo:
+        # Yarışma demosu için bilinen şifreler kasıtlıdır; gerçek kurulumda bu profil kullanılmamalı.
+        logger.warning(
+            "SEED_PROFILE=demo: örnek kullanıcıların şifreleri README'de yazılı (yalnız yerel demo). "
+            "Gerçek kullanımda SEED_PROFILE=base ya da none kullanın."
+        )
+    elif loaded:
+        logger.warning("Örnek kullanıcıların şifreleri geçicidir: ilk girişte değiştirilmeleri zorunlu.")
 
 
 if __name__ == "__main__":

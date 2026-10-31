@@ -496,3 +496,26 @@ Mailpit ile canlı deneme (demo yığını, API 18300):
 - `magaza1` → `yabanci@kotu.example`: 422, `details.rejected`; → Market A (kayıtlı cari): 201, Mailpit'e düştü. Aynı dakikada 6. gönderim 429.
 - `kalite1`, web'den **Rapor gönder → Geri çağırma bildirimi → Etkilenen müşterileri alıcı yap (3) → Gönder**: tek istek (`POST /mail/batch` 201), üç ayrı e-posta. Her markete yalnız kendi miktarı gitti (A 30, B 25, C 30 adet).
 - Gün değişince yönetici girişinde kural motoru 4 lot için SKT uyarısı açtı; her uyarı 4 aboneye ayrı ayrı gitti (tekilleştirme alarm + alıcı başına).
+
+## 31 Ekim 2026 — uçtan uca güvenlik denetimi
+
+Ayrıntı ve kanıtlar: [docs/guvenlik/guvenlik_denetimi.md](../docs/guvenlik/guvenlik_denetimi.md).
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **274 geçti** (yeni: `tests/test_access_matrix.py` 9 test — 95 uç, 93 girişsiz → 401, 223 rol dışı → 403; `tests/test_security.py` 9 yeni test (3 eski şifre özeti testi yerinde) — CORS, `no-store`, hata ayrıntısı gizli, SQL enjeksiyonu, sunucu tarafı doğrulama, kaçışlı içerik, e-posta başlık enjeksiyonu, geçici kurulum şifreleri, `create_admin`) |
+| Biçim | `ruff format --check` + `ruff check` | Temiz |
+| Yapay zekâ | `… api sh -c "cd /ml && pytest -q"` | 4 geçti |
+| Web | `npm test`, `npx tsc -b`, `npm run lint` | **32 geçti** (yeni `roles.test.ts`); tip ve lint temiz |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | **26 geçti** (yeni `TokenCipherTest` 4); APK derlendi |
+| Kabul (sıfırdan kurulum) | `sh scripts/kabul_testleri.sh` | 23/23 |
+| Canlı saldırı (demo yığını, nginx) | `sh scripts/guvenlik_denemesi.sh` | 27/27 reddedildi |
+| Yedek | `sh scripts/yedek_denemesi.sh` | 38 tablo, 2 tetikleyici; döküm yedekle bire bir aynı |
+| Bağımlılık | `npm audit --audit-level=moderate`; `pip-audit 2.10.1 -r requirements.txt` | 0 açık; 0 açık |
+| Gizli bilgi | gitleaks v8.21.2 `git` (45 commit) ve `dir` | Bulgu yok |
+
+Bulunan sorun: 4 test (`test_price_increase_rule_uses_editable_threshold` ve üç e-posta abonelik testi) alış tarihini "28 Ekim" diye sabit yazıyordu. Kurulum verisindeki son alış "dün" olduğu için 31 Ekim'de test alışı ondan önceye düştü ve fiyat artışı alarmı açılmadı. Testler bugünün tarihine bağlandı.
+
+Emülatör (Medium_Phone, demo yığını):
+- Eski APK'nın düz `token` değeri güncellemeden sonra silindi. Girişten sonra yalnız `token_sifreli` (`v1:…`) var. Uygulama kapatılıp açılınca oturum sürdü; çökme yok.
+- Sunucu adresi web portu (`http://10.0.2.2:18380`) iken giriş ve eşitleme nginx üzerinden 200 döndü.
