@@ -140,6 +140,11 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Yeni uyarılar: SKT yaklaşan/geçen lot, sayım farkı. Göç `d7f3b9a2c4e1` (37 tablo).
 - docker-compose'a Mailpit (`axllent/mailpit:v1.32.0`, 8025 arayüz, 1025 SMTP); `.env.example` yeni değişkenlerle. Değişken adları `SMTP_PASS`, `MAIL_FROM` (eski `SMTP_PASSWORD`, `SMTP_FROM` de okunur).
 
+### 31 Ekim 2026 (beşinci tur) — demo videosu ve teslim hazırlığı
+- Demo videosu hazırlandı (6,5 dakika; Görev 1–3, Kotlin satış ve geri çağrılan lotun engellenmesi, iki yapay zekâ modeli, gerçek kullanım, güvenlik). Video depoya girmez; bağlantısı teslim e-postasındadır.
+- Düzeltme: web tablo başlığının zemini yarı saydamdı; sağa sabitlenen "İşlem" sütunu (geri çağırma listesi, cariler, ürünler) kaydırılınca arkadaki başlık yazısı görünüyordu. Zemin opak yapıldı.
+- README durum bölümü ve teslim kontrol listesi güncellendi (284 sunucu, 37 web, 31 Android, 23 kabul testi).
+
 ### 31 Ekim 2026 (dördüncü tur) — kalite blokesi ve geri çağırma iletişim kaydı
 - Göç `e8a4c2f6b1d3` (39 tablo): `quality_holds`, `recall_contacts`. Var olan tablolara dokunulmadı.
 - **Kalite blokesi (karantina):**
