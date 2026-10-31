@@ -19,7 +19,7 @@ Bir gıda işletmesinde hammaddenin alışından nihai satışına kadar stok ha
 >
 > **Takım:** Synera · **Yığın:** Python + FastAPI (sunucu ve YZ), MySQL 8.4, React + Vite + TypeScript (web), Kotlin + Compose + Room (Android), Docker Compose — bkz. [docs/technical_research.md](docs/technical_research.md)
 
-**Ekran görüntüleri:** Sistemi kurmadan bütün ekranları görmek için [docs/ekran_goruntuleri](docs/ekran_goruntuleri/README.md) (66 görüntü: web ve Android; turkuaz + 3B arayüz, alarm merkezi, denetim günlüğü, e-posta, panel grafikleri, hesaplayıcılar).
+**Ekran görüntüleri:** Sistemi kurmadan bütün ekranları görmek için [docs/ekran_goruntuleri](docs/ekran_goruntuleri/README.md) (71 görüntü: web ve Android; turkuaz + 3B arayüz, alarm merkezi, denetim günlüğü, e-posta, panel grafikleri, hesaplayıcılar, Ayarlar).
 
 ## Önemli tarihler
 

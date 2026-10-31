@@ -2,9 +2,9 @@
 
 Uygulamanın bütün ekranları, demo verisiyle (şartname senaryosu ve örnek günlük işler). Sistemi kurmadan uygulamayı görmek için.
 Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülatörden (yarı boyut).
-28 Ekim 2026'da, sıfırdan kurulan sistemden turkuaz + 3B arayüzle çekildi (alarm, denetim, e-posta, panel ve hesaplayıcı ekranları dahil); Android görüntüleri emülatörden, turkuaz üst çubukla.
+28 Ekim 2026'da, sıfırdan kurulan sistemden turkuaz + 3B arayüzle çekildi (alarm, denetim, e-posta, panel ve hesaplayıcı ekranları dahil); Android görüntüleri emülatörden, turkuaz üst çubukla. Ayarlar ve yetkisiz ekran görüntüleri 31 Ekim'de eklendi.
 
-İçindekiler: [Web — giriş ve rollere göre ana sayfa](#1) · [Web — satış, gün sonu](#2) · [Web — depo: mal kabul, stok, son kullanma, sayım](#3) · [Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)](#4) · [Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)](#5) · [Web — raporlar, yapay zekâ, yönetim](#6) · [Web — alarm, denetim, e-posta, hesaplayıcılar, faturadan doldur](#7) · [Web — yazdırılabilir belgeler](#8) · [Web — İngilizce ve telefon genişliği](#9) · [Android (Kotlin) — araçtan satış](#10)
+İçindekiler: [Web — giriş ve rollere göre ana sayfa](#1) · [Web — satış, gün sonu](#2) · [Web — depo: mal kabul, stok, son kullanma, sayım](#3) · [Web — üretim: fason üretim (Görev 1), parçalama (Görev 2)](#4) · [Web — kalite: izleme, tatbikat, geri çağırma (Görev 3)](#5) · [Web — raporlar, yapay zekâ, yönetim](#6) · [Web — alarm, denetim, e-posta, hesaplayıcılar, faturadan doldur](#7) · [Ayarlar ve hesap güvenliği (web ve telefon)](#8) · [Web — yazdırılabilir belgeler](#9) · [Web — İngilizce ve telefon genişliği](#10) · [Android (Kotlin) — araçtan satış](#11)
 
 <a id="1"></a>
 
@@ -204,6 +204,30 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <a id="8"></a>
 
+## Ayarlar ve hesap güvenliği (web ve telefon)
+
+**Ayarlar (yönetici): hesabım; güvenlik — şifre, açık oturumlar (bu oturum işaretli) ve "diğer cihazlardan çıkış"; hangi alarmlar için e-posta gelsin (kişiye özel); dil; bütün kullanıcıları etkileyen işletme ayarları ayrı bölümde; hakkında, sistem durumu ve tutulan kişisel veriler.**
+
+<img src="web/53_ayarlar_yonetici.jpg" alt="Ayarlar (yönetici): hesabım; güvenlik — şifre, açık oturumlar (bu oturum işaretli) ve &quot;diğer cihazlardan çıkış&quot;; hangi alarmlar için e-posta gelsin (kişiye özel); dil; bütün kullanıcıları etkileyen işletme ayarları ayrı bölümde; hakkında, sistem durumu ve tutulan kişisel veriler.">
+
+**Ayarlar (depo sorumlusu): aynı kişisel bölümler; işletme ayarları bölümü yok. Ad ve e-postayı yönetici değiştirir.**
+
+<img src="web/54_ayarlar_depo.jpg" alt="Ayarlar (depo sorumlusu): aynı kişisel bölümler; işletme ayarları bölümü yok. Ad ve e-postayı yönetici değiştirir.">
+
+**Rol dışı ekrana adres çubuğundan girme denemesi (depo sorumlusu → Kullanıcılar): "Bu ekrana yetkiniz yok". Sunucu da bu isteği 403 ile reddeder; veri hiç gelmez.**
+
+<img src="web/55_yetkisiz_ekran.jpg" alt="Rol dışı ekrana adres çubuğundan girme denemesi (depo sorumlusu → Kullanıcılar): &quot;Bu ekrana yetkiniz yok&quot;. Sunucu da bu isteği 403 ile reddeder; veri hiç gelmez.">
+
+**Telefon — Ayarlar (sağ üst menü): hesap, şifre değiştirme, eşitleme durumu (sunucu, son eşitleme, gönderilmeyi bekleyen satış), dil, sürüm ve cihaz kimliği; en altta onaylı çıkış.**
+
+<img src="android/A15_ayarlar.png" alt="Telefon — Ayarlar (sağ üst menü): hesap, şifre değiştirme, eşitleme durumu (sunucu, son eşitleme, gönderilmeyi bekleyen satış), dil, sürüm ve cihaz kimliği; en altta onaylı çıkış." width="320">
+
+**Telefon — yöneticinin verdiği geçici şifreyle ilk giriş: önce kendi şifresini belirler (en az 8 karakter, harf ve rakam); sunucu bundan önce eşitlemeye izin vermez.**
+
+<img src="android/A16_yeni_sifre_zorunlu.png" alt="Telefon — yöneticinin verdiği geçici şifreyle ilk giriş: önce kendi şifresini belirler (en az 8 karakter, harf ve rakam); sunucu bundan önce eşitlemeye izin vermez." width="320">
+
+<a id="9"></a>
+
 ## Web — yazdırılabilir belgeler
 
 **Lot etiketi: ürün, üretim ve son tüketim tarihi, Code 128 barkod (el terminaliyle okunur).**
@@ -226,7 +250,7 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <img src="web/44_yazdir_geri_cagirma_bildirimi.jpg" alt="Müşteri başına geri çağırma bildirimi: ürün, lot, teslim belgesi, müşteride olması gereken miktar.">
 
-<a id="9"></a>
+<a id="10"></a>
 
 ## Web — İngilizce ve telefon genişliği
 
@@ -250,7 +274,7 @@ Web görüntüleri 1440 px genişlikte tam sayfa; Android görüntüleri emülat
 
 <img src="web/52_telefon_yonetici_paneli.jpg" alt="Telefon genişliğinde yöneticinin ana sayfası ve paneli: grafikler tek sütunda." width="320">
 
-<a id="10"></a>
+<a id="11"></a>
 
 ## Android (Kotlin) — araçtan satış
 
