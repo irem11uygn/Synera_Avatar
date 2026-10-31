@@ -40,6 +40,8 @@ APK: `app/build/outputs/apk/debug/app-debug.apk`. Android Studio'da `android/` k
 
 **Android 17 notu:** targetSdk 37 olan uygulamalar yerel ağdaki adreslere ancak `ACCESS_LOCAL_NETWORK` ("Yakındaki cihazlar") çalışma anı izniyle erişebilir; izin yoksa bağlantı zaman aşımına uğrar. Uygulama bu izni yalnız sunucu adresi yerel ağdaysa girişte ister. İnternetteki bir sunucu için izin gerekmez.
 
+**Ayarlar** (sağ üst menü): hesap, şifre değiştirme, eşitleme durumu, dil, sürüm ve cihaz kimliği, çıkış. Yönetici yeni satış elemanı açınca ya da şifresini sıfırlayınca, geçici şifreyle ilk girişte uygulama önce yeni şifre ister. Sunucu yeni şifre belirlenmeden eşitlemeye izin vermez (`PASSWORD_CHANGE_REQUIRED`).
+
 ## Bilinen sınırlamalar (prototip)
 
 - Debug derlemesi (teslim APK'sı) yerel demo için HTTP'ye izin verir (`src/debug/res/xml/network_security_config.xml`); yayın derlemesi yalnız HTTPS kabul eder (`src/main/res/xml/...`). Gerçek kurulumda sunucu HTTPS arkasında olmalı.

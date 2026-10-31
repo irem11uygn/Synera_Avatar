@@ -1,5 +1,6 @@
 """Giriş, oturumdaki kullanıcı, çıkış ve şifre değiştirme (api.md §2 — Kimlik)."""
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
@@ -88,6 +89,37 @@ def login(body: LoginRequest, db: Db, request: Request) -> LoginResponse | JSONR
 @router.get("/me", response_model=UserOut)
 def me(user: CurrentUser, db: Db) -> UserOut:
     return user_out(db, user)
+
+
+class SessionOut(BaseModel):
+    started_at: datetime
+    expires_at: datetime
+    current: bool
+
+
+class ClosedSessions(BaseModel):
+    closed: int
+
+
+@router.get("/sessions", response_model=list[SessionOut])
+def sessions(
+    user: CurrentUser, db: Db, credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer)]
+) -> list[SessionOut]:
+    """Kendi açık oturumlarım (Ayarlar → Güvenlik). Belirteç ya da özeti dönmez."""
+    return [
+        SessionOut(started_at=row.created_at, expires_at=row.expires_at, current=current)
+        for row, current in auth.open_sessions(db, user.id, credentials.credentials)
+    ]
+
+
+@router.post("/sessions/close-others", response_model=ClosedSessions)
+def close_other_sessions(
+    user: CurrentUser, db: Db, credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer)]
+) -> ClosedSessions:
+    """Diğer bütün cihazlardan çıkış: bu oturum sürer, diğer belirteçler hemen geçersiz olur."""
+    closed = auth.end_other_sessions(db, user.id, credentials.credentials)
+    audit.log(db, "OTURUMLAR_KAPATILDI", f"Diğer cihazlardaki {closed} oturumunu kapattı", user=user)
+    return ClosedSessions(closed=closed)
 
 
 @router.post("/logout", status_code=204)

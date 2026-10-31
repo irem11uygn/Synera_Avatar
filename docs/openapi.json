@@ -101,6 +101,64 @@
         ]
       }
     },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "tags": [
+          "kimlik"
+        ],
+        "summary": "Sessions",
+        "description": "Kendi açık oturumlarım (Ayarlar → Güvenlik). Belirteç ya da özeti dönmez.",
+        "operationId": "sessions_api_v1_auth_sessions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionOut"
+                  },
+                  "type": "array",
+                  "title": "Response Sessions Api V1 Auth Sessions Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/close-others": {
+      "post": {
+        "tags": [
+          "kimlik"
+        ],
+        "summary": "Close Other Sessions",
+        "description": "Diğer bütün cihazlardan çıkış: bu oturum sürer, diğer belirteçler hemen geçersiz olur.",
+        "operationId": "close_other_sessions_api_v1_auth_sessions_close_others_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedSessions"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/auth/logout": {
       "post": {
         "tags": [
@@ -5086,6 +5144,19 @@
           "shipments"
         ],
         "title": "ChartsOut"
+      },
+      "ClosedSessions": {
+        "properties": {
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "closed"
+        ],
+        "title": "ClosedSessions"
       },
       "ColumnKind": {
         "type": "string",
@@ -11121,6 +11192,31 @@
           "margin_pct"
         ],
         "title": "SalesOut"
+      },
+      "SessionOut": {
+        "properties": {
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started_at",
+          "expires_at",
+          "current"
+        ],
+        "title": "SessionOut"
       },
       "Severity": {
         "type": "string",

@@ -59,6 +59,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sessions
+         * @description Kendi açık oturumlarım (Ayarlar → Güvenlik). Belirteç ya da özeti dönmez.
+         */
+        get: operations["sessions_api_v1_auth_sessions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/sessions/close-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close Other Sessions
+         * @description Diğer bütün cihazlardan çıkış: bu oturum sürer, diğer belirteçler hemen geçersiz olur.
+         */
+        post: operations["close_other_sessions_api_v1_auth_sessions_close_others_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/logout": {
         parameters: {
             query?: never;
@@ -1614,6 +1654,11 @@ export interface components {
             part_costs: components["schemas"]["PartCostOut"][];
             /** Shipments */
             shipments: components["schemas"]["ShipmentOut"][];
+        };
+        /** ClosedSessions */
+        ClosedSessions: {
+            /** Closed */
+            closed: number;
         };
         /**
          * ColumnKind
@@ -3446,6 +3491,21 @@ export interface components {
             /** Margin Pct */
             margin_pct: string;
         };
+        /** SessionOut */
+        SessionOut: {
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Current */
+            current: boolean;
+        };
         /**
          * Severity
          * @description Alarm ve denetim kaydı önemi.
@@ -4066,6 +4126,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+        };
+    };
+    sessions_api_v1_auth_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"][];
+                };
+            };
+        };
+    };
+    close_other_sessions_api_v1_auth_sessions_close_others_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosedSessions"];
                 };
             };
         };

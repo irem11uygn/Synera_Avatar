@@ -28,11 +28,15 @@ data class MainUiState(
     val error: String? = null,
     val offline: Boolean = false,
     val signedOut: Boolean = false,
+    /** Yönetici şifreyi sıfırladı: sunucu yeni şifre belirlenmeden eşitlemeye izin vermiyor. */
+    val passwordRequired: Boolean = false,
 )
 
 /** Ana ekranın verisi: araç stoku, bugünkü satışlar, bekleyen gönderimler ve eşitleme durumu. */
 class MainViewModel(private val repository: AvatarRepository, zone: ZoneId = ZoneId.systemDefault()) : ViewModel() {
     val session: Session? = repository.currentSession()
+    val serverUrl: String get() = repository.serverUrl
+    val deviceId: String get() = repository.deviceId
 
     private val startOfToday = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
 
@@ -64,6 +68,7 @@ class MainViewModel(private val repository: AvatarRepository, zone: ZoneId = Zon
                         offline = e.code == "NETWORK",
                         error = if (e.code == "NETWORK") null else e.message,
                         signedOut = e.code == "UNAUTHORIZED",
+                        passwordRequired = e.code == "PASSWORD_CHANGE_REQUIRED",
                     )
                 }
             }

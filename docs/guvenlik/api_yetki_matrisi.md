@@ -25,6 +25,8 @@ Doğrulama: `tests/test_access_matrix.py` her uca girişsiz istek atar (401 bekl
 | POST | `/api/v1/auth/login` | — | herkese açık |
 | POST | `/api/v1/auth/logout` | gerekli | giriş |
 | GET | `/api/v1/auth/me` | gerekli | giriş |
+| GET | `/api/v1/auth/sessions` | gerekli | giriş |
+| POST | `/api/v1/auth/sessions/close-others` | gerekli | giriş |
 | POST | `/api/v1/calc/cutting` | gerekli | Y, D, Ü, K, M |
 | POST | `/api/v1/calc/ekp` | gerekli | Y, D, Ü, K, M |
 | GET | `/api/v1/cutting-recipes` | gerekli | Y, D, Ü, K, M |
@@ -103,4 +105,4 @@ Doğrulama: `tests/test_access_matrix.py` her uca girişsiz istek atar (401 bekl
 | POST | `/api/v1/users/{user_id}/reset-password` | gerekli | Y |
 | GET | `/api/v1/warehouses` | gerekli | Y, D, Ü, K, M |
 
-Toplam 95 uç; herkese açık: 2.
+Toplam 97 uç; herkese açık: 2.

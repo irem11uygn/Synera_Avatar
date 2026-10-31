@@ -141,6 +141,20 @@ export const ALERT_KIND: Record<AlertKind, string> = {
   SAYIM_FARKI: t('Sayım farkı'),
 }
 
+/** Her alarm türünün ne zaman açıldığı (alarm ayarları ve kişisel e-posta bildirimi ekranı). */
+export const ALERT_WHEN: Record<AlertKind, string> = {
+  GERI_CAGIRMA_IHLALI: t('Telefondan çevrimdışı satışta bloke lot satılmışsa.'),
+  SKT_IHLALI: t('Telefondan çevrimdışı satışta son kullanma tarihi geçmiş lot satılmışsa.'),
+  GERI_CAGIRMA: t('Geri çağırma başlatılınca.'),
+  BLOKE_SATIS_DENEMESI: t('Mağazada bloke lot satılmak istenince (satış engellenir).'),
+  BLOKE_STOK: t('Geri çağrılmış (bloke) lotta hâlâ stok varsa.'),
+  VERIM_SAPMASI: t('Üretim veriminin ya da parçalama firesinin model beklentisinden sapması z-skoru eşiğini geçince.'),
+  FIYAT_ARTISI: t('Bir ürünün alış fiyatı bir önceki alışa göre eşikten fazla artınca.'),
+  HATALI_GIRIS: t('Bir hesaba art arda eşik kadar hatalı giriş denenince.'),
+  SKT_YAKLASIYOR: t('Elimizdeki satışa açık lotun son kullanma tarihi 3 gün içinde ya da geçmişse.'),
+  SAYIM_FARKI: t('Depo ya da araç sayımında sistemle sayılan farklıysa.'),
+}
+
 export const MAIL_STATUS: Record<MailStatus, string> = {
   KUYRUKTA: t('Kuyrukta'),
   GONDERILDI: t('Gönderildi'),
@@ -154,6 +168,7 @@ export const AUDIT_ACTION: Record<string, string> = {
   GIRIS_ENGELLENDI: t('Giriş engellendi'),
   CIKIS: t('Çıkış'),
   SIFRE_DEGISTI: t('Şifre değişti'),
+  OTURUMLAR_KAPATILDI: t('Diğer oturumlar kapatıldı'),
   SIFRE_SIFIRLANDI: t('Şifre sıfırlandı'),
   KULLANICI: t('Kullanıcı'),
   MAL_KABUL: t('Mal kabul'),

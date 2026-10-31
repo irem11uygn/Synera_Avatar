@@ -12,6 +12,7 @@ import com.synera.avatar.data.local.VanStockRow
 import com.synera.avatar.data.remote.ApiClient
 import com.synera.avatar.data.remote.ApiException
 import com.synera.avatar.data.remote.AvatarApi
+import com.synera.avatar.data.remote.ChangePasswordRequest
 import com.synera.avatar.data.remote.CountLineDto
 import com.synera.avatar.data.remote.DayEndDto
 import com.synera.avatar.data.remote.LoginRequest
@@ -79,10 +80,30 @@ class AvatarRepository(
             dao.clearAll()
         }
         sessions.serverUrl = serverUrl
-        val session = Session(response.token, user.username, user.fullName, user.warehouseCode, user.warehouseId)
+        val session = Session(
+            response.token,
+            user.username,
+            user.fullName,
+            user.warehouseCode,
+            user.warehouseId,
+            mustChangePassword = user.mustChangePassword,
+        )
         sessions.save(session)
         return session
     }
+
+    /**
+     * Kendi şifresini değiştirir (Ayarlar ya da geçici şifreyle ilk giriş). Kural önce telefonda
+     * denetlenir (PasswordRules), son söz sunucunundur. Başarılıysa "şifre değişmeli" bayrağı kalkar.
+     */
+    suspend fun changePassword(current: String, new: String) {
+        val session = sessions.current() ?: throw ApiException(t("Oturum yok; yeniden giriş yapın."), UNAUTHORIZED)
+        authorized { apiFor(sessions.serverUrl).changePassword(bearer(session), ChangePasswordRequest(current, new)) }
+        sessions.setMustChangePassword(false)
+    }
+
+    /** Bu kurulumun kimliği (satışların hangi telefondan geldiği); Ayarlar → Hakkında'da görünür. */
+    val deviceId: String get() = sessions.deviceId
 
     /**
      * Satışı cihazda tek işlemde kaydeder (FR-404): bağlantı gerekmez. Bloke lot ve kullanılabilir
@@ -179,12 +200,16 @@ class AvatarRepository(
     private suspend fun fetchChanges(session: Session, since: Long) =
         authorized { apiFor(sessions.serverUrl).pull(bearer(session), since) }.toChanges()
 
-    /** 401 gelirse belirteç silinir; ekran giriş sayfasına döner. */
+    /**
+     * 401 gelirse belirteç silinir; ekran giriş sayfasına döner. Yönetici şifreyi sıfırladıysa sunucu
+     * PASSWORD_CHANGE_REQUIRED der: bayrak kalkar, uygulama şifre ekranını açar.
+     */
     private suspend fun <T> authorized(block: suspend () -> T): T =
         try {
             ApiClient.call(block)
         } catch (e: ApiException) {
             if (e.code == UNAUTHORIZED) sessions.clearToken()
+            if (e.code == PASSWORD_CHANGE_REQUIRED) sessions.setMustChangePassword(true)
             throw e
         }
 
@@ -242,6 +267,7 @@ class AvatarRepository(
 
     private companion object {
         const val UNAUTHORIZED = "UNAUTHORIZED"
+        const val PASSWORD_CHANGE_REQUIRED = "PASSWORD_CHANGE_REQUIRED"
         const val PUSH_BATCH = 50
     }
 }

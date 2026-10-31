@@ -169,6 +169,18 @@ Uyarılar ve raporlar e-postayla gider. E-posta önce giden kutusuna yazılır; 
 
 İkisi de birkaç saniye içinde Mailpit'te görünür.
 
+### Ayarlar
+
+Web'de hesap menüsünden ya da soldaki **Hesap → Ayarlar**'dan açılır (herkese):
+- **Hesabım:** ad, kullanıcı adı, rol ve ne yaptığı, e-posta, depo. Ad ve e-postayı yönetici değiştirir. Kişinin kendi e-postasını değiştirebilmesi, kayıtlı alıcı kuralını aşıp veriyi dışarı göndermenin yolu olurdu.
+- **Güvenlik:** şifre değiştirme, açık oturumlar (bu oturum işaretli) ve **diğer cihazlardan çıkış**.
+- **E-posta bildirimleri:** hangi alarm türleri için e-posta gelsin (kişiye özel; alarm merkezini etkilemez).
+- **Dil.**
+- **Hakkında ve yardım:** sürüm, API ve veritabanı durumu, kısa yardım, tutulan kişisel veriler.
+- Yöneticide ayrıca **İşletme ayarları** (kullanıcılar, ürün ve fiyatlar, alarm eşikleri ve e-posta sunucusu, denetim günlüğü). Bu bölümün bütün kullanıcıları etkilediği yazılıdır.
+
+Telefonda sağ üst menü → **Ayarlar**: hesap, şifre değiştirme, eşitleme durumu (sunucu, son eşitleme, gönderilmeyi bekleyen satış), dil, sürüm ve cihaz kimliği, çıkış (gönderilmemiş satış varsa uyarır). Yöneticinin verdiği geçici şifreyle girilince telefon önce **yeni şifre** ister. Satış elemanı web'e giremediği için şifresini telefondan belirler.
+
 ### Güvenlik, yedekleme ve sürekli entegrasyon
 
 Denetim raporu: [docs/guvenlik/guvenlik_denetimi.md](docs/guvenlik/guvenlik_denetimi.md) (kontrol tablosu, düzeltilenler, kalan riskler). Bütün API uçlarının rol yetkisi: [docs/guvenlik/api_yetki_matrisi.md](docs/guvenlik/api_yetki_matrisi.md) (koddan üretilir, `tests/test_access_matrix.py` her ucu girişsiz ve yetkisiz rolle dener).

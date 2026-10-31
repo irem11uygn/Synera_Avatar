@@ -519,3 +519,26 @@ Bulunan sorun: 4 test (`test_price_increase_rule_uses_editable_threshold` ve ü�
 Emülatör (Medium_Phone, demo yığını):
 - Eski APK'nın düz `token` değeri güncellemeden sonra silindi. Girişten sonra yalnız `token_sifreli` (`v1:…`) var. Uygulama kapatılıp açılınca oturum sürdü; çökme yok.
 - Sunucu adresi web portu (`http://10.0.2.2:18380`) iken giriş ve eşitleme nginx üzerinden 200 döndü.
+
+## 31 Ekim 2026 (ikinci tur) — Ayarlar (web ve telefon)
+
+| Bölüm | Komut | Sonuç |
+|---|---|---|
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **278 geçti**. Yeni `tests/test_settings.py` (4 test): oturum listesi bu oturumu işaretler ve belirteç döndürmez; diğer oturumları kapatma ve denetim kaydı; girişsiz 401; geçici şifreli satış elemanı önce 403 `PASSWORD_CHANGE_REQUIRED` alır, şifresini değiştirince eşitler. Yetki matrisi yeni iki ucu da kendiliğinden sınadı. |
+| Biçim | `ruff format --check` + `ruff check` | Temiz |
+| Web | `npm test`, `npx tsc -b`, `npm run lint` | 32 geçti; tip ve lint temiz |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | **29 geçti** (yeni `PasswordRulesTest` 3); APK derlendi |
+
+**Tarayıcı (demo, `depo1`):**
+- `/ayarlar` açıldı: hesap bilgileri, 3 açık oturum ("Bu oturum" işaretli), 9 bildirim türü, dil, sürüm ve durum doğru görünüyor.
+- Yönetici bölümü `depo1`'de görünmüyor.
+
+**Emülatör:**
+- Ayarlar ekranı açıldı: hesap, eşitleme (sunucu, son eşitleme, bekleyen 0), dil, sürüm, cihaz kimliği.
+- "Çıkış yap" onay istedi ve çıkış yapıldı.
+- Geçici şifre senaryosu ayrı bir atılacak kopyada (`avatar-ayar`, API 18210) denendi:
+  1. Yönetici, geçici şifreli `satis2`'yi açtı.
+  2. Telefonda girişte zorunlu "Yeni şifrenizi belirleyin" ekranı açıldı.
+  3. Kısa şifre telefonda reddedildi.
+  4. Geçerli şifreyle `change-password` 200, ardından `sync/pull` 200 ("20 kayıt güncellendi").
+  5. Kopya sonra silindi.

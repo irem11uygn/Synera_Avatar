@@ -66,6 +66,11 @@ object AppIcons {
         moveTo(18.5f, 21f); lineTo(18.5f, 17f); lineTo(14.5f, 17f)
     }
 
+    /** Geri oku (üst çubuk). */
+    val Back = icon("geri") {
+        moveTo(15f, 5f); lineTo(8f, 12f); lineTo(15f, 19f)
+    }
+
     /** Üç nokta (menü). */
     val More = icon("menu") {
         moveTo(12f, 5f); lineTo(12.01f, 5f)

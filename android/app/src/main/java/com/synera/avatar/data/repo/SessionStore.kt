@@ -15,6 +15,8 @@ data class Session(
     val warehouseCode: String?,
     /** Satış gönderiminde kullanılır; eski sürümden kalan oturumda yoktur (yeniden giriş istenir). */
     val warehouseId: Long?,
+    /** Geçici şifreyle girildi; yeni şifre belirlenene kadar uygulama yalnız şifre ekranını açar. */
+    val mustChangePassword: Boolean = false,
 )
 
 /**
@@ -41,6 +43,7 @@ class SessionStore(context: Context, private val cipher: TokenCipher = TokenCiph
             fullName = prefs.getString(KEY_FULL_NAME, "").orEmpty(),
             warehouseCode = prefs.getString(KEY_WAREHOUSE, null),
             warehouseId = prefs.getLong(KEY_WAREHOUSE_ID, NO_ID).takeIf { it != NO_ID },
+            mustChangePassword = prefs.getBoolean(KEY_MUST_CHANGE, false),
         )
     }
 
@@ -52,7 +55,10 @@ class SessionStore(context: Context, private val cipher: TokenCipher = TokenCiph
         putString(KEY_FULL_NAME, session.fullName)
         putString(KEY_WAREHOUSE, session.warehouseCode)
         if (session.warehouseId != null) putLong(KEY_WAREHOUSE_ID, session.warehouseId) else remove(KEY_WAREHOUSE_ID)
+        putBoolean(KEY_MUST_CHANGE, session.mustChangePassword)
     }
+
+    fun setMustChangePassword(value: Boolean) = prefs.edit { putBoolean(KEY_MUST_CHANGE, value) }
 
     /** Bu kurulumun kalıcı kimliği (satışların hangi cihazdan geldiği); ilk kullanımda üretilir. */
     val deviceId: String
@@ -107,6 +113,7 @@ class SessionStore(context: Context, private val cipher: TokenCipher = TokenCiph
         const val KEY_WAREHOUSE = "warehouse_code"
         const val KEY_WAREHOUSE_ID = "warehouse_id"
         const val KEY_DEVICE = "device_id"
+        const val KEY_MUST_CHANGE = "must_change_password"
         const val NO_ID = -1L
     }
 }

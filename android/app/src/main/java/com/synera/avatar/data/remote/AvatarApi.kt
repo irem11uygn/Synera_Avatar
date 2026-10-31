@@ -31,6 +31,10 @@ interface AvatarApi {
     @POST("api/v1/auth/logout")
     suspend fun logout(@Header("Authorization") bearer: String): Response<Unit>
 
+    /** Kendi şifresini değiştirir; diğer cihazlardaki oturumlar kapanır, bu oturum sürer. */
+    @POST("api/v1/auth/change-password")
+    suspend fun changePassword(@Header("Authorization") bearer: String, @Body body: ChangePasswordRequest): UserDto
+
     /** day boşsa sunucu işletmenin bugününü (yerel saat) kullanır; telefonun saat dilimi yanlış olsa da doğru gün gelir. */
     @GET("api/v1/sync/day-end")
     suspend fun dayEndToday(@Header("Authorization") bearer: String): DayEndDto

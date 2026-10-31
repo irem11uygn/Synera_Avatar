@@ -16,10 +16,18 @@ data class UserDto(
     val role: String,
     @SerialName("warehouse_id") val warehouseId: Long? = null,
     @SerialName("warehouse_code") val warehouseCode: String? = null,
+    /** Yöneticinin verdiği geçici şifreyle girildi: yeni şifre belirlenmeden eşitleme yapılamaz. */
+    @SerialName("must_change_password") val mustChangePassword: Boolean = false,
 )
 
 @Serializable
 data class LoginResponse(val token: String, val user: UserDto)
+
+@Serializable
+data class ChangePasswordRequest(
+    @SerialName("current_password") val currentPassword: String,
+    @SerialName("new_password") val newPassword: String,
+)
 
 @Serializable
 data class ProductDto(

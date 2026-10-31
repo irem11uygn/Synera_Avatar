@@ -36,6 +36,8 @@ Yönetici şifreyi sıfırladıysa kullanıcı yeni şifresini belirleyene kadar
 | GET | `/auth/me` | Y, S | Oturumdaki kullanıcı |
 | POST | `/auth/logout` | Y, S | Oturumu sunucuda kapatır (204); belirteç bundan sonra geçersiz |
 | POST | `/auth/change-password` | hepsi | `{current_password, new_password}`; en az 8 karakter, harf + rakam. Diğer oturumlar kapanır |
+| GET | `/auth/sessions` | hepsi | Kendi açık oturumlarım: `[{started_at, expires_at, current}]` (belirteç ya da özeti dönmez) |
+| POST | `/auth/sessions/close-others` | hepsi | Diğer cihazlardan çıkış: bu oturum dışındakiler hemen kapanır → `{closed}`; denetim kaydı `OTURUMLAR_KAPATILDI` |
 | GET, POST | `/users` | Y | Kullanıcı listesi / yeni kullanıcı (geçici şifreyle; satış rolü araç ister) |
 | PUT | `/users/{id}` | Y | Ad, rol, aktiflik, araç. Kendini pasifleştiremez; son aktif yönetici kaldırılamaz |
 | POST | `/users/{id}/reset-password` | Y | Geçici şifre üretir (`{temporary_password}`), oturumları kapatır |

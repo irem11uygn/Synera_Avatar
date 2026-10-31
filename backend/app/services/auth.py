@@ -124,12 +124,29 @@ def change_password(session: Session, user: User, current: str, new: str, keep_t
     check_new_password(new)
     user.password_hash = hash_password(new)
     user.must_change_password = False
-    session.execute(
+    end_other_sessions(session, user.id, keep_token)
+
+
+def open_sessions(session: Session, user_id: int, current_token: str) -> list[tuple[AuthSession, bool]]:
+    """Kullanıcının süresi dolmamış oturumları, yeniden eskiye; ikinci değer "bu oturum mu"."""
+    rows = session.scalars(
+        select(AuthSession)
+        .where(AuthSession.user_id == user_id, AuthSession.expires_at > utcnow())
+        .order_by(AuthSession.created_at.desc())
+    ).all()
+    current = _digest(current_token)
+    return [(row, row.token_hash == current) for row in rows]
+
+
+def end_other_sessions(session: Session, user_id: int, keep_token: str) -> int:
+    """Bu oturum dışındaki bütün oturumları kapatır (diğer cihazlardan çıkış); kapanan sayısını döner."""
+    result = session.execute(
         delete(AuthSession).where(
-            AuthSession.user_id == user.id, AuthSession.token_hash != _digest(keep_token)
+            AuthSession.user_id == user_id, AuthSession.token_hash != _digest(keep_token)
         )
     )
     session.flush()
+    return result.rowcount
 
 
 def end_all_sessions(session: Session, user_id: int) -> None:

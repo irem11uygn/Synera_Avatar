@@ -10,21 +10,21 @@ import type { MailStatusInfo, RuleRun, Thresholds } from '../api/types'
 import { Page } from '../components/Page'
 import { QueryError } from '../components/QueryError'
 import { t } from '../lib/i18n'
-import { ALERT_KIND } from '../lib/labels'
+import { ALERT_KIND, ALERT_WHEN } from '../lib/labels'
 import { navigate } from '../lib/router'
 
 type Values = { yield_z: number; price_increase_pct: number; failed_logins: number }
 
 const RULES: { kind: keyof typeof ALERT_KIND; when: string; who: string }[] = [
-  { kind: 'VERIM_SAPMASI', when: t('Üretim veriminin ya da parçalama firesinin model beklentisinden sapması z-skoru eşiğini geçince.'), who: t('Uyarı · yönetici, kalite, üretim') },
-  { kind: 'FIYAT_ARTISI', when: t('Bir ürünün alış fiyatı bir önceki alışa göre eşikten fazla artınca.'), who: t('Uyarı · yönetici, depo') },
-  { kind: 'BLOKE_STOK', when: t('Geri çağrılmış (bloke) lotta hâlâ stok varsa.'), who: t('Uyarı · yönetici, kalite, depo') },
-  { kind: 'GERI_CAGIRMA', when: t('Geri çağırma başlatılınca.'), who: t('Kritik · yönetici, kalite') },
-  { kind: 'BLOKE_SATIS_DENEMESI', when: t('Mağazada bloke lot satılmak istenince (satış engellenir).'), who: t('Kritik · yönetici, kalite, mağaza') },
-  { kind: 'GERI_CAGIRMA_IHLALI', when: t('Telefondan çevrimdışı satışta bloke lot satılmışsa.'), who: t('Kritik · yönetici, kalite') },
-  { kind: 'HATALI_GIRIS', when: t('Bir hesaba art arda eşik kadar hatalı giriş denenince.'), who: t('Kritik · yalnız yönetici') },
-  { kind: 'SKT_YAKLASIYOR', when: t('Elimizdeki satışa açık lotun son kullanma tarihi 3 gün içinde ya da geçmişse.'), who: t('Uyarı · yönetici, kalite, depo, mağaza') },
-  { kind: 'SAYIM_FARKI', when: t('Depo ya da araç sayımında sistemle sayılan farklıysa.'), who: t('Uyarı · yönetici, depo') },
+  { kind: 'VERIM_SAPMASI', when: ALERT_WHEN.VERIM_SAPMASI, who: t('Uyarı · yönetici, kalite, üretim') },
+  { kind: 'FIYAT_ARTISI', when: ALERT_WHEN.FIYAT_ARTISI, who: t('Uyarı · yönetici, depo') },
+  { kind: 'BLOKE_STOK', when: ALERT_WHEN.BLOKE_STOK, who: t('Uyarı · yönetici, kalite, depo') },
+  { kind: 'GERI_CAGIRMA', when: ALERT_WHEN.GERI_CAGIRMA, who: t('Kritik · yönetici, kalite') },
+  { kind: 'BLOKE_SATIS_DENEMESI', when: ALERT_WHEN.BLOKE_SATIS_DENEMESI, who: t('Kritik · yönetici, kalite, mağaza') },
+  { kind: 'GERI_CAGIRMA_IHLALI', when: ALERT_WHEN.GERI_CAGIRMA_IHLALI, who: t('Kritik · yönetici, kalite') },
+  { kind: 'HATALI_GIRIS', when: ALERT_WHEN.HATALI_GIRIS, who: t('Kritik · yalnız yönetici') },
+  { kind: 'SKT_YAKLASIYOR', when: ALERT_WHEN.SKT_YAKLASIYOR, who: t('Uyarı · yönetici, kalite, depo, mağaza') },
+  { kind: 'SAYIM_FARKI', when: ALERT_WHEN.SAYIM_FARKI, who: t('Uyarı · yönetici, depo') },
 ]
 
 export default function AlarmSettingsPage() {

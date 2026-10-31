@@ -74,11 +74,19 @@ fun paymentLabel(method: String?): String = when (method) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel, dayEnd: DayEndViewModel, onNewSale: () -> Unit, onSignedOut: () -> Unit) {
+fun MainScreen(
+    viewModel: MainViewModel,
+    dayEnd: DayEndViewModel,
+    onNewSale: () -> Unit,
+    onSignedOut: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onPasswordRequired: () -> Unit,
+) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(Tab.SALES) }
     var menu by remember { mutableStateOf(false) }
     LaunchedEffect(ui.signedOut) { if (ui.signedOut) onSignedOut() }
+    LaunchedEffect(ui.passwordRequired) { if (ui.passwordRequired) onPasswordRequired() }
 
     Scaffold(
         topBar = {
@@ -105,6 +113,8 @@ fun MainScreen(viewModel: MainViewModel, dayEnd: DayEndViewModel, onNewSale: () 
                     }
                     IconButton(onClick = { menu = true }) { Icon(AppIcons.More, contentDescription = t("Menü")) }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        DropdownMenuItem(text = { Text(t("Ayarlar")) }, onClick = { menu = false; onOpenSettings() })
+                        HorizontalDivider()
                         DropdownMenuItem(
                             text = { Text(if (L.lang == L.TR) "✓ Türkçe" else "Türkçe") },
                             onClick = { L.select(L.TR); menu = false },

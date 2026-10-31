@@ -24,17 +24,17 @@ Hiçbir alan "%100 güvenli" değildir. "GEÇTİ", yalnız tabloda yazan denemey
   - Demo dışı kurulumda örnek şifreler bilinen değerlerle açılıyordu.
   - Telefon oturum belirtecini şifresiz saklıyordu.
 - **Yetki denetimi tam:** Bütün API uçlarının yetkisi koddan okunup sınanıyor:
-  - 95 uç var.
-  - Girişsiz istek denemesi: 93, hepsi 401.
+  - 97 uç var.
+  - Girişsiz istek denemesi: 95, hepsi 401.
   - Rol dışı istek denemesi: 223, hepsi 403.
   - Bu denemelerde yeni bir yetki açığı bulunmadı.
 - **Testler:**
 
   | Bölüm | Sonuç |
   |---|---|
-  | Sunucu | 274/274 |
+  | Sunucu | 278/278 |
   | Web | 32/32 |
-  | Android | 26/26 |
+  | Android | 29/29 |
   | Kabul | 23/23 |
   | Yapay zekâ | 4/4 |
   | Canlı saldırı denemesi | 27/27 reddedildi |
@@ -53,7 +53,7 @@ Hiçbir alan "%100 güvenli" değildir. "GEÇTİ", yalnız tabloda yazan denemey
 
 | # | Kontrol | Durum | Kanıt | Not |
 |---|---|---|---|---|
-| 1 | Kimlik doğrulama | **GEÇTİ** | `tests/test_auth.py`, `tests/test_access_matrix.py::test_every_non_public_endpoint_requires_login` (93 uç → 401), `::test_forged_or_expired_token_is_rejected`. Canlı: girişsiz 5 uç ve sahte belirteç → 401 | Şifre scrypt ile özetlenir. Belirteç sunucuda SHA-256 özetiyle saklanır, 12 saatte biter, çıkışta kapanır. Şifre değişince ya da sıfırlanınca diğer oturumlar kapanır. MFA yok. |
+| 1 | Kimlik doğrulama | **GEÇTİ** | `tests/test_auth.py`, `tests/test_access_matrix.py::test_every_non_public_endpoint_requires_login` (95 uç → 401), `::test_forged_or_expired_token_is_rejected`. Canlı: girişsiz 5 uç ve sahte belirteç → 401 | Şifre scrypt ile özetlenir. Belirteç sunucuda SHA-256 özetiyle saklanır, 12 saatte biter, çıkışta kapanır. Şifre değişince ya da sıfırlanınca diğer oturumlar kapanır; Ayarlar'dan "diğer cihazlardan çıkış" yapılabilir. MFA yok. |
 | 2 | Yetkilendirme (rol) | **GEÇTİ** | `app/access_matrix.py` + `tests/test_access_matrix.py`: 6 rol, 223 rol dışı istek → 403 `FORBIDDEN`. Belge: [api_yetki_matrisi.md](api_yetki_matrisi.md). Canlı: 6 deneme → 403 | Matris koddan üretilir; elle yazılmadığı için kodla ayrışmaz. Web'de rol dışı yönetici ekranına adresle gidilince 403 sayfası çıkar (`web/src/lib/roles.test.ts`). |
 | 3 | Girdi doğrulama | **GEÇTİ** | `tests/test_security.py::test_server_side_validation_rejects_bad_input`. Canlı: geçersiz düzeltme ve 501 karakterlik neden → 422 | Pydantic şemaları: pozitif miktar, uzunluk, rol listesi, tarih. Hatalı istek veriyi değiştirmez. |
 | 4 | SQL enjeksiyonu | **GEÇTİ** | `test_sql_injection_payloads_are_plain_text`. Canlı: `' OR '1'='1` → boş liste; `' OR 1=1 --` → 404 | ORM ve parametreli sorgu kullanılır. `text()` sorguları (`services/integrity.py`) sabit metindir. |
@@ -121,7 +121,7 @@ Uygulama ve giriş ekranı tek, ama menü, düğmeler ve izin verilen uçlar rol
 | Uç türü | Sayı | Örnek |
 |---|---|---|
 | Herkese açık | 2 | `GET /health`, `POST /auth/login` |
-| Giriş yeterli | 3 | Kendi hesabı ve çıkış |
+| Giriş yeterli | 5 | Kendi hesabı, şifre, açık oturumlar ve çıkış |
 | Rolle sınırlı | 90 | Diğer bütün uçlar |
 
 Okuma uçları beş ofis rolüne açıktır; yazma uçları işin sahibine. Kullanıcı ve denetim kayıtlarını yalnız yönetici okur. Satış elemanı (telefon) yalnız eşitleme ve sayım uçlarına erişir.
@@ -157,11 +157,13 @@ Her düzeltmeden sonra ilgili testler, en sonda bütün testler çalıştırıld
 | B-4 | Orta | Telefon oturum belirteci SharedPreferences'ta düz metindi. | `android/.../data/repo/TokenCipher.kt` (yeni), `SessionStore.kt` (şifreli yazma, eski düz değeri taşıyıp silme, bellekte önbellek; Keystore çalışmazsa diske hiç yazmama) | `TokenCipherTest` (4). Emülatör kanıtı A3'te. |
 | B-5 | Orta | Android'in her derlemesi şifresiz HTTP'ye izinliydi. | `src/main/res/xml/network_security_config.xml` (yalnız HTTPS), `src/debug/res/xml/network_security_config.xml` (yeni, demo için HTTP) | Birleştirilmiş kaynaklar: release `cleartextTrafficPermitted="false"`, debug `true` |
 | B-6 | Orta | API yanıtlarında önbellek yasağı yoktu; raporlar, kullanıcı listesi ve CSV tarayıcıda ya da ara vekilde kalabilirdi. | `backend/app/main.py` (`/api/` altına `Cache-Control: no-store`) | `test_api_responses_are_not_cached`; canlı `no-store` |
-| B-7 | Orta | Yetki yalnız seçilmiş uçlarda sınanıyordu; yeni uç eklenince unutulabilirdi. | `backend/app/access_matrix.py` (yeni), `backend/tests/test_access_matrix.py` (yeni), `docs/guvenlik/api_yetki_matrisi.md` | 9 test: 95 uç, 93 → 401, 223 → 403. Yetki hatası bulunmadı; yeni uçlar artık kendiliğinden sınanır. |
+| B-7 | Orta | Yetki yalnız seçilmiş uçlarda sınanıyordu; yeni uç eklenince unutulabilirdi. | `backend/app/access_matrix.py` (yeni), `backend/tests/test_access_matrix.py` (yeni), `docs/guvenlik/api_yetki_matrisi.md` | 9 test: 97 uç, 95 → 401, 223 → 403. Yetki hatası bulunmadı; yeni uçlar artık kendiliğinden sınanır. |
 | B-8 | Orta | Yedekleme ve geri yükleme yöntemi yoktu. | `scripts/yedekle.sh`, `scripts/geri_yukle.sh`, `scripts/yedek_denemesi.sh` (yeni), `.gitignore` (`yedekler/`) | Bire bir eşleşme; yarım yedek, kötü veritabanı adı ve onaysız yükleme reddedildi. Canlı veriye dokunulmadı. |
 | B-9 | Orta | CI ve otomatik güvenlik taraması yoktu. | `.github/workflows/ci.yml` (yeni) | Adımlar yerelde geçti; GitHub'da **doğrulanmadı**. |
 | B-10 | Düşük | Rol dışı yönetici ekranı adres çubuğundan açılınca sayfa çerçevesiyle "Veri alınamadı" hata kutusu çıkıyordu (sunucu zaten reddediyordu). | `web/src/lib/roles.ts` (`canOpenPage`), `web/src/App.tsx` (403 sayfası), `web/src/i18n/en.ts`, `web/src/lib/roles.test.ts` (yeni) | 2 test; tarayıcıda doğrulandı. Alarm bağlantılarının açtığı ekranlar (ör. kalite → `/uretim/5`) açık kaldı. |
 | B-11 | Kalite | 4 sunucu testi sabit tarih ("28 Ekim") yüzünden 31 Ekim'de düşüyordu: test alışı, kurulumdaki "dünkü" alıştan önceye düşüyordu. Jüri testleri 1 Kasım'dan sonra çalıştırsa da düşecekti. | `backend/tests/test_alarms_audit_mail.py`, `backend/tests/test_email_notifications.py` (`business_today()`) | 274/274 |
+| B-13 | Yüksek (işlev) | Yönetici yeni satış elemanı açınca ya da şifresini sıfırlayınca kişi hiç çalışamıyordu. Sunucu yeni şifre belirlenmeden eşitlemeye izin vermiyor (doğru davranış), ama telefonda şifre ekranı yoktu ve web satış elemanına kapalı. | Telefon: `ui/settings/PasswordScreen.kt`, `PasswordViewModel.kt`, `util/PasswordRules.kt`, `MainActivity.kt` (geçici şifreyle girişte zorunlu ekran), `AvatarRepository.changePassword` | `tests/test_settings.py::test_new_phone_user_can_replace_temporary_password_and_then_sync`, `PasswordRulesTest` (3). Emülatör: `change-password` 200 → `sync/pull` 200. |
+| B-14 | Orta | "Diğer cihazlardan çıkış" yoktu; çalınan ya da unutulan cihazdaki oturum ancak şifre değişince kapanıyordu. | `backend/app/api/auth.py` (`GET /auth/sessions`, `POST /auth/sessions/close-others`), `services/auth.py`; web **Ayarlar → Güvenlik** | `tests/test_settings.py` (3 test); yetki matrisi iki ucu da sınadı |
 | B-12 | Düşük | gitleaks, test dosyasındaki uydurma bir değeri gizli anahtar sandı; CI'da yanlış alarm verecekti. | `android/.../TokenCipherTest.kt` | gitleaks: bulgu yok |
 
 Ek olarak `scripts/guvenlik_denemesi.py` ve `.sh` eklendi. Videodaki saldırı denemesini tek komutla yineler (27 deneme; Docker ağı içinden, nginx üzerinden).
@@ -209,7 +211,7 @@ Ek olarak `scripts/guvenlik_denemesi.py` ve `.sh` eklendi. Videodaki saldırı d
 | 0:40–1:15 | Terminal | `sh scripts/guvenlik_denemesi.sh` çalıştır; çıktıyı kaydır | Saldırılar engellendi: girişsiz 401, rol dışı 403, SQL enjeksiyonu, açık posta rölesi, 2 MB gövde, kaba kuvvet | "Burada sisteme 27 saldırı isteği atıyoruz: sahte belirteç, başka rolün işi, SQL enjeksiyonu, dışarıya e-posta, kaba kuvvet. Hepsi reddedildi: 27'de 27." | Terminal çıktısı |
 | 1:15–1:35 | Web, `yonetici` → Alarm merkezi; Mailpit | "Art arda hatalı giriş" alarmını göster; Mailpit'te `[AVATAR UYARI]` e-postasını aç | Saldırı fark edilir ve bildirilir | "Kaba kuvvet denemesi alarm açtı ve yöneticiye anında e-posta gitti." | Mailpit |
 | 1:35–1:50 | Web → Denetim günlüğü | Hatalı giriş kayıtlarını süz | İz bırakır: kim, ne zaman, nereden | "Her deneme denetim günlüğünde; CSV olarak da alınır." | `test_alarms_audit_mail.py` |
-| 1:50–2:10 | Editör: `docs/guvenlik/api_yetki_matrisi.md` | Tabloyu kaydır | Bütün API'nin yetkisi belgeli ve otomatik sınanıyor | "95 ucun her biri koddan okunup sınanıyor: girişsiz 93 deneme, rol dışı 223 deneme; hepsi reddedildi." | `test_access_matrix.py` |
+| 1:50–2:10 | Editör: `docs/guvenlik/api_yetki_matrisi.md` | Tabloyu kaydır | Bütün API'nin yetkisi belgeli ve otomatik sınanıyor | "97 ucun her biri koddan okunup sınanıyor: girişsiz 95 deneme, rol dışı 223 deneme; hepsi reddedildi." | `test_access_matrix.py` |
 | 2:10–2:30 | Terminal | `sh scripts/yedek_denemesi.sh` | Yedek gerçekten geri yükleniyor | "Yedek alıp ayrı bir veritabanına geri yüklüyoruz; içerik bire bir aynı. Çalışan sisteme dokunulmuyor." | Çıktıdaki "Aynı" satırı |
 | 2:30–2:45 | Bu belgenin C bölümü | Kalan riskleri göster | Dürüstlük: kanıtlanmayanı iddia etmiyoruz | "Kanıtlayamadığımızı iddia etmiyoruz: HTTPS gerçek kurulumun işi, burada yerel demo çalışıyor." | Bu belge |
 
@@ -239,7 +241,7 @@ Ek olarak `scripts/guvenlik_denemesi.py` ve `.sh` eklendi. Videodaki saldırı d
    3. README'de gerçek kurulum için "HTTPS + `.env` + `SEED_PROFILE=base`" kontrol listesini öne çıkarmak.
 5. **Öne çıkarılacaklar:**
    - Şartname senaryosu uçtan uca, kanıtlı.
-   - 95 uç × 6 rol otomatik yetki testi.
+   - 97 uç × 6 rol otomatik yetki testi.
    - Canlı saldırı denemesinin 27/27 reddedilmesi.
    - Saldırının alarm ve e-postayla bildirilmesi.
    - Yedeğin geri yüklenebildiğinin gösterilmesi.
@@ -257,11 +259,11 @@ Ek olarak `scripts/guvenlik_denemesi.py` ve `.sh` eklendi. Videodaki saldırı d
 
 | Bölüm | Komut | Sonuç |
 |---|---|---|
-| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **274 geçti** |
+| Sunucu | `docker compose run --rm --no-deps api pytest -q` | **278 geçti** |
 | Biçim | `ruff format --check` + `ruff check` | Temiz |
 | Yapay zekâ | `… api sh -c "cd /ml && pytest -q"` | 4 geçti |
 | Web | `npm test`, `npx tsc -b`, `npm run lint` | 32 geçti; tip ve lint temiz |
-| Android | `./gradlew testDebugUnitTest assembleDebug` | 26 geçti; APK derlendi |
+| Android | `./gradlew testDebugUnitTest assembleDebug` | 29 geçti; APK derlendi |
 | Kabul (sıfırdan kurulum) | `sh scripts/kabul_testleri.sh` | 23/23 |
 | Canlı saldırı (demo, nginx) | `sh scripts/guvenlik_denemesi.sh` | 27/27 reddedildi |
 | Yedek | `sh scripts/yedek_denemesi.sh` | Bire bir aynı |

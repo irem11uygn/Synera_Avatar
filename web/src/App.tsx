@@ -79,6 +79,7 @@ const UsersPage = lazy(() => import('./pages/UsersPage'))
 const ProductsPage = lazy(() => import('./pages/ProductsPage'))
 const PartnersPage = lazy(() => import('./pages/PartnersPage'))
 const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const PrintPage = lazy(() => import('./pages/PrintPage'))
 
 type Route = { pattern: string; render: (params: Record<string, string>) => ReactNode }
@@ -133,6 +134,7 @@ const ROUTES: Route[] = [
   { pattern: '/urunler', render: () => <ProductsPage /> },
   { pattern: '/cariler', render: () => <PartnersPage /> },
   { pattern: '/sifre', render: () => <ChangePasswordPage /> },
+  { pattern: '/ayarlar', render: () => <SettingsPage /> },
 ]
 
 type NavItem = { to: string; label: string; icon: ReactNode; roles?: UserRole[]; badge?: 'alerts' }
@@ -197,6 +199,10 @@ const NAV: NavGroup[] = [
       { to: '/alarm-ayarlari', label: t('Alarm ve e-posta ayarları'), icon: <SettingOutlined />, roles: ['YONETICI'] },
       { to: '/denetim', label: t('Denetim günlüğü'), icon: <AuditOutlined />, roles: ['YONETICI'] },
     ],
+  },
+  {
+    label: t('Hesap'),
+    items: [{ to: '/ayarlar', label: t('Ayarlar'), icon: <SettingOutlined />, roles: ALL }],
   },
 ]
 
@@ -326,6 +332,7 @@ function Shell({
   const userMenu: MenuProps['items'] = [
     { key: 'role', label: ROLE[role], disabled: true },
     { type: 'divider' },
+    { key: 'settings', icon: <SettingOutlined />, label: t('Ayarlar'), onClick: () => go('/ayarlar') },
     { key: 'password', icon: <KeyOutlined />, label: t('Şifremi değiştir'), onClick: () => go('/sifre') },
     { key: 'logout', icon: <LogoutOutlined />, label: t('Çıkış'), danger: true, onClick: () => void logout() },
   ]

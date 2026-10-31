@@ -140,12 +140,27 @@ Biçim: her kayıt tarih, ne değişti ve neden. Yalnızca gerçekten yapılmı�
 - Yeni uyarılar: SKT yaklaşan/geçen lot, sayım farkı. Göç `d7f3b9a2c4e1` (37 tablo).
 - docker-compose'a Mailpit (`axllent/mailpit:v1.32.0`, 8025 arayüz, 1025 SMTP); `.env.example` yeni değişkenlerle. Değişken adları `SMTP_PASS`, `MAIL_FROM` (eski `SMTP_PASSWORD`, `SMTP_FROM` de okunur).
 
+### 31 Ekim 2026 (ikinci tur) — Ayarlar (web ve telefon)
+- Web: **Ayarlar** sayfası (`/ayarlar`, herkese):
+  - Hesabım ve Dil bölümleri.
+  - Güvenlik: şifre, açık oturumlar, diğer cihazlardan çıkış.
+  - Kişiye özel e-posta bildirim tercihleri: sunucuda vardı, ekranı yoktu.
+  - Hakkında ve yardım: sürüm, durum, kişisel veriler.
+  - Yöneticiye "İşletme ayarları" bölümü.
+- Sunucu: `GET /auth/sessions`, `POST /auth/sessions/close-others`; denetim kaydı `OTURUMLAR_KAPATILDI`.
+- Telefon: **Ayarlar** ekranı. Hesap, şifre değiştirme, eşitleme durumu, dil, sürüm, cihaz kimliği ve onaylı çıkış.
+- Hata düzeltmesi (telefon): geçici şifreli satış elemanı hiç çalışamıyordu.
+  - Durum: Yöneticinin açtığı ya da şifresini sıfırladığı satış elemanı, sunucu "önce şifre değiştir" dediği için eşitleyemiyordu.
+  - Neden: Web satış elemanına kapalı, telefonda da şifre ekranı yoktu.
+  - Çözüm: Telefon artık geçici şifreyle girişte zorunlu yeni şifre ekranını açar. Şifre kuralı telefonda da denetlenir (`PasswordRules`).
+- Alarm türlerinin "ne zaman" açıklamaları ortak listede (`ALERT_WHEN`).
+
 ### 31 Ekim 2026 — uçtan uca güvenlik denetimi
 - Rapor: `docs/guvenlik/guvenlik_denetimi.md` (20 temel kontrol + mobil, web, API, e-posta, Docker/CI; düzeltilenler; kalan riskler; video bölümü; son karar).
 - API ve Mailpit portları yalnız `127.0.0.1`'e bağlanır (önce bütün ağa açıktı); telefon web portunu (nginx) kullanır. `API_BIND` ayarı.
 - Demo dışı kurulumda örnek kullanıcı şifreleri geçici; ilk yönetici için `python -m app.create_admin` (tek kullanımlık şifre).
 - API yanıtlarında `Cache-Control: no-store`.
-- Bütün API'nin yetki matrisi koddan üretilir (`app/access_matrix.py`, `docs/guvenlik/api_yetki_matrisi.md`); 95 uç girişsiz ve her yetkisiz rolle sınanır (yetki hatası bulunmadı).
+- Bütün API'nin yetki matrisi koddan üretilir (`app/access_matrix.py`, `docs/guvenlik/api_yetki_matrisi.md`); 95 uç (Ayarlar turunda 97) girişsiz ve her yetkisiz rolle sınanır (yetki hatası bulunmadı).
 - Android: oturum belirteci Keystore + AES-GCM ile şifreli (eski düz belirteç taşınıp silinir); şifresiz HTTP yalnız debug derlemesinde.
 - Web: rol dışı yönetici ekranına adresle gidilince "Bu ekrana yetkiniz yok" sayfası.
 - Yedekleme: `scripts/yedekle.sh`, `scripts/geri_yukle.sh` (onaylı), `scripts/yedek_denemesi.sh` (ayrı veritabanına geri yükleyip karşılaştırır).
